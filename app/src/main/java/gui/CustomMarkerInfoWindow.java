@@ -2,7 +2,7 @@ package gui;
 
 import android.widget.TextView;
 
-import com.example.test3.R;
+import com.example.carrismobile.R;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;

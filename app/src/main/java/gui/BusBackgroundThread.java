@@ -2,7 +2,7 @@ package gui;
 
 import android.util.Log;
 
-import com.example.test3.MainActivity2;
+import com.example.carrismobile.MainActivity2;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;

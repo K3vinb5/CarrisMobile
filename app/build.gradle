@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.test3'
+    namespace 'com.example.carrismobile'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.test3"
+        applicationId "com.example.carrismobile"
         minSdk 24
         targetSdk 34
         versionCode 1
