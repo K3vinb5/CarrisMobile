@@ -1,12 +1,11 @@
 package com.example.carrismobile;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -15,12 +14,12 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -50,7 +49,7 @@ import data_structure.Path;
 import data_structure.Schedule;
 import gui.CustomMarkerInfoWindow;
 
-public class RouteFragment extends Fragment {
+public class RouteDetailsFragment extends Fragment {
 
     private static SharedPreferences mPrefs;
     static MapView map;
@@ -99,7 +98,12 @@ public class RouteFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                try {
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
 
+                }
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -192,26 +196,6 @@ public class RouteFragment extends Fragment {
             }
         });
 
-        if (restoreObjects()){
-
-            editText.setText(currentCarreiraId+"");
-            button.performClick();
-
-            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-            loadingImage.setScaleX(0.3f);
-            loadingImage.setScaleY(0.3f);
-
-            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-            map.setTileSource(TileSourceFactory.OpenTopo);
-            map.setMultiTouchControls(true);
-            //map.setVisibility(View.INVISIBLE);
-            map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
-            map.getController().setZoom(13.0);
-            map.invalidate();
-            CompassOverlay compassOverlay = new CompassOverlay(getContext(), map);
-            compassOverlay.enableCompass();
-            map.getOverlays().add(compassOverlay);
-        }else{
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             loadingImage.setScaleX(0.3f);
             loadingImage.setScaleY(0.3f);
@@ -230,7 +214,7 @@ public class RouteFragment extends Fragment {
             CompassOverlay compassOverlay = new CompassOverlay(getContext(), map);
             compassOverlay.enableCompass();
             map.getOverlays().add(compassOverlay);
-        }
+
 
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -374,7 +358,6 @@ public class RouteFragment extends Fragment {
         //storeObject(gson.toJson(uiIsVisible), "key_uiIsVisible");
         //storeObject(gson.toJson(currentDirectionIndex), "key_currentDirectionIndex");
         //storeObject(gson.toJson(currentPathIndex), "key_currentPathIndex");
-        storeObject(gson.toJson(currentCarreiraId), "key_currentCarreiraId");
     }
 
 

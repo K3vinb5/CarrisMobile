@@ -12,7 +12,8 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity {
 
     Fragment realTimeFragment = new RealTimeFragment();
-    Fragment routeFragment = new RouteFragment();
+    Fragment routeFragment = new RouteDetailsFragment();
+    int currentFragment = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,16 +28,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.example_menu, menu);
+        inflater.inflate(R.menu.top_menu, menu);
+        inflater.inflate(R.menu.bottom_menu, menu);
         return true;
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.item2) {
-            openRealTimeAFragment();
-            return true;
-        }else if(item.getItemId() == R.id.item1){
+        if (item.getItemId() == R.id.bottomitem1) {
             openRouteDetailFragment();
+            return true;
+        }else if(item.getItemId() == R.id.bottomitem2){
+            openRealTimeAFragment();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(routeFragment);
         transaction.show(realTimeFragment);
         transaction.commit();
+        currentFragment = 0; //keeps track of current fragment
     }
 
     public void openRouteDetailFragment(){
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(realTimeFragment);
         transaction.show(routeFragment);
         transaction.commit();
+        currentFragment = 1; //keeps track of current fragment
     }
 
 }

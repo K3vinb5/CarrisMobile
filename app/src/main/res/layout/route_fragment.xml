@@ -4,18 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RouteFragment">
+    tools:context=".RouteDetailsFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="47dp"
+        android:layout_height="45dp"
         android:background="?attr/colorPrimary"
         android:backgroundTint="@color/yellow"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/example_menu"
+        app:menu="@menu/top_menu"
         tools:layout_editor_absoluteX="0dp"
         />
 
@@ -32,7 +32,7 @@
 
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
-        android:layout_width="match_parent"
+        android:layout_width="413dp"
         android:layout_height="284dp"
         android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -154,6 +154,5 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,7 @@
 package com.example.carrismobile;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
+
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
@@ -11,9 +13,9 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -76,6 +78,12 @@ public class RealTimeFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                try {
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
+
+                }
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -116,7 +124,7 @@ public class RealTimeFragment extends Fragment {
 
     public void openRouteDeitalActivity() {
         backgroundThread.interrupt();
-        Intent intent = new Intent(getActivity(), RouteFragment.class);
+        Intent intent = new Intent(getActivity(), RouteDetailsFragment.class);
         startActivity(intent);
     }
 
