@@ -1,8 +1,8 @@
 package com.example.carrismobile;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,10 +10,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -35,14 +35,14 @@ import data_structure.Path;
 import gui.BusBackgroundThread;
 import gui.CustomMarkerInfoWindow;
 
-public class MainActivity2 extends AppCompatActivity {
+public class RealTimeFragment extends Fragment {
 
     public static MapView map;
+    public static Activity activity;
     Button button;
     EditText editText;
     public BusBackgroundThread backgroundThread = new BusBackgroundThread();
     public boolean backgroundThreadStarted = false;
-    public static Activity activity;
     public static List<Bus> busList = new ArrayList<>();
     public static List<Path> pathList = new ArrayList<>();
     public static List<Marker> markerList = new ArrayList<>();
@@ -52,14 +52,14 @@ public class MainActivity2 extends AppCompatActivity {
     public static String currentText = "";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
-        activity = this;
-        map = findViewById(R.id.mapview);
-        button = findViewById(R.id.button2);
-        editText = findViewById(R.id.editText2);
+        View v = inflater.inflate(R.layout.realtime_fragment, container, false);
+
+        activity = getActivity();
+        map = v.findViewById(R.id.mapview);
+        button = v.findViewById(R.id.button2);
+        editText = v.findViewById(R.id.editText2);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -69,7 +69,7 @@ public class MainActivity2 extends AppCompatActivity {
         map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
         map.getController().setZoom(13.0);
         map.invalidate();
-        CompassOverlay compassOverlay = new CompassOverlay(this, map);
+        CompassOverlay compassOverlay = new CompassOverlay(getActivity(), map);
         compassOverlay.enableCompass();
         map.getOverlays().add(compassOverlay);
 
@@ -93,11 +93,11 @@ public class MainActivity2 extends AppCompatActivity {
                         busList.addAll(listToAdd);
                         pathList.addAll(pathListToAdd);
 
-                        runOnUiThread(new Runnable() {
+                        getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                updateMarkers(pathList, map, activity);
-                                updateBuses(busList, map, activity);
+                                updateMarkers(pathList, map, getActivity());
+                                updateBuses(busList, map, getActivity());
                                 Log.println(Log.DEBUG, "BUS DEBUG", "UI UPDATED");
                             }
                         });
@@ -111,27 +111,12 @@ public class MainActivity2 extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.example_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.item1) {
-            openRouteDeitalActivity();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return v;
     }
 
     public void openRouteDeitalActivity() {
         backgroundThread.interrupt();
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(getActivity(), RouteFragment.class);
         startActivity(intent);
     }
 
@@ -186,43 +171,4 @@ public class MainActivity2 extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        /*Gson gson = new Gson();
-        String busListJson = gson.toJson(busList);
-        String pathListJson = gson.toJson(pathList);
-        String markerListJson = gson.toJson(markerList);
-        String markerBusListJson = gson.toJson(markerBusList);
-
-        outState.putInt("key_currentSelectedBus", currentSelectedBus);
-        outState.putInt("key_currentSelectedDirection", currentSelectedDirection);
-        outState.putString("key_currentText", currentText);
-
-        outState.putString("key_busListJson", busListJson);
-        outState.putString("key_pathListJson", pathListJson);
-        outState.putString("key_markerListJson", markerListJson);
-        outState.putString("key_markerBusListJson", markerBusListJson);*/
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        /*Gson gson = new Gson();
-
-        String busListJson = savedInstanceState.getString("key_busListJson");
-        String pathListJson = savedInstanceState.getString("key_pathListJson");
-        String markerListJson = savedInstanceState.getString("key_markerListJson");
-        String markerBusListJson = savedInstanceState.getString("key_markerBusListJson");
-
-        busList = gson.fromJson(busListJson, busList.getClass());
-        pathList = gson.fromJson(pathListJson, pathList.getClass());
-        markerList = gson.fromJson(markerListJson, markerList.getClass());
-        markerBusList = gson.fromJson(markerBusListJson, markerBusList.getClass());
-
-        currentSelectedBus = savedInstanceState.getInt("key_currentSelectedBus");
-        currentSelectedDirection = savedInstanceState.getInt("key_currentSelectedDirection");
-        currentText = savedInstanceState.getString("key_currentText");*/
-    }
 }

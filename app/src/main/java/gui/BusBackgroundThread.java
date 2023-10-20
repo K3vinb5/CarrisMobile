@@ -2,7 +2,7 @@ package gui;
 
 import android.util.Log;
 
-import com.example.carrismobile.MainActivity2;
+import com.example.carrismobile.RealTimeFragment;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -24,24 +24,24 @@ public class BusBackgroundThread extends Thread{
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        MapView map = MainActivity2.map;
-                        String currentText = MainActivity2.currentText;
+                        MapView map = RealTimeFragment.map;
+                        String currentText = RealTimeFragment.currentText;
 
-                        MainActivity2.busList.clear();
+                        RealTimeFragment.busList.clear();
                         List<Bus> listToAdd = Api.getBusFromLine(currentText);
-                        MainActivity2.busList.addAll(listToAdd);
-                        MainActivity2.updateBusesUI();
+                        RealTimeFragment.busList.addAll(listToAdd);
+                        RealTimeFragment.updateBusesUI();
                         Log.println(Log.DEBUG, "BACKGROUND THREAD", getName() + "Ended");
                     }
                 });
 
                 Log.println(Log.DEBUG,"BACKGROUND CALLER", "Call" + index);
                 index++;
-                List<Marker> currentBusList = MainActivity2.markerBusList;
-                TimeUnit.MILLISECONDS.sleep(10000);
-                if (!MainActivity2.markerBusList.equals(currentBusList)){
+                List<Marker> currentBusList = RealTimeFragment.markerBusList;
+                TimeUnit.MILLISECONDS.sleep(5000);
+                if (!RealTimeFragment.markerBusList.equals(currentBusList)){
                     for (Marker marker : currentBusList){
-                        MainActivity2.map.getOverlays().remove(marker);
+                        RealTimeFragment.map.getOverlays().remove(marker);
                     }
                 }
                 Log.println(Log.DEBUG, "BACKGROUND THREAD", thread.getName() + "STARTED");
