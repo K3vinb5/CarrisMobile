@@ -5,6 +5,8 @@ import static android.content.Context.MODE_PRIVATE;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -308,11 +310,6 @@ public class RouteFragment extends Fragment {
         //Click Button
         return v;
     }
-
-    /*public void openRealTimeActivity(){
-        Intent intent = new Intent(this, MainActivity2.class);
-        startActivity(intent);
-    }*/
 
     private static void updateMarkers(List<Path> pathList, MapView map, Activity activity){
         for (Marker marker : markerList){
