@@ -10,6 +10,7 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="match_parent"
         android:layout_height="45dp"
+        android:id="@+id/bottomAppBar"
         app:backgroundTint="@color/lightYellow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

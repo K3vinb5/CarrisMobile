@@ -9,19 +9,30 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.android.material.bottomappbar.BottomAppBar;
+
 public class MainActivity extends AppCompatActivity {
 
     Fragment realTimeFragment = new RealTimeFragment();
-    Fragment routeFragment = new RouteDetailsFragment();
-    int currentFragment = 0;
+    Fragment routeDetailsFragment = new RouteDetailsFragment();
+    Fragment routesFragment = new RoutesFragment();
+    Fragment currentFragment = null;
+    int currentIndexFragment = 0;
+    BottomAppBar bottomAppBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        bottomAppBar = findViewById(R.id.bottomAppBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.main_layout, routeFragment);
+        transaction.add(R.id.main_layout, routeDetailsFragment);
         transaction.add(R.id.main_layout, realTimeFragment);
+        transaction.add(R.id.main_layout, routesFragment);
         transaction.hide(realTimeFragment);
+        transaction.hide(routeDetailsFragment);
+        currentFragment = routesFragment;
+
         transaction.commit();
     }
 
@@ -40,24 +51,38 @@ public class MainActivity extends AppCompatActivity {
         }else if(item.getItemId() == R.id.bottomitem2){
             openRealTimeAFragment();
             return true;
+        }else if(item.getItemId() == R.id.bottomitem3){
+            openRouteFragment();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     public void openRealTimeAFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.hide(routeFragment);
+        transaction.hide(currentFragment);
         transaction.show(realTimeFragment);
         transaction.commit();
-        currentFragment = 0; //keeps track of current fragment
+        currentFragment = realTimeFragment;
+        currentIndexFragment = 0; //keeps track of current fragment
     }
 
     public void openRouteDetailFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.hide(realTimeFragment);
-        transaction.show(routeFragment);
+        transaction.hide(currentFragment);
+        transaction.show(routeDetailsFragment);
         transaction.commit();
-        currentFragment = 1; //keeps track of current fragment
+        currentFragment = routeDetailsFragment;
+        currentIndexFragment = 2; //keeps track of current fragment
+    }
+
+    public void openRouteFragment(){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.hide(currentFragment);
+        transaction.show(routesFragment);
+        transaction.commit();
+        currentFragment = routesFragment;
+        currentIndexFragment = 1; //keeps track of current fragment
     }
 
 }

@@ -48,6 +48,7 @@ import data_structure.Direction;
 import data_structure.Path;
 import data_structure.Schedule;
 import gui.CustomMarkerInfoWindow;
+import kevin.carrismobile.adaptors.MyTileSource;
 
 public class RouteDetailsFragment extends Fragment {
 
@@ -80,7 +81,7 @@ public class RouteDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.route_fragment, container, false);
+        View v = inflater.inflate(R.layout.route_details_fragment, container, false);
 
         mPrefs = getActivity().getSharedPreferences("myAppPrefs", MODE_PRIVATE);
 
@@ -155,9 +156,9 @@ public class RouteDetailsFragment extends Fragment {
                         pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
                         scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
 
-                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.list_item, R.id.listText, scheduleList);
-                        pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.list_item, R.id.listText, pathList);
-                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.list_item, R.id.listText, directionList);
+                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                        pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
+                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
                         Carreira finalCarreira = carreira;
                         getActivity().runOnUiThread(new Runnable() {
                             @Override

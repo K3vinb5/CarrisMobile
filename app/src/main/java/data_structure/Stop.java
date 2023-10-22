@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import api.Api;
-
 public class Stop implements Serializable {
 
     private int id;

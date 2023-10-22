@@ -11,6 +11,14 @@
         android:orderInCategory="2"/>
     />
 
+    <item android:id="@+id/bottomitem3"
+        android:icon="@drawable/baseline_home_24"
+        android:title=""
+        app:showAsAction="always"
+        android:onClick="onOptionsItemSelected"
+        android:orderInCategory="2"/>
+    />
+
     <item
         android:id="@+id/bottomitem2"
         android:icon="@drawable/ic_bus_icon_bar"
