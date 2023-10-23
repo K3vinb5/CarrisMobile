@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -48,7 +49,6 @@ import data_structure.Direction;
 import data_structure.Path;
 import data_structure.Schedule;
 import gui.CustomMarkerInfoWindow;
-import kevin.carrismobile.adaptors.MyTileSource;
 
 public class RouteDetailsFragment extends Fragment {
 
@@ -374,4 +374,33 @@ public class RouteDetailsFragment extends Fragment {
         return true;
     }
 
+    public EditText getEditText() {
+        return editText;
+    }
+
+    public Button getButton() {
+        return button;
+    }
+
+    public Integer getCurrentCarreiraId() {
+        return currentCarreiraId;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.realTimeonDetails){
+            MainActivity activity = (MainActivity) getActivity();
+            RealTimeFragment fragment = (RealTimeFragment) activity.realTimeFragment;
+            activity.openRealTimeAFragment();
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fragment.editText.setText(currentCarreiraId.toString());
+                    fragment.button.performClick();
+                }
+            });
+            return true;
+        }
+        return false;
+    }
 }

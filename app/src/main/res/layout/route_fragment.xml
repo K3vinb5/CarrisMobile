@@ -25,7 +25,7 @@
         android:layout_height="30dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        android:text="Carreiras"
+        android:text="Carreiras / Stops"
         android:textColor="@color/black"
         android:textSize="20dp"
         android:textStyle="bold"
@@ -54,15 +54,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
-    <Button
-        android:id="@+id/routesButton"
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="35dp"
+        android:checked="false"
+        android:text="Switch"
+        android:textColorHighlight="@color/lightYellow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewCarreirasStops"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:text="Atualizar"
-        android:backgroundTint="@color/lightYellow"
-        android:textColor="@color/black"
+        android:layout_marginEnd="25dp"
+        android:gravity="right"
+        android:text="Carreiras/Stops"
+        android:textColor="@color/lightYellow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

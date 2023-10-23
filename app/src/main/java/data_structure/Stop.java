@@ -23,6 +23,8 @@ public class Stop implements Serializable {
     private String district_name;
     private String region_id;
     private String region_name;
+    private List<String> lines;
+
     private List<Schedule> scheduleList;
     private boolean init = false;
 

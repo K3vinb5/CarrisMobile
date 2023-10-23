@@ -15,7 +15,7 @@
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/top_menu"
+        app:menu="@menu/route_details_top_menu"
         tools:layout_editor_absoluteX="0dp"
         />
 

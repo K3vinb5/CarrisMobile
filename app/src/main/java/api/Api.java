@@ -15,14 +15,18 @@ import data_structure.Bus;
 import data_structure.Carreira;
 import data_structure.CarreiraBasic;
 import data_structure.Direction;
+import data_structure.Path;
 import data_structure.RealTimeSchedule;
+import data_structure.Stop;
 
 public class Api {
     private String line;
     public static final String CARREIRAURL = "https://api.carrismetropolitana.pt/lines/";
-    public static final String CARREIRABASICURL = "https://api.carrismetropolitana.pt/lines";
+    public static final String CARREIRALISTURL = "https://api.carrismetropolitana.pt/lines";
     public static final String DIRECTIONURL = "https://api.carrismetropolitana.pt/patterns/";
     public static final String REALTIMESTOPURL = "https://api.carrismetropolitana.pt/stops/";
+    public static final String REALTIMELISTSTOPURL = "https://api.carrismetropolitana.pt/stops";
+
     public static final String BUSREALTIMESTOPURL = "https://api.carrismetropolitana.pt/vehicles";
 
     public static String getJson(String url){
@@ -127,13 +131,29 @@ public class Api {
     public static List<CarreiraBasic> getCarreiraBasicList(){
         try {
             Gson gson = new Gson();
-            JsonArray jsonCarreiraArray = new JsonParser().parse(getJson(CARREIRABASICURL)).getAsJsonArray();
+            JsonArray jsonCarreiraArray = new JsonParser().parse(getJson(CARREIRALISTURL)).getAsJsonArray();
             List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
             for (JsonElement jsonElement : jsonCarreiraArray){
                 CarreiraBasic carreira = gson.fromJson(jsonElement, CarreiraBasic.class);
                 carreiraBasicList.add(carreira);
             }
             return carreiraBasicList;
+        }catch (Exception e ){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static List<Stop> getStopList(){
+        try {
+            Gson gson = new Gson();
+            JsonArray jsonCarreiraArray = new JsonParser().parse(getJson(REALTIMELISTSTOPURL)).getAsJsonArray();
+            List<Stop> stopList = new ArrayList<>();
+            for (JsonElement jsonElement : jsonCarreiraArray){
+                Stop stop = gson.fromJson(jsonElement, Stop.class);
+                stopList.add(stop);
+            }
+            return stopList;
         }catch (Exception e ){
             e.printStackTrace();
             return null;
