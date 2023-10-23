@@ -17,7 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -42,14 +44,18 @@ public class RealTimeFragment extends Fragment {
     public static MapView map;
     public static Activity activity;
     Button button;
+    Button nextButton;
+    TextView textView;
+    Button previousButton;
     EditText editText;
+    public static CheckBox checkBox;
     public BusBackgroundThread backgroundThread = new BusBackgroundThread();
     public boolean backgroundThreadStarted = false;
     public static List<Bus> busList = new ArrayList<>();
     public static List<Path> pathList = new ArrayList<>();
     public static List<Marker> markerList = new ArrayList<>();
     public static List<Marker> markerBusList = new ArrayList<>();
-    public int currentSelectedBus = 0;
+    public static int currentSelectedBus = 0;
     public int currentSelectedDirection = 0;
     public static String currentText = "";
 
@@ -61,7 +67,11 @@ public class RealTimeFragment extends Fragment {
         activity = getActivity();
         map = v.findViewById(R.id.mapview);
         button = v.findViewById(R.id.button2);
+        previousButton = v.findViewById(R.id.previousButton);
+        nextButton = v.findViewById(R.id.nextButton);
         editText = v.findViewById(R.id.editText2);
+        textView = v.findViewById(R.id.textViewRealTimeFragment);
+        checkBox = v.findViewById(R.id.checkBox);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -87,6 +97,7 @@ public class RealTimeFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        currentSelectedBus = 0;
                         currentText = editText.getText().toString();
                         busList.clear();
                         pathList.clear();
@@ -107,6 +118,7 @@ public class RealTimeFragment extends Fragment {
                                 updateMarkers(pathList, map, getActivity());
                                 updateBuses(busList, map, getActivity());
                                 Log.println(Log.DEBUG, "BUS DEBUG", "UI UPDATED");
+                                textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
                             }
                         });
 
@@ -119,6 +131,52 @@ public class RealTimeFragment extends Fragment {
                 }
             }
         });
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (currentSelectedBus < busList.size() - 1){
+                    currentSelectedBus ++;
+                    if (busList.size() != 0){
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
+                                Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus + " " + point.getLatitude() + "|" + point.getLongitude());
+                                map.getController().animateTo(point, 16.0, 2500L);
+                                map.invalidate();
+                                textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
+                            }
+                        });
+                    }
+
+                }
+            }
+        });
+
+        previousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (currentSelectedBus >= 1){
+                    currentSelectedBus --;
+                    if (busList.size() != 0){
+
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
+                                Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus + " " + point.getLatitude() + "|" + point.getLongitude());
+                                map.getController().animateTo(point, 16.0, 2500L);
+                                map.invalidate();
+                                textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
         return v;
     }
 
@@ -150,10 +208,11 @@ public class RealTimeFragment extends Fragment {
     }
 
     public static void updateBuses(List<Bus> busList, MapView map, Activity activity){
+
         for (Marker marker : markerBusList){
             map.getOverlays().remove(marker);
         }
-
+        markerBusList.clear();
         for (Bus bus : busList){
             double[] coordinates = bus.getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);

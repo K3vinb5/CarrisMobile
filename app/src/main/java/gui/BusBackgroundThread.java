@@ -31,6 +31,15 @@ public class BusBackgroundThread extends Thread{
                         List<Bus> listToAdd = Api.getBusFromLine(currentText);
                         RealTimeFragment.busList.addAll(listToAdd);
                         RealTimeFragment.updateBusesUI();
+                        RealTimeFragment.activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (RealTimeFragment.checkBox.isChecked()){
+                                    map.getController().animateTo(RealTimeFragment.markerBusList.get(RealTimeFragment.currentSelectedBus).getPosition(), 16.0, 2500L);
+                                    map.invalidate();
+                                }
+                            }
+                        });
                         Log.println(Log.DEBUG, "BACKGROUND THREAD", getName() + "Ended");
                     }
                 });

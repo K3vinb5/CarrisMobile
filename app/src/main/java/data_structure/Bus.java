@@ -5,6 +5,7 @@ public class Bus {
     private double lat;
     private double lon;
     private String speed;
+    private String status;
     private double heading;
     private String trip_id;
     private String pattern_id;
@@ -59,6 +60,10 @@ public class Bus {
 
     public String getSpeed() {
         return speed;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public void setSpeed(String speed) {
