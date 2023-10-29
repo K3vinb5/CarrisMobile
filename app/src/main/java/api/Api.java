@@ -5,9 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +15,8 @@ import data_structure.Direction;
 import data_structure.Path;
 import data_structure.RealTimeSchedule;
 import data_structure.Stop;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public class Api {
     private String line;
@@ -30,15 +29,15 @@ public class Api {
     public static final String BUSREALTIMESTOPURL = "https://api.carrismetropolitana.pt/vehicles";
 
     public static String getJson(String url){
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(url).build();
+        String output = "";
         try {
-            final Document document = Jsoup.connect(url).ignoreContentType(true).get();
-            Gson gson = new Gson();
-            return document.body().text();
-        }catch (Exception e ){
+            output = client.newCall(request).execute().body().string();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
+        return output;
     }
 
     public static Direction getDirection(String pattern){

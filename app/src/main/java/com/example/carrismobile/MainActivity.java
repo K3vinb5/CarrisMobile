@@ -1,22 +1,30 @@
 package com.example.carrismobile;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+
+import data_structure.Stop;
 
 public class MainActivity extends AppCompatActivity {
 
-    Fragment realTimeFragment = new RealTimeFragment();
-    Fragment routeDetailsFragment = new RouteDetailsFragment();
-    Fragment routesFragment = new RoutesFragment();
-    Fragment currentFragment = null;
+    public Fragment realTimeFragment = new RealTimeFragment();
+    public Fragment routeDetailsFragment = new RouteDetailsFragment();
+    public Fragment routesFragment = new RoutesFragment();
+    public Fragment stopsMapFragment = new StopsMapFragment();
+    public Fragment currentFragment = null;
     int currentIndexFragment = 0;
     BottomAppBar bottomAppBar;
 
@@ -29,10 +37,10 @@ public class MainActivity extends AppCompatActivity {
         transaction.add(R.id.main_layout, routeDetailsFragment);
         transaction.add(R.id.main_layout, realTimeFragment);
         transaction.add(R.id.main_layout, routesFragment);
+        transaction.add(R.id.main_layout, stopsMapFragment);
         transaction.hide(realTimeFragment);
         transaction.hide(routeDetailsFragment);
         currentFragment = routesFragment;
-
         transaction.commit();
     }
 
@@ -47,13 +55,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.bottomitem1) {
             openRouteDetailFragment();
-            return true;
+            return super.onOptionsItemSelected(item);
         }else if(item.getItemId() == R.id.bottomitem2){
             openRealTimeAFragment();
-            return true;
+            return super.onOptionsItemSelected(item);
         }else if(item.getItemId() == R.id.bottomitem3){
             openRouteFragment();
-            return true;
+            return super.onOptionsItemSelected(item);
+        }else if(item.getItemId() == R.id.bottomitem4){
+            openstopsMapFragment();
         }else if (item.getItemId() == R.id.realTimeonDetails){
             openRealTimeAFragment();
             RouteDetailsFragment fragment = (RouteDetailsFragment) routeDetailsFragment;
@@ -74,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void openRealTimeAFragment(){
         int oldIndexFragment = currentIndexFragment;
-        currentIndexFragment = 0; //keeps track of current fragment
+        currentIndexFragment = 3; //keeps track of current fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
         transaction.hide(currentFragment);
@@ -85,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void openRouteDetailFragment(){
         int oldIndexFragment = currentIndexFragment;
-        currentIndexFragment = 2; //keeps track of current fragment
+        currentIndexFragment = 0; //keeps track of current fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
         transaction.hide(currentFragment);
@@ -96,13 +106,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void openRouteFragment(){
         int oldIndexFragment = currentIndexFragment;
-        currentIndexFragment = 1; //keeps track of current fragment
+        currentIndexFragment = 2; //keeps track of current fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
         transaction.hide(currentFragment);
         transaction.show(routesFragment);
         transaction.commit();
         currentFragment = routesFragment;
+    }
+
+    public void openstopsMapFragment(){
+        int oldIndexFragment = currentIndexFragment;
+        currentIndexFragment = 1; //keeps track of current fragment
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+        transaction.hide(currentFragment);
+        transaction.show(stopsMapFragment);
+        transaction.commit();
+        currentFragment = stopsMapFragment;
     }
 
     private void slideRight(FragmentTransaction transaction){
@@ -122,5 +143,4 @@ public class MainActivity extends AppCompatActivity {
             //nothing
         }
     }
-
 }

@@ -8,6 +8,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -49,6 +51,7 @@ import data_structure.Direction;
 import data_structure.Path;
 import data_structure.Schedule;
 import gui.CustomMarkerInfoWindow;
+import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class RouteDetailsFragment extends Fragment {
 
@@ -75,6 +78,8 @@ public class RouteDetailsFragment extends Fragment {
     static ArrayAdapter<Direction> directionArrayAdapter = null;
     public static List<Schedule> scheduleList = new ArrayList<>();//
     static ArrayAdapter<Schedule> scheduleArrayAdapter = null;
+    public AlertDialog dialog;
+    public boolean connected;
     public static List<Marker> markerList = new ArrayList<>();//
 
 
@@ -95,6 +100,8 @@ public class RouteDetailsFragment extends Fragment {
         scheduleView = v.findViewById(R.id.scheduleView);
         spinner = v.findViewById(R.id.spinner);
         loadingImage = v.findViewById(R.id.loadingImage);
+
+        dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,18 +138,19 @@ public class RouteDetailsFragment extends Fragment {
                         try {
                             carreira = Api.getCarreira(editText.getText().toString());
                             carreira.init();
+                            connected = true;
                         }catch (Exception e ){
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    dialog.show();
                                     if (loadingImage.getAnimation() != null){
                                         loadingImage.getAnimation().cancel();
                                     }
                                     loadingImage.setVisibility(View.INVISIBLE);
-                                    textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
-                                    textView.setVisibility(View.VISIBLE);
                                 }
                             });
+                            connected = false;
                             return;
                         }
 
@@ -305,7 +313,7 @@ public class RouteDetailsFragment extends Fragment {
             double[] coordinates = path.getStop().getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.ic_bus_stop, null);
+            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.map_stop_selected, null);
             marker.setIcon(d);
             markerList.add(marker);
             marker.setPosition(point);

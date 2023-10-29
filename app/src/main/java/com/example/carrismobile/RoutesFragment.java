@@ -1,5 +1,7 @@
 package com.example.carrismobile;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -26,6 +28,7 @@ import data_structure.CarreiraBasic;
 import data_structure.Schedule;
 import data_structure.Stop;
 import kevin.carrismobile.adaptors.ImageListAdaptor;
+import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class RoutesFragment extends Fragment {
 
@@ -36,9 +39,10 @@ public class RoutesFragment extends Fragment {
     ArrayAdapter<Stop> stopListAdaptor;
     List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
     List<Stop> stopsList = new ArrayList<>();
-    Switch aSwitch;
     List<CarreiraBasic> currentCarreiraBasicList = new ArrayList<>();
     List<Stop> currentStopList = new ArrayList<>();
+    AlertDialog dialog;
+    public boolean connected = false;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -47,7 +51,9 @@ public class RoutesFragment extends Fragment {
 
         list = v.findViewById(R.id.main_list);
         editText = v.findViewById(R.id.editTextRoutes);
-        aSwitch = v.findViewById(R.id.switch1);
+
+
+        dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
 
         Gson gson = new Gson();
         Thread thread = new Thread(new Runnable() {
@@ -56,15 +62,42 @@ public class RoutesFragment extends Fragment {
                 Thread thread1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        stopsList.addAll(Api.getStopList());
+                        List<Stop> toAdd;
+                        try{
+                            toAdd = Api.getStopList();
+                            connected = true;
+                        }catch (Exception e){
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.show();
+                                }
+                            });
+                            connected = false;
+                            return;
+                        }
+                        stopsList.addAll(toAdd);
                         currentStopList.addAll(stopsList);
                         //TODO Might need UiThread
                         stopListAdaptor = new ArrayAdapter<Stop>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentStopList);
                     }
                 });
                 //thread1.start();
-
-                carreiraBasicList.addAll(Api.getCarreiraBasicList());
+                List<CarreiraBasic> toAdd;
+                try{
+                    toAdd = Api.getCarreiraBasicList();
+                    carreiraBasicList.addAll(toAdd);
+                    connected = true;
+                }catch (Exception e){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.show();
+                        }
+                    });
+                    connected = false;
+                    return;
+                }
                 currentCarreiraBasicList.addAll(carreiraBasicList);
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
@@ -148,30 +181,7 @@ public class RoutesFragment extends Fragment {
                         });
                     }
                 });
-
-                Thread thread2 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //TODO STOPS
-                    }
-                });
-
-                if (!aSwitch.isChecked()){
-                    thread1.start();
-                }else {
-                    thread2.start();
-                }
-            }
-        });
-
-        aSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (aSwitch.isChecked()){
-                    list.setAdapter(stopListAdaptor);
-                }else{
-                    list.setAdapter(imagesListAdapter);
-                }
+                thread1.start();
             }
         });
         return v;

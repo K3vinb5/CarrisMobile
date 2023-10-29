@@ -12,10 +12,12 @@
         android:layout_height="45dp"
         android:id="@+id/bottomAppBar"
         app:backgroundTint="@color/lightYellow"
+        app:itemIconTint="@color/bottom_bar_icon_colort"
+        app:itemRippleColor="@color/lightGray"
+        android:stateListAnimator="@animator/bottom_app_bar_iconsize"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:itemIconTint="@color/black"
         app:menu="@menu/bottom_menu" />
 
     <LinearLayout
