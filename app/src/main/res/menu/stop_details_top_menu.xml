@@ -2,29 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/topItem1"
+
+    <item android:id="@+id/stopDetailstopItem1"
         android:icon="@drawable/baseline_more_vert_24"
         android:title="Item 1"
         app:showAsAction="always"
         android:onClick="onOptionsItemSelected"
-        android:orderInCategory="2">
+        android:orderInCategory="2"/>
+    />
 
-        <menu
-            android:id="@+id/menu_revice" >
-
-            <item
-                android:id="@+id/realTimeonDetails"
-                android:icon="@drawable/ic_bus_icon_bar"
-                android:onClick="onOptionsItemSelected"
-                android:title="Ver em Tempo Real"
-                app:showAsAction="never" />
-
-        </menu>
-
-    </item>
-
-    <item android:id="@+id/routeDetailstopItem2"
+    <item android:id="@+id/stopDetailstopItem2"
         android:icon="@drawable/baseline_star_border_24"
         android:title="Item 1"
         app:showAsAction="always"

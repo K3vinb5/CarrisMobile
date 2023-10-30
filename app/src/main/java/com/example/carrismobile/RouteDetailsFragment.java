@@ -50,6 +50,7 @@ import data_structure.Carreira;
 import data_structure.Direction;
 import data_structure.Path;
 import data_structure.Schedule;
+import data_structure.Stop;
 import gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.adaptors.MyCustomDialog;
 
@@ -58,6 +59,7 @@ public class RouteDetailsFragment extends Fragment {
     private static SharedPreferences mPrefs;
     static MapView map;
     Button button;
+    Button favoriteButton;
     TextView textView;//
     TextView pathListText;//
     TextView schedulesListText;//
@@ -79,6 +81,7 @@ public class RouteDetailsFragment extends Fragment {
     public static List<Schedule> scheduleList = new ArrayList<>();//
     static ArrayAdapter<Schedule> scheduleArrayAdapter = null;
     public AlertDialog dialog;
+    public AlertDialog stopAdded;
     public boolean connected;
     public static List<Marker> markerList = new ArrayList<>();//
 
@@ -88,9 +91,10 @@ public class RouteDetailsFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.route_details_fragment, container, false);
 
-        mPrefs = getActivity().getSharedPreferences("myAppPrefs", MODE_PRIVATE);
+        mPrefs = getActivity().getSharedPreferences("RouteDetailsFragmentd", MODE_PRIVATE);
 
         button = v.findViewById(R.id.button);
+        favoriteButton = v.findViewById(R.id.favoriteButton);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
         editText = v.findViewById(R.id.editText);
@@ -102,6 +106,7 @@ public class RouteDetailsFragment extends Fragment {
         loadingImage = v.findViewById(R.id.loadingImage);
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
+        stopAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada à Lista de Favoritos", "A Paragem Selecionada foi adicionada com sucesso á Lista de Favoritos de Paragens");
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,6 +183,7 @@ public class RouteDetailsFragment extends Fragment {
                                 pathView.setVisibility(View.VISIBLE);
                                 pathListText.setVisibility(View.VISIBLE);
                                 schedulesListText.setVisibility(View.VISIBLE);
+                                favoriteButton.setVisibility(View.VISIBLE);
 
                                 pathView.setAdapter(pathAdapter);
                                 scheduleView.setAdapter(scheduleArrayAdapter);
@@ -211,6 +217,7 @@ public class RouteDetailsFragment extends Fragment {
             schedulesListText.setVisibility(View.INVISIBLE);
             pathListText.setVisibility(View.INVISIBLE);
             map.setVisibility(View.INVISIBLE);
+            favoriteButton.setVisibility(View.INVISIBLE);
             textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
 
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -300,6 +307,29 @@ public class RouteDetailsFragment extends Fragment {
             }
         });
 
+        favoriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Stop stoptoAdd = pathList.get(currentPathIndex).getStop();
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
+                        fragment.addStopToFavorites(stoptoAdd);
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopAdded.show();
+                                //informs user of success;
+                            }
+                        });
+                    }
+                });
+                thread.start();
+            }
+        });
+
         //Click Button
         return v;
     }
@@ -353,34 +383,6 @@ public class RouteDetailsFragment extends Fragment {
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
     }
-    @Override
-    public void onStop() {
-        super.onStop();
-        Gson gson = new Gson();
-        mPrefs.edit().clear();
-        //storeObject(gson.toJson(currentCarreira), "key_currentCarreira");
-        //storeObject(gson.toJson(pathList), "key_pathList");
-        //storeObject(gson.toJson(directionList), "key_directionList");
-        //storeObject(gson.toJson(scheduleList), "key_scheduleList");
-        //storeObject(gson.toJson(markerList), "key_markerList");
-        //storeObject(gson.toJson(map), "key_map");
-        //storeObject(gson.toJson(uiIsVisible), "key_uiIsVisible");
-        //storeObject(gson.toJson(currentDirectionIndex), "key_currentDirectionIndex");
-        //storeObject(gson.toJson(currentPathIndex), "key_currentPathIndex");
-    }
-
-
-    private static boolean restoreObjects(){
-
-        Integer carreiraId = (Integer) loadObject("key_currentCarreiraId", Integer.class);
-        if (carreiraId == null){
-            return false;
-        }
-
-        currentCarreiraId = carreiraId.intValue();
-
-        return true;
-    }
 
     public EditText getEditText() {
         return editText;
@@ -392,23 +394,5 @@ public class RouteDetailsFragment extends Fragment {
 
     public Integer getCurrentCarreiraId() {
         return currentCarreiraId;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.realTimeonDetails){
-            MainActivity activity = (MainActivity) getActivity();
-            RealTimeFragment fragment = (RealTimeFragment) activity.realTimeFragment;
-            activity.openRealTimeAFragment();
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fragment.editText.setText(currentCarreiraId.toString());
-                    fragment.button.performClick();
-                }
-            });
-            return true;
-        }
-        return false;
     }
 }

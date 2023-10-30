@@ -1,5 +1,7 @@
 package com.example.carrismobile;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -168,6 +171,12 @@ public class RoutesFragment extends Fragment {
                 Thread thread1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        try {
+                            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                        } catch (Exception e) {
+
+                        }
                         String busID = currentCarreiraBasicList.get(i).getId()+"";
                         MainActivity activity = (MainActivity) getActivity();
                         activity.openRouteDetailFragment();

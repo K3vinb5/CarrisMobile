@@ -170,6 +170,17 @@ public class Api {
         return null;
     }
 
+    public static Stop getStopFromId(String stopId){
+        try{
+            Gson gson = new Gson();
+            Stop stop = gson.fromJson(getJson(REALTIMESTOPURL + stopId), Stop.class);
+            return stop;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /*public static void main(String[] args) {
         List<Bus> busList = getBusFromLine("2823");
         for (Bus bus : busList){

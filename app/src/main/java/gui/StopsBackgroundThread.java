@@ -55,7 +55,9 @@ public class StopsBackgroundThread extends Thread{
                                     mapIsUpdated = false;
                                 }
                                 double[] coordinates = new double[]{currentFixedPoint.getLatitude(),currentFixedPoint.getLongitude()};
-                                assert stopList != null;
+                                if (stopList == null){
+                                    return;
+                                }
                                 for (Stop stop : stopList){
                                     StopThread stopThread = new StopThread(coordinates,stop.getCoordinates(), stopToAddList, stop);
                                     stopThread.start();

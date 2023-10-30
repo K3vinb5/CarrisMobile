@@ -1,5 +1,9 @@
 package data_structure;
 
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,7 +30,7 @@ public class Stop implements Serializable {
     private String region_id;
     private String region_name;
     private List<String> lines;
-
+    private List<RealTimeSchedule> realTimeSchedules = new ArrayList<>();
     private List<Schedule> scheduleList;
     private boolean init = false;
 
@@ -71,7 +75,7 @@ public class Stop implements Serializable {
     }
 
     public List<Schedule> getScheduleList() {
-        return scheduleList;
+            return scheduleList;
     }
 
     public void init(){
@@ -136,8 +140,41 @@ public class Stop implements Serializable {
         }
     }
 
+    public List<RealTimeSchedule> getRealTimeSchedules(){
+        if (realTimeSchedules!= null && realTimeSchedules.size() > 0){
+            return  realTimeSchedules;
+        }else{
+            List<RealTimeSchedule> newRealTimeSchedulesList;
+            try{
+                String callId = Integer.toString(this.id);
+                while (callId.length() < 6){
+                    callId = "0" + callId;
+                }
+                newRealTimeSchedulesList = Api.getRealTimeStops(callId);
+            }catch (Exception e){
+                Log.d("API ERROR", "ERROR RETRIEVING SCHEDULES");
+                return new ArrayList<RealTimeSchedule>();
+            }
+            return  newRealTimeSchedulesList;
+        }
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getDistrict_name() {
+        return district_name;
+    }
+
     @Override
     public String toString() {
         return name + " - " + locality;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        Stop stopCompare = (Stop) obj;
+        return this.getStopID() == stopCompare.getStopID();
     }
 }
