@@ -75,6 +75,7 @@ public class RealTimeFragment extends Fragment {
     public boolean connected = false;
     public AlertDialog dialog;
     public AlertDialog backgroundDialog;
+    public AlertDialog noCurrentBusesDialog;
     public static String currentText = "";
 
     @Override
@@ -106,7 +107,7 @@ public class RealTimeFragment extends Fragment {
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet.\nPode também haver um problema com os servidores da Carris Metropolitana");
         backgroundDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Error in background thread");
-
+        noCurrentBusesDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não existe nenhum autocarro dessa carreira em circulação neste preciso momento");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -133,6 +134,15 @@ public class RealTimeFragment extends Fragment {
                             busList.addAll(listToAdd);
                             pathList.addAll(pathListToAdd);
                             connected = true;
+                            if (listToAdd.size() == 0){
+                             connected = false;
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        noCurrentBusesDialog.show();
+                                    }
+                                });
+                            }
                         }catch (Exception e){
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override

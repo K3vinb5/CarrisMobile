@@ -1,25 +1,20 @@
 package com.example.carrismobile;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,15 +28,10 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import data_structure.Path;
 import data_structure.Stop;
 import gui.CustomMarkerInfoWindow;
 import gui.StopsBackgroundThread;
@@ -50,17 +40,22 @@ public class StopsMapFragment extends Fragment {
 
     public MapView map;
     public TextView textView;
+    public Button buttonRefresh;
+    public Button buttonCenter;
+    public boolean isFocused = true;
     static List<Marker> markerList = new ArrayList<>();
     private List<Marker> stopsMarkerList = new ArrayList<>();
-    GeoPoint currentLocation = new GeoPoint(0d, 0d);
+    GeoPoint currentLocation = new GeoPoint(0d,0d);
     StopsBackgroundThread backgroundThread = new StopsBackgroundThread();
     FusedLocationProviderClient fusedLocationProviderClient;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_stops_map, container, false);
+        View v = inflater.inflate(R.layout.stops_map_fragment, container, false);
 
         map = v.findViewById(R.id.mapviewStops);
         textView = v.findViewById(R.id.textViewStops);
+        buttonCenter = v.findViewById(R.id.imageButtonCenter);
+        buttonRefresh = v.findViewById(R.id.imageButtonRefresh);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -77,6 +72,28 @@ public class StopsMapFragment extends Fragment {
         map.setMaxZoomLevel(20d);
         backgroundThread.start();
 
+        buttonCenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isFocused = true;
+                getLastLocation();
+                backgroundThread.notifyUpdate();
+                map.getController().animateTo(currentLocation, 17d, 1500L);
+            }
+        });
+
+        buttonRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isFocused = false;
+                //Fakes new currentLocation to get stops around that point
+                currentLocation.setLatitude(map.getMapCenter().getLatitude());
+                currentLocation.setLongitude(map.getMapCenter().getLongitude());
+                backgroundThread.notifyUpdate();
+                map.getController().animateTo(currentLocation, 17d, 1500L);
+            }
+        });
+
         return v;
     }
 
@@ -85,7 +102,7 @@ public class StopsMapFragment extends Fragment {
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    if (location!=null){
+                    if (location!=null && isFocused && calcCrow(new double[]{currentLocation.getLatitude(), currentLocation.getLongitude()}, new double[]{location.getLatitude(), location.getLongitude()}) > 0.3d){
                         currentLocation.setLatitude(location.getLatitude());
                         currentLocation.setLongitude(location.getLongitude());
                     }
@@ -96,7 +113,7 @@ public class StopsMapFragment extends Fragment {
         }
     }
 
-    public void updateMarkers(){
+    public void updateCurrentLocationMarker(){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
         }
@@ -124,10 +141,31 @@ public class StopsMapFragment extends Fragment {
             stopsMarkerList.add(marker);
             marker.setPosition(new GeoPoint(stop.getCoordinates()[0], stop.getCoordinates()[1]));
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-
+            String description = "Lines " + stop.getLines() + "\nMunicipality: " + stop.getMunicipality_name() + "\nLocality: " + stop.getLocality();
+            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, stop.getTts_name(), description);
+            marker.setInfoWindow(miw);
             map.getOverlays().add(marker);
             map.invalidate();
         }
+    }
+
+    private double calcCrow(double[] coordinates1, double[] coordinates2)
+    {
+        float R = 6371; // Radius of earth in km
+        double dLat = toRad(coordinates2[0] - coordinates1[0]);
+        double dLon = toRad(coordinates2[1] - coordinates1[1]);
+        double radlat1 = toRad(coordinates1[0]);
+        double radlat2 = toRad(coordinates2[0]);
+
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(radlat1) * Math.cos(radlat2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    private static double toRad(double d)
+    {
+        return d * Math.PI / 180;
     }
 
     public MapView getMap() {
@@ -140,5 +178,9 @@ public class StopsMapFragment extends Fragment {
 
     public TextView getTextView() {
         return textView;
+    }
+
+    public boolean isFocused() {
+        return isFocused;
     }
 }

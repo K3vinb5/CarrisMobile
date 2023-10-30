@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import api.Api;
+
 public class Stop implements Serializable {
 
     private int id;
@@ -29,7 +31,7 @@ public class Stop implements Serializable {
     private boolean init = false;
 
 
-    public Stop(int id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name) {
+    public Stop(int id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name, List<String> lines) {
         this.id = id;
         this.name = name;
         this.tts_name = tts_name;
@@ -42,6 +44,7 @@ public class Stop implements Serializable {
         this.district_name = district_name;
         this.region_id = region_id;
         this.region_name = region_name;
+        this.lines = lines;
     }
 
     public int getStopID() {
@@ -111,6 +114,26 @@ public class Stop implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getLines(){
+        if (lines == null){
+            lines = Api.getLinesFromStop(this.id+"");
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : getLinesObject()){
+            sb.append("\n").append(s);
+        }
+        return sb.toString();
+    }
+
+    public List<String> getLinesObject(){
+        List<String> out = new ArrayList<>();
+        if (lines != null){
+            return  lines;
+        }else{
+            return out;
+        }
     }
 
     @Override
