@@ -1,5 +1,7 @@
 package data_structure;
 
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -116,5 +118,11 @@ public class Carreira implements Serializable {
     @Override
     public String toString() {
         return id + " - " + long_name;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        Carreira carreiraToCompare = (Carreira) obj;
+        return this.getRouteId() == carreiraToCompare.getRouteId();
     }
 }

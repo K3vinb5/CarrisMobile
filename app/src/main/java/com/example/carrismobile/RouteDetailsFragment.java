@@ -62,6 +62,7 @@ public class RouteDetailsFragment extends Fragment {
     Button button;
     Button favoriteButton;
     Button routeStopDetails;
+    Button routeFavoriteButton;
     TextView textView;//
     TextView pathListText;//
     TextView schedulesListText;//
@@ -84,6 +85,7 @@ public class RouteDetailsFragment extends Fragment {
     static ArrayAdapter<Schedule> scheduleArrayAdapter = null;
     public AlertDialog dialog;
     public AlertDialog stopAdded;
+    public AlertDialog routeAdded;
     public boolean connected;
     public static List<Marker> markerList = new ArrayList<>();//
 
@@ -97,6 +99,7 @@ public class RouteDetailsFragment extends Fragment {
 
         button = v.findViewById(R.id.button);
         favoriteButton = v.findViewById(R.id.favoriteButton);
+        routeFavoriteButton = v.findViewById(R.id.routeFavorite);
         routeStopDetails = v.findViewById(R.id.routeStopDetails);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
@@ -109,7 +112,8 @@ public class RouteDetailsFragment extends Fragment {
         loadingImage = v.findViewById(R.id.loadingImage);
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
-        stopAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada à Lista de Favoritos", "A Paragem Selecionada foi adicionada com sucesso á Lista de Favoritos de Paragens");
+        stopAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada à Lista de Favoritos", "A Paragem Selecionada foi adicionada com sucesso á Lista de Paragens Favoritas");
+        routeAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Carreira adicionada à Lista de Favoritos", "A Carreira foi adicionada com sucesso á Lista de Carreiras Favoritas");
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,6 +140,7 @@ public class RouteDetailsFragment extends Fragment {
                                 schedulesListText.setVisibility(View.INVISIBLE);
                                 favoriteButton.setVisibility((View.INVISIBLE));
                                 routeStopDetails.setVisibility(View.INVISIBLE);
+                                routeFavoriteButton.setVisibility((View.INVISIBLE));
 
                                 RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                                 rotate.setDuration(20000);
@@ -188,6 +193,7 @@ public class RouteDetailsFragment extends Fragment {
                                 pathView.setVisibility(View.VISIBLE);
                                 pathListText.setVisibility(View.VISIBLE);
                                 schedulesListText.setVisibility(View.VISIBLE);
+                                routeFavoriteButton.setVisibility(View.VISIBLE);
 
                                 pathView.setAdapter(pathAdapter);
                                 scheduleView.setAdapter(scheduleArrayAdapter);
@@ -215,25 +221,26 @@ public class RouteDetailsFragment extends Fragment {
             }
         });
 
-            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-            loadingImage.setScaleX(0.3f);
-            loadingImage.setScaleY(0.3f);
-            schedulesListText.setVisibility(View.INVISIBLE);
-            pathListText.setVisibility(View.INVISIBLE);
-            map.setVisibility(View.INVISIBLE);
-            favoriteButton.setVisibility(View.INVISIBLE);
-            routeStopDetails.setVisibility(View.INVISIBLE);
-            textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
-
-            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-            map.setTileSource(TileSourceFactory.OpenTopo);
-            map.setMultiTouchControls(true);
-            //map.setVisibility(View.INVISIBLE);
-            map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
-            map.getController().setZoom(13.0);
-            map.invalidate();
 
 
+        editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        loadingImage.setScaleX(0.3f);
+        loadingImage.setScaleY(0.3f);
+        schedulesListText.setVisibility(View.INVISIBLE);
+        pathListText.setVisibility(View.INVISIBLE);
+        map.setVisibility(View.INVISIBLE);
+        favoriteButton.setVisibility(View.INVISIBLE);
+        routeStopDetails.setVisibility(View.INVISIBLE);
+        textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
+
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+        map.setTileSource(TileSourceFactory.OpenTopo);
+
+        map.setMultiTouchControls(true);
+        //map.setVisibility(View.INVISIBLE);
+        map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
+        map.getController().setZoom(13.0);
+        map.invalidate();
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -376,8 +383,76 @@ public class RouteDetailsFragment extends Fragment {
             }
         });
 
+        routeFavoriteButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
+                fragment.addCarreiraToFavorites(currentCarreira);
+                mainActivity.openRouteDetailsFragment(false);
+                mainActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        routeAdded.show();
+                    }
+                });
+            }
+        });
+
         //Click Button
         return v;
+    }
+
+    public void loadCarreira(Carreira carreira){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
+                currentCarreira = carreira;
+                currentCarreiraId = carreira.getRouteId();
+                currentPathIndex = 0;
+                double[] coordinates = carreira.getDirectionList().get(currentDirectionIndex).getPathList().get(currentPathIndex).getStop().getCoordinates();
+                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+                directionList = carreira.getDirectionList();
+                pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
+                scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
+
+                scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
+                directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
+                Carreira finalCarreira = carreira;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textView.setText(finalCarreira.getRouteId() + " - " + finalCarreira.getName());
+                        uiIsVisible = true;
+                        textView.setVisibility(View.VISIBLE);
+                        scheduleView.setVisibility(View.VISIBLE);
+                        pathView.setVisibility(View.VISIBLE);
+                        pathListText.setVisibility(View.VISIBLE);
+                        schedulesListText.setVisibility(View.VISIBLE);
+                        routeFavoriteButton.setVisibility(View.VISIBLE);
+
+                        pathView.setAdapter(pathAdapter);
+                        scheduleView.setAdapter(scheduleArrayAdapter);
+                        spinner.setAdapter(directionArrayAdapter);
+
+                        map.setVisibility(View.VISIBLE);
+                        map.getController().setCenter(point);
+                        map.getController().setZoom(17.0);
+                        map.invalidate();
+                        updateMarkers(pathList, map, getActivity());
+
+                        //Loading Screen
+                        if (loadingImage.getAnimation() != null){
+                            loadingImage.getAnimation().cancel();
+                        }
+                        loadingImage.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+        });
+        thread.start();
     }
 
     private static void updateMarkers(List<Path> pathList, MapView map, Activity activity){

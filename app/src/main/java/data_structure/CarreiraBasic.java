@@ -38,6 +38,10 @@ public class CarreiraBasic {
         this.long_name = long_name;
     }
 
+    public static CarreiraBasic newCarreiraBasicFromCarreira(Carreira carreira){
+        return new CarreiraBasic(carreira.getRouteId(), carreira.getName(), "000000");
+    }
+
     @NonNull
     @Override
     public String toString() {

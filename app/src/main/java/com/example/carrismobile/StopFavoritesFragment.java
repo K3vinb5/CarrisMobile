@@ -41,7 +41,6 @@ public class StopFavoritesFragment extends Fragment {
     ListView list;
     EditText editText;
     AlertDialog confirmRemoval;
-    Button removeSelectionButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,7 +48,6 @@ public class StopFavoritesFragment extends Fragment {
         View v = inflater.inflate(R.layout.stop_favorites_fragment, container, false);
 
         list = v.findViewById(R.id.stopFavoritesList);
-        removeSelectionButton = v.findViewById(R.id.removeSelectionButton);
         editText = v.findViewById(R.id.editTextFavorites);
 
         confirmRemoval = MyCustomDialog.createYesAndNoButtonDialogStopFavorite(getContext(), "Queres eliminar as tuas paragens favoritas?", "Tens a certeza que queres eliminar as paragens selecionadas neste preciso momento da lista de paragens favoritas?", getActivity());
@@ -70,39 +68,6 @@ public class StopFavoritesFragment extends Fragment {
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
                         mainActivity.openstopDetailsFragment(false);
-                    }
-                });
-                thread.start();
-            }
-        });
-
-        removeSelectionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                confirmRemoval.show();
-                                if (getRemoveListSelectionDecision()){
-                                    for (Stop stop : currentStopList){
-                                        removeStopFromFavorites(stop.getStopID()+"");
-                                        editText.setText("");
-                                        currentStopList.clear();
-                                        currentStopList.addAll(stopList);
-                                        getActivity().runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                stopListAdaptor.notifyDataSetChanged();
-                                            }
-                                        });
-
-                                    }
-                                }
-                            }
-                        });
                     }
                 });
                 thread.start();

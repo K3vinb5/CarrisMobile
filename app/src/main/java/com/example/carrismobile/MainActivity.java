@@ -49,8 +49,17 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(stopDetailsFragment);
         transaction.hide(stopFavoritesFragment);
         transaction.hide(routeFavoritesFragment);
+        currentIndexFragment = 2;
         currentFragment = routesFragment;
+        //transaction.hide(routesFragment);
         transaction.commit();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                bottomAppBar.getMenu().getItem(0).setChecked(false);
+                bottomAppBar.getMenu().getItem(currentIndexFragment).setChecked(true);
+            }
+        });
     }
 
     @Override
