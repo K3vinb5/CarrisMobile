@@ -15,13 +15,13 @@ import api.Api;
 
 public class Carreira implements Serializable {
 
-    private int id;
+    private String id;
     private String long_name;
     private List<Direction> directionList;
     private List<String> patterns = new ArrayList<>();
     private List<String> routes = new ArrayList<>();
 
-    public Carreira(String long_name, int id){
+    public Carreira(String long_name, String id){
         this.long_name = long_name;
         this.id = id;
     }
@@ -30,7 +30,7 @@ public class Carreira implements Serializable {
         return long_name;
     }
 
-    public int getRouteId() {
+    public String getRouteId() {
         return id;
     }
 
@@ -112,7 +112,7 @@ public class Carreira implements Serializable {
     }*/
 
     public static Carreira generateCarreiraPlaceHolder(){
-        return new Carreira("Carreira", -1);
+        return new Carreira("Carreira", "-1");
     }
 
     @Override

@@ -184,17 +184,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
-    <Button
-        android:id="@+id/routeFavorite"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginTop="40dp"
-        android:backgroundTint="@color/lightYellow"
-        android:text="Favoritar"
-        android:textColor="#000000"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toStartOf="@+id/schedulesListText"
-        app:layout_constraintStart_toEndOf="@+id/pathListText"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

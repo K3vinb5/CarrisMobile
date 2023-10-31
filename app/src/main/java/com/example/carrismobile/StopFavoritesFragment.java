@@ -39,6 +39,7 @@ public class StopFavoritesFragment extends Fragment {
     private ArrayAdapter<Stop> stopListAdaptor;
     boolean removeListSelectionDecision = false;
     ListView list;
+    Button seeRoutesFavorites;
     EditText editText;
     AlertDialog confirmRemoval;
 
@@ -49,6 +50,7 @@ public class StopFavoritesFragment extends Fragment {
 
         list = v.findViewById(R.id.stopFavoritesList);
         editText = v.findViewById(R.id.editTextFavorites);
+        seeRoutesFavorites = v.findViewById(R.id.SeeRoutesFavorites);
 
         confirmRemoval = MyCustomDialog.createYesAndNoButtonDialogStopFavorite(getContext(), "Queres eliminar as tuas paragens favoritas?", "Tens a certeza que queres eliminar as paragens selecionadas neste preciso momento da lista de paragens favoritas?", getActivity());
 
@@ -66,8 +68,8 @@ public class StopFavoritesFragment extends Fragment {
                         }
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
                         mainActivity.openstopDetailsFragment(false);
+                        stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
                     }
                 });
                 thread.start();
@@ -119,6 +121,14 @@ public class StopFavoritesFragment extends Fragment {
                 }catch (Exception e){
                     return;
                 }
+            }
+        });
+
+        seeRoutesFavorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.openRouteFavoritesFragment(false);
             }
         });
 

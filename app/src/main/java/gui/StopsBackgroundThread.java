@@ -46,6 +46,11 @@ public class StopsBackgroundThread extends Thread{
                         StopsMapFragment fragment = (StopsMapFragment) mainActivity.stopsMapFragment;
                         fragment.getLastLocation();
                         if (firstRunExecuted){
+                            try {
+                                TimeUnit.MILLISECONDS.sleep(4000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             currentFixedPoint = fragment.getCurrentLocation();
                             lastFixedPoint = currentFixedPoint;
                         }else{
@@ -66,6 +71,7 @@ public class StopsBackgroundThread extends Thread{
                                     StopThread stopThread = new StopThread(coordinates,stop.getCoordinates(), stopToAddList, stop);
                                     stopThread.start();
                                 }
+                                Log.d("STOP BACKGROUND THREAD", "STOPS CLOSE " + stopToAddList.size());
                                 mainActivity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -77,6 +83,7 @@ public class StopsBackgroundThread extends Thread{
                                         });
                                         if (needUpdating || firstRunExecuted){
                                             thread2.start();
+                                            Log.d("STOP BACKGROUND THREAD", "MAP UPDATED");
                                             firstRunExecuted = false;
                                             needUpdating = false;
                                         }
@@ -97,7 +104,7 @@ public class StopsBackgroundThread extends Thread{
                 Log.println(Log.DEBUG,"STOP BACKGROUND THREAD", "CALL" + index);
                 thread.start();
                 index++;
-                TimeUnit.MILLISECONDS.sleep(5000);
+                TimeUnit.MILLISECONDS.sleep(7000);
             }catch (Exception e){
                 Log.d("STOP BACKGROUND THREAD", "INTERRUPTED");
                 break;

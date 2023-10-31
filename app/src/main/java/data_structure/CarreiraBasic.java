@@ -4,21 +4,21 @@ import androidx.annotation.NonNull;
 
 public class CarreiraBasic {
 
-    private int id;
+    private String id;
     private String long_name;
     private String color;
 
-    public CarreiraBasic(int id, String long_name, String color) {
+    public CarreiraBasic(String id, String long_name, String color) {
         this.id = id;
         this.long_name = long_name;
         this.color = color;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -31,7 +31,7 @@ public class CarreiraBasic {
     }
 
     public static CarreiraBasic getExample(){
-        return new CarreiraBasic(0, "Example", "#ED1944");
+        return new CarreiraBasic("0", "Example", "#ED1944");
     }
 
     public void setLong_name(String long_name) {

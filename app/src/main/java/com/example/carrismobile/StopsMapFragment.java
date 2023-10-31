@@ -55,6 +55,7 @@ public class StopsMapFragment extends Fragment {
     private List<Marker> stopsMarkerList = new ArrayList<>();
     GeoPoint currentLocation = new GeoPoint(0d,0d);
     StopsBackgroundThread backgroundThread = new StopsBackgroundThread();
+    public boolean backgroundThreadStarted = false;
     FusedLocationProviderClient fusedLocationProviderClient;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -83,13 +84,16 @@ public class StopsMapFragment extends Fragment {
         map.getController().setZoom(18f);
         map.setMinZoomLevel(16d);
         map.setMaxZoomLevel(20d);
-        backgroundThread.start();
 
         buttonCenter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 isFocused = true;
                 getLastLocation();
+                if (!backgroundThreadStarted){
+                    backgroundThread.start();
+                    backgroundThreadStarted = true;
+                }
                 //backgroundThread.notifyUpdate();
                 map.getController().animateTo(currentLocation, 17d, 1500L);
             }
@@ -137,8 +141,8 @@ public class StopsMapFragment extends Fragment {
                     public void run() {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
                         mainActivity.openstopDetailsFragment(true);
+                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
                     }
                 });
                 thread.start();

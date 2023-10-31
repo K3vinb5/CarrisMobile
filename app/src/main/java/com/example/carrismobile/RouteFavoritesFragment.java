@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -30,6 +31,7 @@ public class RouteFavoritesFragment extends Fragment {
 
     EditText editText;
     ListView list;
+    Button seeStopsFavorites;
     List<Carreira> carreiraList = new ArrayList<>();
     List<Carreira> currentCarreiraList = new ArrayList<>();
     ArrayAdapter<Carreira> carreiraListAdapter;
@@ -42,6 +44,7 @@ public class RouteFavoritesFragment extends Fragment {
 
         list = v.findViewById(R.id.routeFavoritesList);
         editText = v.findViewById(R.id.editTextRouteFavorites);
+        seeStopsFavorites = v.findViewById(R.id.SeeStopsFavorites);
 
         init();
 
@@ -106,6 +109,14 @@ public class RouteFavoritesFragment extends Fragment {
                     }
                 });
                 thread.start();
+            }
+        });
+
+        seeStopsFavorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.openstopFavoritesFragment(false);
             }
         });
 
@@ -177,7 +188,7 @@ public class RouteFavoritesFragment extends Fragment {
                 Carreira stopToRemove = null;
                 boolean stopFound = false;
                 for (Carreira carreira : carreiraList){
-                    if (carreiraId.equals(Integer.toString(carreira.getRouteId()))){
+                    if (carreiraId.equals(carreira.getRouteId())){
                         stopToRemove = carreira;
                         stopFound = true;
                         break;

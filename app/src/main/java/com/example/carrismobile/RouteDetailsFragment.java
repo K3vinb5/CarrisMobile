@@ -62,7 +62,6 @@ public class RouteDetailsFragment extends Fragment {
     Button button;
     Button favoriteButton;
     Button routeStopDetails;
-    Button routeFavoriteButton;
     TextView textView;//
     TextView pathListText;//
     TextView schedulesListText;//
@@ -72,7 +71,7 @@ public class RouteDetailsFragment extends Fragment {
     Spinner spinner;//
     ImageView loadingImage;
 
-    public static Integer currentCarreiraId = null;
+    public static String currentCarreiraId = null;
     public static boolean uiIsVisible = false;//
     public static int currentPathIndex = 0;//
     public static int currentDirectionIndex = 0;//
@@ -99,7 +98,6 @@ public class RouteDetailsFragment extends Fragment {
 
         button = v.findViewById(R.id.button);
         favoriteButton = v.findViewById(R.id.favoriteButton);
-        routeFavoriteButton = v.findViewById(R.id.routeFavorite);
         routeStopDetails = v.findViewById(R.id.routeStopDetails);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
@@ -140,7 +138,6 @@ public class RouteDetailsFragment extends Fragment {
                                 schedulesListText.setVisibility(View.INVISIBLE);
                                 favoriteButton.setVisibility((View.INVISIBLE));
                                 routeStopDetails.setVisibility(View.INVISIBLE);
-                                routeFavoriteButton.setVisibility((View.INVISIBLE));
 
                                 RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                                 rotate.setDuration(20000);
@@ -193,7 +190,6 @@ public class RouteDetailsFragment extends Fragment {
                                 pathView.setVisibility(View.VISIBLE);
                                 pathListText.setVisibility(View.VISIBLE);
                                 schedulesListText.setVisibility(View.VISIBLE);
-                                routeFavoriteButton.setVisibility(View.VISIBLE);
 
                                 pathView.setAdapter(pathAdapter);
                                 scheduleView.setAdapter(scheduleArrayAdapter);
@@ -375,27 +371,11 @@ public class RouteDetailsFragment extends Fragment {
                         Stop currentStop = pathList.get(currentPathIndex).getStop();
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
                         mainActivity.openstopDetailsFragment(true);
+                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
                     }
                 });
                 thread.start();
-            }
-        });
-
-        routeFavoriteButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                MainActivity mainActivity = (MainActivity) getActivity();
-                RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
-                fragment.addCarreiraToFavorites(currentCarreira);
-                mainActivity.openRouteDetailsFragment(false);
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        routeAdded.show();
-                    }
-                });
             }
         });
 
@@ -431,7 +411,6 @@ public class RouteDetailsFragment extends Fragment {
                         pathView.setVisibility(View.VISIBLE);
                         pathListText.setVisibility(View.VISIBLE);
                         schedulesListText.setVisibility(View.VISIBLE);
-                        routeFavoriteButton.setVisibility(View.VISIBLE);
 
                         pathView.setAdapter(pathAdapter);
                         scheduleView.setAdapter(scheduleArrayAdapter);
@@ -513,7 +492,21 @@ public class RouteDetailsFragment extends Fragment {
         return button;
     }
 
-    public Integer getCurrentCarreiraId() {
+    public String getCurrentCarreiraId() {
         return currentCarreiraId;
     }
+
+    public void addCurrentRouteToFavorites(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
+        fragment.addCarreiraToFavorites(currentCarreira);
+        mainActivity.openRouteDetailsFragment(false);
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                routeAdded.show();
+            }
+        });
+    }
+
 }

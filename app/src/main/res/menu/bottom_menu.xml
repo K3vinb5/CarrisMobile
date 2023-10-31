@@ -2,7 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
     <item android:id="@+id/bottomitem1"
         android:icon="@drawable/baseline_map_24"
         android:title=""
@@ -15,7 +14,7 @@
 
     <item
         android:id="@+id/bottomitem5"
-        android:icon="@drawable/bench_svgrepo_com"
+        android:icon="@drawable/baseline_star_24"
         android:title=""
         app:showAsAction="always"
         android:checked="true"
@@ -31,7 +30,7 @@
         android:checked="false"
         android:iconTint="#9A9A9A"
         android:onClick="onOptionsItemSelected"
-        android:orderInCategory="3"/>
+        android:orderInCategory="4"/>
     />
 
     <item
@@ -42,7 +41,7 @@
         android:checked="true"
         android:iconTint="#9A9A9A"
         android:onClick="onOptionsItemSelected"
-        android:orderInCategory="4"/>
+        android:orderInCategory="5"/>
     />
 
     <item
@@ -53,7 +52,7 @@
         android:checked="true"
         android:iconTint="#9A9A9A"
         android:onClick="onOptionsItemSelected"
-        android:orderInCategory="5"/>
+        android:orderInCategory="6"/>
     />
 
 </menu>
