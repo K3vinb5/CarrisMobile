@@ -1,6 +1,7 @@
 package com.example.carrismobile;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -11,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +33,12 @@ import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import data_structure.Stop;
 import gui.CustomMarkerInfoWindow;
 import gui.StopsBackgroundThread;
+import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class StopsMapFragment extends Fragment {
 
@@ -42,6 +46,10 @@ public class StopsMapFragment extends Fragment {
     public TextView textView;
     public Button buttonRefresh;
     public Button buttonCenter;
+    public Button favoritarButton;
+    public Button stopDetailsButton;
+    public Stop currentStop;
+    AlertDialog stopAdded;
     public boolean isFocused = true;
     static List<Marker> markerList = new ArrayList<>();
     private List<Marker> stopsMarkerList = new ArrayList<>();
@@ -56,7 +64,12 @@ public class StopsMapFragment extends Fragment {
         textView = v.findViewById(R.id.textViewStops);
         buttonCenter = v.findViewById(R.id.imageButtonCenter);
         buttonRefresh = v.findViewById(R.id.imageButtonRefresh);
+        favoritarButton = v.findViewById(R.id.favoritar);
+        stopDetailsButton = v.findViewById(R.id.stopDetails);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+        stopAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada à Lista de Favoritos", "A Paragem Selecionada foi adicionada com sucesso á Lista de Favoritos de Paragens");
+
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map.setTileSource(TileSourceFactory.OpenTopo);
@@ -77,7 +90,7 @@ public class StopsMapFragment extends Fragment {
             public void onClick(View view) {
                 isFocused = true;
                 getLastLocation();
-                backgroundThread.notifyUpdate();
+                //backgroundThread.notifyUpdate();
                 map.getController().animateTo(currentLocation, 17d, 1500L);
             }
         });
@@ -89,8 +102,53 @@ public class StopsMapFragment extends Fragment {
                 //Fakes new currentLocation to get stops around that point
                 currentLocation.setLatitude(map.getMapCenter().getLatitude());
                 currentLocation.setLongitude(map.getMapCenter().getLongitude());
-                backgroundThread.notifyUpdate();
                 map.getController().animateTo(currentLocation, 17d, 1500L);
+            }
+        });
+
+        favoritarButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Stop stoptoAdd = currentStop;
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
+                        fragment.addStopToFavorites(stoptoAdd);
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopAdded.show();
+                                //informs user of success;
+                            }
+                        });
+                    }
+                });
+                thread.start();
+            }
+        });
+
+        stopDetailsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                        mainActivity.openstopDetailsFragment(true);
+                    }
+                });
+                thread.start();
+            }
+        });
+        //temp
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonCenter.performClick();
             }
         });
 
@@ -102,7 +160,8 @@ public class StopsMapFragment extends Fragment {
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    if (location!=null && isFocused && calcCrow(new double[]{currentLocation.getLatitude(), currentLocation.getLongitude()}, new double[]{location.getLatitude(), location.getLongitude()}) > 0.3d){
+                    if (location!=null && isFocused && calcCrow(new double[]{currentLocation.getLatitude(), currentLocation.getLongitude()}, new double[]{location.getLatitude(), location.getLongitude()}) > 0.05d){
+                        //gets updated every 50m you walk so it is not necessary to compute new close stops everytime there is a tiny change
                         currentLocation.setLatitude(location.getLatitude());
                         currentLocation.setLongitude(location.getLongitude());
                     }
@@ -141,9 +200,40 @@ public class StopsMapFragment extends Fragment {
             stopsMarkerList.add(marker);
             marker.setPosition(new GeoPoint(stop.getCoordinates()[0], stop.getCoordinates()[1]));
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String description = "Lines " + stop.getLines() + "\nMunicipality: " + stop.getMunicipality_name() + "\nLocality: " + stop.getLocality();
+            String description = "Municipality: " + stop.getMunicipality_name() + "\nLocality: " + stop.getLocality();
             MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, stop.getTts_name(), description);
             marker.setInfoWindow(miw);
+            marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    currentStop = stop;
+                    favoritarButton.setVisibility(View.VISIBLE);
+                    stopDetailsButton.setVisibility(View.VISIBLE);
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                TimeUnit.MILLISECONDS.sleep(5000);
+                                favoritarButton.setVisibility(View.INVISIBLE);
+                                stopDetailsButton.setVisibility(View.INVISIBLE);
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        marker.getInfoWindow().close();
+                                    }
+                                });
+
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+                    thread.start();
+                    marker.showInfoWindow();
+                    mapView.getController().animateTo(marker.getPosition());
+                    return true;
+                }
+            });
             map.getOverlays().add(marker);
             map.invalidate();
         }

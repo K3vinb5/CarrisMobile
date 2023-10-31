@@ -1,22 +1,19 @@
 package com.example.carrismobile;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-
-import data_structure.Stop;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,16 +23,18 @@ public class MainActivity extends AppCompatActivity {
     public Fragment stopsMapFragment = new StopsMapFragment();
     public Fragment stopDetailsFragment = new StopDetailsFragment();
     public Fragment stopFavoritesFragment = new StopFavoritesFragment();
+    public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
     public Fragment currentFragment = null;
+    public boolean routeDetailsFavorite = true;
     public boolean stopDetailsFavorite = true;
     int currentIndexFragment = 0;
-    BottomAppBar bottomAppBar;
+    BottomNavigationView bottomAppBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        bottomAppBar = findViewById(R.id.bottomAppBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        bottomAppBar = findViewById(R.id.bottomAppBar);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.main_layout, routeDetailsFragment);
         transaction.add(R.id.main_layout, realTimeFragment);
@@ -43,11 +42,13 @@ public class MainActivity extends AppCompatActivity {
         transaction.add(R.id.main_layout, stopsMapFragment);
         transaction.add(R.id.main_layout, stopDetailsFragment);
         transaction.add(R.id.main_layout, stopFavoritesFragment);
+        transaction.add(R.id.main_layout, routeFavoritesFragment);
         transaction.hide(realTimeFragment);
         transaction.hide(routeDetailsFragment);
         transaction.hide(stopsMapFragment);
         transaction.hide(stopDetailsFragment);
         transaction.hide(stopFavoritesFragment);
+        transaction.hide(routeFavoritesFragment);
         currentFragment = routesFragment;
         transaction.commit();
     }
@@ -63,7 +64,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         //Application bottomBar
         if (item.getItemId() == R.id.bottomitem1) {
-            openRouteDetailFragment();
+            if(routeDetailsFavorite){
+                openRouteFavoritesFragment(true);
+            }else{
+                openRouteDetailsFragment(true);
+            }
             return super.onOptionsItemSelected(item);
         }else if(item.getItemId() == R.id.bottomitem2){
             openRealTimeAFragment();
@@ -106,7 +111,14 @@ public class MainActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.stopFavoritesItem2){
             openstopDetailsFragment(false);
         }
-
+        //routedetailsbar
+        if(item.getItemId() == R.id.routeDetailstopItem2){
+            openRouteFavoritesFragment(false);
+        }
+        //routefavoritesbar
+        if(item.getItemId() == R.id.routeFavoritesitem1){
+            openRouteDetailsFragment(false);
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -119,17 +131,37 @@ public class MainActivity extends AppCompatActivity {
         transaction.show(realTimeFragment);
         transaction.commit();
         currentFragment = realTimeFragment;
+        checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
 
-    public void openRouteDetailFragment(){
-        int oldIndexFragment = currentIndexFragment;
-        currentIndexFragment = 0; //keeps track of current fragment
+    public void openRouteDetailsFragment(boolean animate){
+        routeDetailsFavorite = false;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+        if (animate){
+            int oldIndexFragment = currentIndexFragment;
+            currentIndexFragment = 0; //keeps track of current fragment
+            decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+            checkRightMenu(oldIndexFragment, currentIndexFragment);
+        }
         transaction.hide(currentFragment);
         transaction.show(routeDetailsFragment);
         transaction.commit();
         currentFragment = routeDetailsFragment;
+    }
+
+    public void openRouteFavoritesFragment(boolean animate){
+        routeDetailsFavorite = true;
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (animate){
+            int oldIndexFragment = currentIndexFragment;
+            currentIndexFragment = 0; //keeps track of current fragment
+            decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+            checkRightMenu(oldIndexFragment, currentIndexFragment);
+        }
+        transaction.hide(currentFragment);
+        transaction.show(routeFavoritesFragment);
+        transaction.commit();
+        currentFragment = routeFavoritesFragment;
     }
 
     public void openRouteFragment(){
@@ -141,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.show(routesFragment);
         transaction.commit();
         currentFragment = routesFragment;
+        checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
 
     public void openstopsMapFragment(){
@@ -152,15 +185,18 @@ public class MainActivity extends AppCompatActivity {
         transaction.show(stopsMapFragment);
         transaction.commit();
         currentFragment = stopsMapFragment;
+        checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
 
     public void openstopDetailsFragment(boolean animate){
         stopDetailsFavorite = false;
-        int oldIndexFragment = currentIndexFragment;
-        currentIndexFragment = 1; //keeps track of current fragment
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (animate){
+            int oldIndexFragment = currentIndexFragment;
+            currentIndexFragment = 1; //keeps track of current fragment
             decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+            checkRightMenu(oldIndexFragment, currentIndexFragment);
         }
         transaction.hide(currentFragment);
         transaction.show(stopDetailsFragment);
@@ -174,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
             int oldIndexFragment = currentIndexFragment;
             currentIndexFragment = 1; //keeps track of current fragment
             decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+            checkRightMenu(oldIndexFragment, currentIndexFragment);
         }
         transaction.hide(currentFragment);
         transaction.show(stopFavoritesFragment);
@@ -197,5 +234,15 @@ public class MainActivity extends AppCompatActivity {
         }else{
             //nothing
         }
+    }
+
+    public void checkRightMenu(int oldIndexFragment, int currentIndexFragment){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                bottomAppBar.getMenu().getItem(oldIndexFragment).setChecked(false);
+                bottomAppBar.getMenu().getItem(currentIndexFragment).setChecked(true);
+            }
+        });
     }
 }

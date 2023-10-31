@@ -26,7 +26,7 @@
         android:layout_height="30dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        android:text="Paragem Favoritas"
+        android:text="Paragens Favoritas"
         android:textColor="@color/black"
         android:textSize="20dp"
         android:textStyle="bold"
@@ -38,12 +38,39 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="20dp"
+        android:layout_marginBottom="60dp"
         android:background="@drawable/rectangle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextFavorites" />
+
+    <EditText
+        android:id="@+id/editTextFavorites"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text=""
+        android:textColor="@color/lightYellow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stopFavoritestoolbar" />
+
+    <Button
+        android:id="@+id/removeSelectionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="15dp"
+        android:backgroundTint="@color/lightYellow"
+        android:scaleX="0.8"
+        android:text="Remover Seleção"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stopFavoritestoolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

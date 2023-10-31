@@ -15,7 +15,35 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" >
+
+    </org.osmdroid.views.MapView>
+
+    <Button
+        android:id="@+id/favoritar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:backgroundTint="@color/extraLightYellow"
+        android:text="Favoritar Paragem"
+        android:textColor="@color/black"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/mapviewStops" />
+
+    <Button
+        android:id="@+id/stopDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:backgroundTint="@color/extraLightYellow"
+        android:text="Detalhes Paragem"
+        android:textColor="#000000"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/favoritar" />
 
     <Button
         android:id="@+id/imageButtonCenter"
@@ -23,10 +51,11 @@
         android:layout_height="50dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="55dp"
+        android:backgroundTint="@color/lightYellow"
+        android:drawableTop="@drawable/baseline_location_searching_24"
         android:foregroundTint="@color/gray"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:drawableTop="@drawable/baseline_location_searching_24" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/imageButtonRefresh"
@@ -34,10 +63,11 @@
         android:layout_height="50dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="115dp"
+        android:drawableTop="@drawable/baseline_refresh_24"
         android:foregroundTint="@color/gray"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:drawableTop="@drawable/baseline_refresh_24"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"

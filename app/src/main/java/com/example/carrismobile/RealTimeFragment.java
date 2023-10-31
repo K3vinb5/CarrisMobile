@@ -120,6 +120,9 @@ public class RealTimeFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        if (backgroundThreadStarted){
+                            backgroundThread.getLock().lock();
+                        }
                         currentText = editText.getText().toString();
                         List<Bus> listToAdd;
                         Carreira carreira;
@@ -168,7 +171,9 @@ public class RealTimeFragment extends Fragment {
                                 }
                             });
                         }
-
+                        if (backgroundThreadStarted){
+                            backgroundThread.getLock().unlock();
+                        }
                     }
                 });
                 thread.start();

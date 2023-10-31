@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -62,9 +63,34 @@ public class StopDetailsFragment extends Fragment {
                                 confirmRemovalDialog.show();
                             }
                         });
+                        mainActivity.openstopFavoritesFragment(false);
                     }
                 });
                 thread.start();
+            }
+        });
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Thread thread1 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        String busID = currentStop.getRealTimeSchedules().get(i).getLine_id()+"";
+                        MainActivity activity = (MainActivity) getActivity();
+                        activity.openRouteDetailsFragment(true);
+                        RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                routeDetailFragment.getEditText().setText(busID.toString());
+                                routeDetailFragment.getButton().performClick();
+                            }
+                        });
+                    }
+                });
+                thread1.start();
             }
         });
 
@@ -117,4 +143,6 @@ public class StopDetailsFragment extends Fragment {
         });
         thread.start();
     }
+
+
 }

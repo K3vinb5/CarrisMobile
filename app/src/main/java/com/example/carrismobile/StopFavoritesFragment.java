@@ -2,17 +2,22 @@ package com.example.carrismobile;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
@@ -21,20 +26,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 import api.Api;
+import data_structure.CarreiraBasic;
 import data_structure.Stop;
+import kevin.carrismobile.adaptors.ImageListAdaptor;
+import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class StopFavoritesFragment extends Fragment {
 
     private static SharedPreferences mPrefs;
     private List<Stop> stopList = new ArrayList<>();
+    private List<Stop> currentStopList = new ArrayList<>();
     private ArrayAdapter<Stop> stopListAdaptor;
+    boolean removeListSelectionDecision = false;
     ListView list;
+    EditText editText;
+    AlertDialog confirmRemoval;
+    Button removeSelectionButton;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.stop_favorites_fragment, container, false);
 
         list = v.findViewById(R.id.stopFavoritesList);
+        removeSelectionButton = v.findViewById(R.id.removeSelectionButton);
+        editText = v.findViewById(R.id.editTextFavorites);
+
+        confirmRemoval = MyCustomDialog.createYesAndNoButtonDialogStopFavorite(getContext(), "Queres eliminar as tuas paragens favoritas?", "Tens a certeza que queres eliminar as paragens selecionadas neste preciso momento da lista de paragens favoritas?", getActivity());
 
         init();
 
@@ -44,7 +62,7 @@ public class StopFavoritesFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Stop selectedStop = stopList.get(index);
+                        Stop selectedStop = currentStopList.get(index);
                         if (selectedStop == null){
                             return;
                         }
@@ -57,16 +75,88 @@ public class StopFavoritesFragment extends Fragment {
                 thread.start();
             }
         });
-        //testing
-        Thread thread = new Thread(new Runnable() {
+
+        removeSelectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                addStopToFavorites(Api.getStopFromId("110066"));
-                //removeStopFromFavorites("110067");
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                confirmRemoval.show();
+                                if (getRemoveListSelectionDecision()){
+                                    for (Stop stop : currentStopList){
+                                        removeStopFromFavorites(stop.getStopID()+"");
+                                        editText.setText("");
+                                        currentStopList.clear();
+                                        currentStopList.addAll(stopList);
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                stopListAdaptor.notifyDataSetChanged();
+                                            }
+                                        });
+
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+                thread.start();
             }
         });
-        thread.start();
-        //end testing
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                Thread thread1 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                currentStopList.clear();
+                                String textModifiedString;
+                                String original = editText.getText().toString();
+                                if (editText.getText().length() > 0) {
+                                    textModifiedString = original.substring(0, 1).toUpperCase() + original.substring(1);
+                                }else{
+                                    textModifiedString = "       ";}
+                                //Carreiras
+                                for (Stop st : stopList){
+                                    if (st.toString().contains(original) || st.toString().contains(textModifiedString)){
+                                        currentStopList.add(st);
+                                    }
+                                }
+
+                                Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentStopList.size());
+                                stopListAdaptor.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                });
+                try{
+                    thread1.start();
+                }catch (Exception e){
+                    return;
+                }
+            }
+        });
+
         return v;
     }
 
@@ -86,10 +176,11 @@ public class StopFavoritesFragment extends Fragment {
             stopList.add(stopToAdd);
             Log.d("Stop Recovered", stopToAdd.getTts_name());
         }
+        currentStopList.addAll(stopList);
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                stopListAdaptor = new ArrayAdapter<Stop>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, stopList);
+                stopListAdaptor = new ArrayAdapter<Stop>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentStopList);
                 list.setAdapter(stopListAdaptor);
             }
         });
@@ -111,6 +202,9 @@ public class StopFavoritesFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                editText.setText(""); //clears editText
+                                currentStopList.clear();
+                                currentStopList.addAll(stopList);
                                 stopListAdaptor.notifyDataSetChanged();
                             }
                         });
@@ -151,6 +245,9 @@ public class StopFavoritesFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        editText.setText(""); //clears editText
+                        currentStopList.clear();
+                        currentStopList.addAll(stopList);
                         stopListAdaptor.notifyDataSetChanged();
                     }
                 });
@@ -179,5 +276,13 @@ public class StopFavoritesFragment extends Fragment {
     }
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
+    }
+
+    public void setRemoveListSelectionDecision(boolean removeListSelectionDecision) {
+        this.removeListSelectionDecision = removeListSelectionDecision;
+    }
+
+    public boolean getRemoveListSelectionDecision() {
+        return removeListSelectionDecision;
     }
 }

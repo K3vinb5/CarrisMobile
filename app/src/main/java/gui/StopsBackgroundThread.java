@@ -12,6 +12,8 @@ import org.osmdroid.views.MapView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import api.Api;
 import data_structure.Stop;
@@ -19,10 +21,11 @@ import data_structure.Stop;
 public class StopsBackgroundThread extends Thread{
 
     private List<Stop> currentToAddList = new ArrayList<>();
-    private GeoPoint currentFixedPoint = new GeoPoint(0d,0d);
+    private GeoPoint currentFixedPoint = new GeoPoint(0d,0d); //current updated location
+    private GeoPoint lastFixedPoint = new GeoPoint(0d, 0d);// last known location (1 iteration behind)
+    public Lock lock = new ReentrantLock();
     private boolean firstRunExecuted = true;
-    private boolean wasUpdated = false;
-    private boolean mapIsUpdated = true;
+    private boolean needUpdating = false;
 
     @Override
     public void run() {
@@ -31,7 +34,7 @@ public class StopsBackgroundThread extends Thread{
         try {
             stopList = Api.getStopList();
         }catch (Exception e){
-            //TODO
+            //TODO use Shared Preferences here to reduce internet connection need
             return;
         }
         while(true){
@@ -44,16 +47,17 @@ public class StopsBackgroundThread extends Thread{
                         fragment.getLastLocation();
                         if (firstRunExecuted){
                             currentFixedPoint = fragment.getCurrentLocation();
+                            lastFixedPoint = currentFixedPoint;
+                        }else{
+                            lastFixedPoint = currentFixedPoint;
+                            currentFixedPoint = fragment.getCurrentLocation();
+                            needUpdating = currentFixedPoint.getLatitude() != lastFixedPoint.getLatitude() || currentFixedPoint.getLongitude() != lastFixedPoint.getLongitude();
                         }
                         MapView map = fragment.getMap();
                         List<Stop> stopToAddList = new ArrayList<>();
                         Thread thread1 = new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                if (getUpdate()){
-                                    currentFixedPoint = fragment.getCurrentLocation();
-                                    mapIsUpdated = false;
-                                }
                                 double[] coordinates = new double[]{currentFixedPoint.getLatitude(),currentFixedPoint.getLongitude()};
                                 if (stopList == null){
                                     return;
@@ -71,11 +75,10 @@ public class StopsBackgroundThread extends Thread{
                                                 fragment.updateStopsMarkersList(stopToAddList);
                                             }
                                         });
-                                        if (!mapIsUpdated || firstRunExecuted){
+                                        if (needUpdating || firstRunExecuted){
                                             thread2.start();
                                             firstRunExecuted = false;
-                                            mapIsUpdated = true;
-                                            currentFixedPoint = fragment.getCurrentLocation();
+                                            needUpdating = false;
                                         }
                                     }
                                 });
@@ -121,14 +124,7 @@ public class StopsBackgroundThread extends Thread{
     {
         return d * Math.PI / 180;
     }
-
-    public void notifyUpdate(){
-        wasUpdated = true;
-    }
-
-    private boolean getUpdate(){
-        boolean update = wasUpdated;
-        wasUpdated = false;
-        return update;
+    public Lock getLock() {
+        return lock;
     }
 }

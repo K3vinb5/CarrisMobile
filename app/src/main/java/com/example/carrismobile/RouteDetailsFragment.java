@@ -44,6 +44,7 @@ import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import api.Api;
 import data_structure.Carreira;
@@ -60,6 +61,7 @@ public class RouteDetailsFragment extends Fragment {
     static MapView map;
     Button button;
     Button favoriteButton;
+    Button routeStopDetails;
     TextView textView;//
     TextView pathListText;//
     TextView schedulesListText;//
@@ -95,6 +97,7 @@ public class RouteDetailsFragment extends Fragment {
 
         button = v.findViewById(R.id.button);
         favoriteButton = v.findViewById(R.id.favoriteButton);
+        routeStopDetails = v.findViewById(R.id.routeStopDetails);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
         editText = v.findViewById(R.id.editText);
@@ -131,6 +134,8 @@ public class RouteDetailsFragment extends Fragment {
                                 loadingImage.setVisibility(View.VISIBLE);
                                 pathListText.setVisibility(View.INVISIBLE);
                                 schedulesListText.setVisibility(View.INVISIBLE);
+                                favoriteButton.setVisibility((View.INVISIBLE));
+                                routeStopDetails.setVisibility(View.INVISIBLE);
 
                                 RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                                 rotate.setDuration(20000);
@@ -183,7 +188,6 @@ public class RouteDetailsFragment extends Fragment {
                                 pathView.setVisibility(View.VISIBLE);
                                 pathListText.setVisibility(View.VISIBLE);
                                 schedulesListText.setVisibility(View.VISIBLE);
-                                favoriteButton.setVisibility(View.VISIBLE);
 
                                 pathView.setAdapter(pathAdapter);
                                 scheduleView.setAdapter(scheduleArrayAdapter);
@@ -218,6 +222,7 @@ public class RouteDetailsFragment extends Fragment {
             pathListText.setVisibility(View.INVISIBLE);
             map.setVisibility(View.INVISIBLE);
             favoriteButton.setVisibility(View.INVISIBLE);
+            routeStopDetails.setVisibility(View.INVISIBLE);
             textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
 
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -227,9 +232,6 @@ public class RouteDetailsFragment extends Fragment {
             map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
             map.getController().setZoom(13.0);
             map.invalidate();
-            CompassOverlay compassOverlay = new CompassOverlay(getContext(), map);
-            compassOverlay.enableCompass();
-            map.getOverlays().add(compassOverlay);
 
 
 
@@ -279,6 +281,33 @@ public class RouteDetailsFragment extends Fragment {
                             public void run() {
                                 scheduleArrayAdapter.notifyDataSetChanged();
                                 map.getController().animateTo(new GeoPoint(coordinates[0], coordinates[1]));
+                                Thread thread1 = new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                favoriteButton.setVisibility(View.VISIBLE);
+                                                routeStopDetails.setVisibility(View.VISIBLE);
+
+                                            }
+                                        });
+                                        try {
+                                            TimeUnit.MILLISECONDS.sleep(5000);
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                favoriteButton.setVisibility(View.INVISIBLE);
+                                                routeStopDetails.setVisibility(View.INVISIBLE);
+                                            }
+                                        });
+
+                                    }
+                                });
+                                thread1.start();
                             }
                         });
                     }
@@ -324,6 +353,23 @@ public class RouteDetailsFragment extends Fragment {
                                 //informs user of success;
                             }
                         });
+                    }
+                });
+                thread.start();
+            }
+        });
+
+        routeStopDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Stop currentStop = pathList.get(currentPathIndex).getStop();
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                        mainActivity.openstopDetailsFragment(true);
                     }
                 });
                 thread.start();

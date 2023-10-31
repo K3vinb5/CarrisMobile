@@ -3,7 +3,6 @@ package com.example.carrismobile;
 import static android.content.Context.INPUT_METHOD_SERVICE;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -19,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Switch;
 
 import com.google.gson.Gson;
 
@@ -28,7 +26,6 @@ import java.util.List;
 
 import api.Api;
 import data_structure.CarreiraBasic;
-import data_structure.Schedule;
 import data_structure.Stop;
 import kevin.carrismobile.adaptors.ImageListAdaptor;
 import kevin.carrismobile.adaptors.MyCustomDialog;
@@ -179,7 +176,7 @@ public class RoutesFragment extends Fragment {
                         }
                         String busID = currentCarreiraBasicList.get(i).getId()+"";
                         MainActivity activity = (MainActivity) getActivity();
-                        activity.openRouteDetailFragment();
+                        activity.openRouteDetailsFragment(true);
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
