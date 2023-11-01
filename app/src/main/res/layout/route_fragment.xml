@@ -51,7 +51,7 @@
         android:layout_marginTop="20dp"
         android:textColor="@color/lightYellow"
         android:ems="10"
-        android:hint="Pesquisa..."
+        android:hint="Pesquisa Carreiras..."
         android:textCursorDrawable="@null"
         android:inputType="text"
         app:layout_constraintStart_toStartOf="parent"

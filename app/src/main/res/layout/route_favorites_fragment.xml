@@ -48,30 +48,44 @@
 
     <EditText
         android:id="@+id/editTextRouteFavorites"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="30dp"
         android:ems="10"
+        android:hint="Pesquisa Carreiras..."
         android:inputType="text"
-        android:textCursorDrawable="@null"
         android:text=""
-        android:hint="Pesquisa..."
         android:textColor="@color/lightYellow"
+        android:textCursorDrawable="@null"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarRouteFavorites" />
+        app:layout_constraintTop_toBottomOf="@+id/SeeStopsFavorites" />
 
     <Button
         android:id="@+id/SeeStopsFavorites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="15dp"
         android:backgroundTint="@color/extraLightYellow"
         android:text="Ver Paragens Favoritas"
         android:textColor="#000000"
         android:textScaleX="0.8"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:cornerRadius="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarRouteFavorites" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="@color/lightGray"
+        android:text="Ver Carreiras Favoritas"
+        android:textColor="@color/black"
+        android:textScaleX="0.8"
+        app:cornerRadius="0dp"
+        app:layout_constraintStart_toEndOf="@+id/SeeStopsFavorites"
         app:layout_constraintTop_toBottomOf="@+id/toolbarRouteFavorites" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

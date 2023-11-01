@@ -49,30 +49,44 @@
 
     <EditText
         android:id="@+id/editTextFavorites"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="30dp"
         android:ems="10"
+        android:hint="Pesquisa Paragens..."
         android:inputType="text"
-        android:textCursorDrawable="@null"
         android:text=""
-        android:hint="Pesquisa..."
         android:textColor="@color/lightYellow"
+        android:textCursorDrawable="@null"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/stopFavoritestoolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/SeeRoutesFavorites" />
 
     <Button
         android:id="@+id/SeeRoutesFavorites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="15dp"
         android:backgroundTint="@color/extraLightYellow"
         android:text="Ver Carreiras Favoritas"
         android:textColor="#000000"
         android:textScaleX="0.8"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:cornerRadius="0dp"
+        app:layout_constraintStart_toEndOf="@+id/button3"
+        app:layout_constraintTop_toBottomOf="@+id/stopFavoritestoolbar" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="@color/lightGray"
+        android:text="Ver Paragens Favoritas"
+        android:textColor="@color/black"
+        android:textScaleX="0.8"
+        app:cornerRadius="0dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stopFavoritestoolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

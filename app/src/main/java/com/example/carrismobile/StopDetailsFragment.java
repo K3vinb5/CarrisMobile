@@ -110,6 +110,7 @@ public class StopDetailsFragment extends Fragment {
                 try{
                     stop = Api.getStopFromId(newStopId); //requires API
                     toAdd = stop.getRealTimeSchedules(); //requires API
+                    Log.d("STOP SCHEDULES", toAdd.toString());
                     if (toAdd != null){
                         currentStopRealTimeSchedules.clear();
                         currentStopRealTimeSchedules.addAll(toAdd);

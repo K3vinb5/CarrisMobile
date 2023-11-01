@@ -216,20 +216,15 @@ public class StopsMapFragment extends Fragment {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(5000);
-                                favoritarButton.setVisibility(View.INVISIBLE);
-                                stopDetailsButton.setVisibility(View.INVISIBLE);
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
+                            //TimeUnit.MILLISECONDS.sleep(5000);
+                            favoritarButton.setVisibility(View.INVISIBLE);
+                            stopDetailsButton.setVisibility(View.INVISIBLE);
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
                                         marker.getInfoWindow().close();
                                     }
-                                });
-
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
+                            });
                         }
                     });
                     thread.start();

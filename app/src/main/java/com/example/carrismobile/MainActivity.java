@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
     public Fragment stopFavoritesFragment = new StopFavoritesFragment();
     public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
     public Fragment currentFragment = null;
-    public boolean favorites = true;
-    public boolean details = true;
+    public boolean routeFavorite = true;
+    public boolean stopFavorite = false;
     int currentIndexFragment = 0;
     BottomNavigationView bottomAppBar;
 
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             openstopsMapFragment();
             return super.onOptionsItemSelected(item);
         }else if(item.getItemId() == R.id.bottomitem5){
-            if(favorites){
+            if(stopFavorite){
                 openstopFavoritesFragment(true);
             }else{
                 openRouteFavoritesFragment(true);
@@ -145,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
     public void openstopFavoritesFragment(boolean animate){
-        favorites = false;
+        stopFavorite = true;
+        routeFavorite = false;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (animate){
             int oldIndexFragment = currentIndexFragment;
@@ -154,12 +155,16 @@ public class MainActivity extends AppCompatActivity {
             checkRightMenu(oldIndexFragment, currentIndexFragment);
         }
         transaction.hide(currentFragment);
+        if (routeFavoritesFragment.isVisible()){
+            transaction.hide(routeFavoritesFragment);
+        }
         transaction.show(stopFavoritesFragment);
         transaction.commit();
         currentFragment = stopFavoritesFragment;
     }
     public void openRouteFavoritesFragment(boolean animate){
-        favorites = true;
+        routeFavorite = true;
+        stopFavorite = false;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (animate){
             int oldIndexFragment = currentIndexFragment;
@@ -173,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
         currentFragment = routeFavoritesFragment;
     }
     public void openRouteDetailsFragment(boolean animate){
-        details = true;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         int oldIndexFragment = currentIndexFragment;
         currentIndexFragment = 0; //keeps track of current fragment
@@ -187,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
         currentFragment = routeDetailsFragment;
     }
     public void openstopDetailsFragment(boolean animate){
-        details = false;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         int oldIndexFragment = currentIndexFragment;
         currentIndexFragment = 0; //keeps track of current fragment

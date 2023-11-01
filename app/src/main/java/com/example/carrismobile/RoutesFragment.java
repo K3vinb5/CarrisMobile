@@ -102,7 +102,7 @@ public class RoutesFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        imagesListAdapter = new ImageListAdaptor(getContext(), currentCarreiraBasicList);
+                        imagesListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraBasicList);
                         list.setAdapter(imagesListAdapter);
                     }
                 });
@@ -148,7 +148,7 @@ public class RoutesFragment extends Fragment {
                                 }
 
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraBasicList.size());
-                                imagesListAdapter = new ImageListAdaptor(getContext(), currentCarreiraBasicList);
+                                imagesListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraBasicList);
                                 list.setAdapter(imagesListAdapter);
                             }
                         });

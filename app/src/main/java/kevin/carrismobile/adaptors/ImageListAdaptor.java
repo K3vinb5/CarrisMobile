@@ -1,7 +1,11 @@
 package kevin.carrismobile.adaptors;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,27 +13,34 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import com.example.carrismobile.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import data_structure.CarreiraBasic;
+import gui.TextDrawable;
 
 public class ImageListAdaptor extends BaseAdapter {
 
     Context context;
+    Activity activity;
     List<String> textList = new ArrayList<>();
-    List<Integer> imageList = new ArrayList<>();
+    List<String> textIdLit = new ArrayList<>();
+    List<Drawable> imageList = new ArrayList<>();
     List<CarreiraBasic> carreiraBasicList;
     LayoutInflater inflater;
 
-    public ImageListAdaptor(Context context, List<CarreiraBasic> carreiraBasicList){
-        this.context = context;
+    public ImageListAdaptor(Activity activity, List<CarreiraBasic> carreiraBasicList){
+        this.context = activity.getApplicationContext();
+        this.activity = activity;
         this.inflater = LayoutInflater.from(context);
         this.carreiraBasicList = carreiraBasicList;
         for (CarreiraBasic cb : carreiraBasicList){
-            textList.add(cb.toString());
+            textList.add(cb.getLong_name());
+            textIdLit.add(cb.getId());
             imageList.add(getImageId(cb.getColor()));
         }
     }
@@ -63,15 +74,34 @@ public class ImageListAdaptor extends BaseAdapter {
         TextView textView = (TextView) view.findViewById(R.id.listText);
         textView.setText(textList.get(i));
         ImageView imageView = (ImageView) view.findViewById(R.id.listImage);
-        imageView.setImageResource(imageList.get(i));
+        Drawable imageDrawable = imageList.get(i);
+        Drawable textDrawable = new TextDrawable(activity.getResources(), textIdLit.get(i));
+
+        int horizontalInset = (textDrawable.getIntrinsicWidth() - textDrawable.getIntrinsicWidth()) / 2;
+        LayerDrawable finalDrawable = new LayerDrawable(new Drawable[] {imageDrawable, textDrawable});
+        float scaleImageX = 1.2f;
+        float scaleImageY = 1.55f;
+        finalDrawable.setLayerSize(0,(int) (imageDrawable.getIntrinsicWidth() * scaleImageX),(int)(imageDrawable.getIntrinsicHeight() * scaleImageY));
+        finalDrawable.setLayerGravity(1, Gravity.CENTER_HORIZONTAL);
+        finalDrawable.setLayerSize(1,textDrawable.getIntrinsicWidth(), textDrawable.getIntrinsicHeight());
+        imageView.setImageDrawable(finalDrawable);
+        //imageView.setImageResource(imageList.get(i));
         return view;
     }
 
-    private int getImageId(String string){
+    private Drawable getImageId(String string){
         if (string.equals("#ED1944")){
-            return R.drawable.red_bus;
-        }else {
-            return R.drawable.blue_bus;
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ed1944, null);
+        }else if (string.equals("#C61D23")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_c61d23, null);
+        }else if (string.equals("#BB3E96")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_bb3e96, null);
+        }else if (string.equals("#3D85C6")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_3d85c6, null);
+        }else if (string.equals("#2A9057")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2a9057, null);
+        }else{
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00b8b0, null);
         }
     }
 }
