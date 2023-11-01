@@ -20,6 +20,7 @@ import com.example.carrismobile.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import data_structure.Carreira;
 import data_structure.CarreiraBasic;
 import gui.TextDrawable;
 
@@ -37,6 +38,22 @@ public class ImageListAdaptor extends BaseAdapter {
         this.context = activity.getApplicationContext();
         this.activity = activity;
         this.inflater = LayoutInflater.from(context);
+        this.carreiraBasicList = carreiraBasicList;
+        for (CarreiraBasic cb : carreiraBasicList){
+            textList.add(cb.getLong_name());
+            textIdLit.add(cb.getId());
+            imageList.add(getImageId(cb.getColor()));
+        }
+    }
+
+    public ImageListAdaptor(Activity activity, List<Carreira> carreiraList, int a){
+        this.context = activity.getApplicationContext();
+        this.activity = activity;
+        this.inflater = LayoutInflater.from(context);
+        List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
+        for (Carreira c : carreiraList){
+            carreiraBasicList.add(CarreiraBasic.newCarreiraBasicFromCarreira(c));
+        }
         this.carreiraBasicList = carreiraBasicList;
         for (CarreiraBasic cb : carreiraBasicList){
             textList.add(cb.getLong_name());

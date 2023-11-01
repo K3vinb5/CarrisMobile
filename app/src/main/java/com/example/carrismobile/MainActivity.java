@@ -1,5 +1,6 @@
 package com.example.carrismobile;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.window.OnBackInvokedDispatcher;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     public Fragment stopFavoritesFragment = new StopFavoritesFragment();
     public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
     public Fragment currentFragment = null;
+    public Fragment oldFragment = null;
     public boolean routeFavorite = true;
     public boolean stopFavorite = false;
     int currentIndexFragment = 0;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(routeFavoritesFragment);
         currentIndexFragment = 2;
         currentFragment = routesFragment;
+        oldFragment = routesFragment;
         //transaction.hide(routesFragment);
         transaction.commit();
         runOnUiThread(new Runnable() {
@@ -106,6 +110,9 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
             return true;
+        }else if(item.getItemId() == R.id.routeDetailstopItem2){
+            RouteDetailsFragment fragment = (RouteDetailsFragment) this.routeDetailsFragment;
+            fragment.addCurrentRouteToFavorites();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -118,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(realTimeFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = realTimeFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -129,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routesFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = routesFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -141,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopsMapFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = stopsMapFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -160,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
         }
         transaction.show(stopFavoritesFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = stopFavoritesFragment;
     }
     public void openRouteFavoritesFragment(boolean animate){
@@ -175,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeFavoritesFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = routeFavoritesFragment;
     }
     public void openRouteDetailsFragment(boolean animate){
@@ -188,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeDetailsFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = routeDetailsFragment;
     }
     public void openstopDetailsFragment(boolean animate){
@@ -201,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopDetailsFragment);
         transaction.commit();
+        oldFragment = currentFragment;
         currentFragment = stopDetailsFragment;
     }
 
@@ -218,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         }else if (newIndex < oldIndex){
             slideRight(transaction);
         }else{
-            //nothing
+            //nothing yet
         }
     }
 

@@ -2,6 +2,7 @@ package com.example.carrismobile;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -26,6 +27,7 @@ import java.util.List;
 
 import data_structure.Carreira;
 import data_structure.Stop;
+import kevin.carrismobile.adaptors.ImageListAdaptor;
 
 public class RouteFavoritesFragment extends Fragment {
 
@@ -34,7 +36,7 @@ public class RouteFavoritesFragment extends Fragment {
     Button seeStopsFavorites;
     List<Carreira> carreiraList = new ArrayList<>();
     List<Carreira> currentCarreiraList = new ArrayList<>();
-    ArrayAdapter<Carreira> carreiraListAdapter;
+    ImageListAdaptor carreiraListAdapter;
     private static SharedPreferences mPrefs;
 
     @Override
@@ -83,7 +85,8 @@ public class RouteFavoritesFragment extends Fragment {
                                 }
 
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraList.size());
-                                carreiraListAdapter.notifyDataSetChanged();
+                                carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                                list.setAdapter(carreiraListAdapter);
                             }
                         });
                     }
@@ -142,7 +145,7 @@ public class RouteFavoritesFragment extends Fragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                carreiraListAdapter = new ArrayAdapter<Carreira>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentCarreiraList);
+                carreiraListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraList, 0);
                 list.setAdapter(carreiraListAdapter);
             }
         });
@@ -161,20 +164,23 @@ public class RouteFavoritesFragment extends Fragment {
                         String newSize = Integer.toString(intSize);
                         storeObject(new Gson().toJson(carreira), "key_carreiraList_carreira_" + size);
                         storeObject(new Gson().toJson(newSize), "key_carreiraList_size"); //updates size
+                        Log.d("ROUTE SAVING", "Route was written into memory");
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 editText.setText(""); //clears editText
                                 currentCarreiraList.clear();
                                 currentCarreiraList.addAll(carreiraList);
-                                carreiraListAdapter.notifyDataSetChanged();
+                                carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                                list.setAdapter(carreiraListAdapter);
                             }
                         });
-                        Log.d("SUCCESS", "Stop added to List successfully");
+                        Log.d("SUCCESS", "Route added to List successfully");
+                    }else{
+                        Log.d("WARNING", "The route given as argument was already in the favorites List");
                     }
-                    Log.d("WARNING", "The stop given as argument was already in the favorites List");
                 }else{
-                    Log.e("ERROR", "Stop provided was null");
+                    Log.e("ERROR", "Route provided was null");
                 }
             }
         });
@@ -211,7 +217,8 @@ public class RouteFavoritesFragment extends Fragment {
                         editText.setText(""); //clears editText
                         currentCarreiraList.clear();
                         currentCarreiraList.addAll(carreiraList);
-                        carreiraListAdapter.notifyDataSetChanged();
+                        carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                        list.setAdapter(carreiraListAdapter);
                     }
                 });
                 Log.d("SUCCESS", "Stop was removed from favorites list");

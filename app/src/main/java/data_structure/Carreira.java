@@ -17,13 +17,15 @@ public class Carreira implements Serializable {
 
     private String id;
     private String long_name;
+    private String color;
     private List<Direction> directionList;
     private List<String> patterns = new ArrayList<>();
     private List<String> routes = new ArrayList<>();
 
-    public Carreira(String long_name, String id){
+    public Carreira(String long_name, String id, String color){
         this.long_name = long_name;
         this.id = id;
+        this.color = color;
     }
 
     public String getName() {
@@ -112,7 +114,10 @@ public class Carreira implements Serializable {
     }*/
 
     public static Carreira generateCarreiraPlaceHolder(){
-        return new Carreira("Carreira", "-1");
+        return new Carreira("Carreira", "-1", "#000000");
+    }
+    public String getColor() {
+        return color;
     }
 
     @Override

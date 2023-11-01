@@ -39,7 +39,7 @@ public class CarreiraBasic {
     }
 
     public static CarreiraBasic newCarreiraBasicFromCarreira(Carreira carreira){
-        return new CarreiraBasic(carreira.getRouteId(), carreira.getName(), "000000");
+        return new CarreiraBasic(carreira.getRouteId(), carreira.getName(), carreira.getColor());
     }
 
     @NonNull

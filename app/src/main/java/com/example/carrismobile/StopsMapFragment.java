@@ -216,7 +216,11 @@ public class StopsMapFragment extends Fragment {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            //TimeUnit.MILLISECONDS.sleep(5000);
+                            try {
+                                TimeUnit.MILLISECONDS.sleep(5000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             favoritarButton.setVisibility(View.INVISIBLE);
                             stopDetailsButton.setVisibility(View.INVISIBLE);
                             getActivity().runOnUiThread(new Runnable() {

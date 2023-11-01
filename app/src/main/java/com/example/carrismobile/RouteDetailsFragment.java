@@ -500,7 +500,7 @@ public class RouteDetailsFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
         fragment.addCarreiraToFavorites(currentCarreira);
-        mainActivity.openRouteDetailsFragment(false);
+        mainActivity.openRouteFavoritesFragment(true);
         mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
