@@ -81,7 +81,8 @@ public class StopsBackgroundThread extends Thread{
                                                 fragment.updateStopsMarkersList(stopToAddList);
                                             }
                                         });
-                                        if (needUpdating || firstRunExecuted){
+                                        needUpdating = needUpdating || map.getOverlays().size() < 3;
+                                        if (needUpdating){
                                             thread2.start();
                                             Log.d("STOP BACKGROUND THREAD", "MAP UPDATED");
                                             firstRunExecuted = false;

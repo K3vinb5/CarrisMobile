@@ -27,7 +27,7 @@ import java.util.List;
 import api.Api;
 import data_structure.CarreiraBasic;
 import data_structure.Stop;
-import kevin.carrismobile.adaptors.ImageListAdaptor;
+import kevin.carrismobile.adaptors.RouteImageListAdaptor;
 import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class RoutesFragment extends Fragment {
@@ -35,7 +35,7 @@ public class RoutesFragment extends Fragment {
 
     ListView list;
     EditText editText;
-    ImageListAdaptor imagesListAdapter;
+    RouteImageListAdaptor imagesListAdapter;
     ArrayAdapter<Stop> stopListAdaptor;
     List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
     List<Stop> stopsList = new ArrayList<>();
@@ -51,7 +51,6 @@ public class RoutesFragment extends Fragment {
 
         list = v.findViewById(R.id.main_list);
         editText = v.findViewById(R.id.editTextRoutes);
-
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
 
@@ -102,7 +101,7 @@ public class RoutesFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        imagesListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                        imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
                         list.setAdapter(imagesListAdapter);
                     }
                 });
@@ -148,7 +147,7 @@ public class RoutesFragment extends Fragment {
                                 }
 
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraBasicList.size());
-                                imagesListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                                imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
                                 list.setAdapter(imagesListAdapter);
                             }
                         });
@@ -178,13 +177,7 @@ public class RoutesFragment extends Fragment {
                         MainActivity activity = (MainActivity) getActivity();
                         activity.openRouteDetailsFragment(true);
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                routeDetailFragment.getEditText().setText(busID.toString());
-                                routeDetailFragment.getButton().performClick();
-                            }
-                        });
+                        routeDetailFragment.loadCarreiraFromApi(busID);
                     }
                 });
                 thread1.start();

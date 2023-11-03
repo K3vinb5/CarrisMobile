@@ -4,6 +4,7 @@ import static android.content.Context.INPUT_METHOD_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
@@ -12,9 +13,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,19 +56,20 @@ import data_structure.Path;
 import data_structure.Schedule;
 import data_structure.Stop;
 import gui.CustomMarkerInfoWindow;
+import gui.TextDrawable;
 import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class RouteDetailsFragment extends Fragment {
 
     private static SharedPreferences mPrefs;
     static MapView map;
-    Button button;
     Button favoriteButton;
     Button routeStopDetails;
     TextView textView;//
+    ImageView routeImageView;
+    Toolbar routeDetailsToolbar;
     TextView pathListText;//
     TextView schedulesListText;//
-    EditText editText;
     ListView pathView;//
     ListView scheduleView;//
     Spinner spinner;//
@@ -85,6 +89,7 @@ public class RouteDetailsFragment extends Fragment {
     public AlertDialog dialog;
     public AlertDialog stopAdded;
     public AlertDialog routeAdded;
+    public AlertDialog routeDeleted;
     public boolean connected;
     public static List<Marker> markerList = new ArrayList<>();//
 
@@ -96,130 +101,25 @@ public class RouteDetailsFragment extends Fragment {
 
         mPrefs = getActivity().getSharedPreferences("RouteDetailsFragmentd", MODE_PRIVATE);
 
-        button = v.findViewById(R.id.button);
         favoriteButton = v.findViewById(R.id.favoriteButton);
         routeStopDetails = v.findViewById(R.id.routeStopDetails);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
-        editText = v.findViewById(R.id.editText);
         pathListText = v.findViewById(R.id.pathListText);
         schedulesListText = v.findViewById(R.id.schedulesListText);
         pathView = v.findViewById(R.id.pathView);
         scheduleView = v.findViewById(R.id.scheduleView);
         spinner = v.findViewById(R.id.spinner);
+        routeImageView = v.findViewById(R.id.routeImageView);
         loadingImage = v.findViewById(R.id.loadingImage);
+        routeDetailsToolbar = v.findViewById(R.id.routeDetailsToolbar);
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
         stopAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada à Lista de Favoritos", "A Paragem Selecionada foi adicionada com sucesso á Lista de Paragens Favoritas");
         routeAdded = MyCustomDialog.createOkButtonDialog(getContext(), "Carreira adicionada à Lista de Favoritos", "A Carreira foi adicionada com sucesso á Lista de Carreiras Favoritas");
-
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                } catch (Exception e) {
-
-                }
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Loading Screen
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                pathView.setVisibility(View.INVISIBLE);
-                                scheduleView.setVisibility(View.INVISIBLE);
-                                textView.setVisibility(View.INVISIBLE);
-                                map.setVisibility(View.INVISIBLE);
-                                loadingImage.setVisibility(View.VISIBLE);
-                                pathListText.setVisibility(View.INVISIBLE);
-                                schedulesListText.setVisibility(View.INVISIBLE);
-                                favoriteButton.setVisibility((View.INVISIBLE));
-                                routeStopDetails.setVisibility(View.INVISIBLE);
-
-                                RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-                                rotate.setDuration(20000);
-                                rotate.setRepeatCount(5);
-                                rotate.setInterpolator(new LinearInterpolator());
-                                loadingImage.startAnimation(rotate);
-                            }
-                        });
-                        Carreira carreira = null;
-                        try {
-                            carreira = Api.getCarreira(editText.getText().toString());
-                            carreira.init();
-                            connected = true;
-                        }catch (Exception e ){
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.show();
-                                    if (loadingImage.getAnimation() != null){
-                                        loadingImage.getAnimation().cancel();
-                                    }
-                                    loadingImage.setVisibility(View.INVISIBLE);
-                                }
-                            });
-                            connected = false;
-                            return;
-                        }
-
-                        carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
-                        currentCarreira = carreira;
-                        currentCarreiraId = carreira.getRouteId();
-                        currentPathIndex = 0;
-                        double[] coordinates = carreira.getDirectionList().get(currentDirectionIndex).getPathList().get(currentPathIndex).getStop().getCoordinates();
-                        GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
-                        directionList = carreira.getDirectionList();
-                        pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
-                        scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
-
-                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
-                        pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
-                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
-                        Carreira finalCarreira = carreira;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textView.setText(finalCarreira.getRouteId() + " - " + finalCarreira.getName());
-                                uiIsVisible = true;
-                                textView.setVisibility(View.VISIBLE);
-                                scheduleView.setVisibility(View.VISIBLE);
-                                pathView.setVisibility(View.VISIBLE);
-                                pathListText.setVisibility(View.VISIBLE);
-                                schedulesListText.setVisibility(View.VISIBLE);
-
-                                pathView.setAdapter(pathAdapter);
-                                scheduleView.setAdapter(scheduleArrayAdapter);
-                                spinner.setAdapter(directionArrayAdapter);
-
-                                map.setVisibility(View.VISIBLE);
-                                map.getController().setCenter(point);
-                                map.getController().setZoom(17.0);
-                                map.invalidate();
-                                updateMarkers(pathList, map, getActivity());
-
-                                //Loading Screen
-                                if (loadingImage.getAnimation() != null){
-                                    loadingImage.getAnimation().cancel();
-                                }
-                                loadingImage.setVisibility(View.INVISIBLE);
-                            }
-                        });
+        routeDeleted = MyCustomDialog.createOkButtonDialog(getContext(), "Carreira removida da Lista de Favoritos", "A Carreira foi removida com sucesso da Lista de Carreiras Favoritas");
 
 
-
-                    }
-                });
-                thread.start();
-            }
-        });
-
-
-
-        editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         loadingImage.setScaleX(0.3f);
         loadingImage.setScaleY(0.3f);
         schedulesListText.setVisibility(View.INVISIBLE);
@@ -378,9 +278,125 @@ public class RouteDetailsFragment extends Fragment {
                 thread.start();
             }
         });
-
-        //Click Button
+            //Click Button
         return v;
+    }
+
+    public void loadCarreiraFromApi(String carreiraId){
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("LOADING ROUTE", "THREAD STARTED");
+                try {
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
+                }
+                //Loading Screen
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pathView.setVisibility(View.INVISIBLE);
+                        scheduleView.setVisibility(View.INVISIBLE);
+                        textView.setVisibility(View.INVISIBLE);
+                        map.setVisibility(View.INVISIBLE);
+                        loadingImage.setVisibility(View.VISIBLE);
+                        pathListText.setVisibility(View.INVISIBLE);
+                        schedulesListText.setVisibility(View.INVISIBLE);
+                        favoriteButton.setVisibility((View.INVISIBLE));
+                        routeImageView.setVisibility(((View.INVISIBLE)));
+                        routeStopDetails.setVisibility(View.INVISIBLE);
+
+                        RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                        rotate.setDuration(20000);
+                        rotate.setRepeatCount(5);
+                        rotate.setInterpolator(new LinearInterpolator());
+                        loadingImage.startAnimation(rotate);
+                    }
+                });
+                Carreira carreira = null;
+                try {
+                    carreira = Api.getCarreira(carreiraId);
+                    carreira.init();
+                    connected = true;
+                }catch (Exception e ){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.show();
+                            if (loadingImage.getAnimation() != null){
+                                loadingImage.getAnimation().cancel();
+                            }
+                            loadingImage.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    connected = false;
+                    return;
+                }
+
+                carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
+                currentCarreira = carreira;
+                currentCarreiraId = carreira.getRouteId();
+                currentPathIndex = 0;
+                double[] coordinates = carreira.getDirectionList().get(currentDirectionIndex).getPathList().get(currentPathIndex).getStop().getCoordinates();
+                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+                directionList = carreira.getDirectionList();
+                pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
+                scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
+
+                MainActivity activity = (MainActivity)getActivity();
+                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
+
+
+                scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
+                directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
+                Carreira finalCarreira = carreira;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textView.setText(finalCarreira.getRouteId() + " - " + finalCarreira.getName());
+                        uiIsVisible = true;
+                        textView.setVisibility(View.VISIBLE);
+                        scheduleView.setVisibility(View.VISIBLE);
+                        pathView.setVisibility(View.VISIBLE);
+                        pathListText.setVisibility(View.VISIBLE);
+                        schedulesListText.setVisibility(View.VISIBLE);
+                        routeImageView.setVisibility(View.VISIBLE);
+
+                        changeCarreiraDrawable(finalCarreira);
+                        changeCarreiraDrawable(finalCarreira);
+
+                        pathView.setAdapter(pathAdapter);
+                        scheduleView.setAdapter(scheduleArrayAdapter);
+                        spinner.setAdapter(directionArrayAdapter);
+
+                        if (fragment.containsCarreira(finalCarreira)) {
+                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
+                        }else{
+                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
+                        }
+
+                        map.setVisibility(View.VISIBLE);
+                        map.getController().setCenter(point);
+                        map.getController().setZoom(17.0);
+                        map.invalidate();
+                        updateMarkers(pathList, map, getActivity());
+
+                        //Loading Screen
+                        if (loadingImage.getAnimation() != null){
+                            loadingImage.getAnimation().cancel();
+                        }
+                        loadingImage.setVisibility(View.INVISIBLE);
+                    }
+                });
+
+
+
+            }
+        });
+        thread.start();
     }
 
     public void loadCarreira(Carreira carreira){
@@ -397,6 +413,9 @@ public class RouteDetailsFragment extends Fragment {
                 pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
                 scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
 
+                MainActivity activity = (MainActivity)getActivity();
+                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
+
                 scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
                 pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
                 directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
@@ -411,6 +430,15 @@ public class RouteDetailsFragment extends Fragment {
                         pathView.setVisibility(View.VISIBLE);
                         pathListText.setVisibility(View.VISIBLE);
                         schedulesListText.setVisibility(View.VISIBLE);
+
+                        if (fragment.containsCarreira(currentCarreira)){
+                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
+                        }else{
+                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
+                        }
+
+                        changeCarreiraDrawable(finalCarreira);
+                        changeCarreiraDrawable(finalCarreira);
 
                         pathView.setAdapter(pathAdapter);
                         scheduleView.setAdapter(scheduleArrayAdapter);
@@ -483,30 +511,65 @@ public class RouteDetailsFragment extends Fragment {
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
     }
-
-    public EditText getEditText() {
-        return editText;
-    }
-
-    public Button getButton() {
-        return button;
-    }
-
     public String getCurrentCarreiraId() {
         return currentCarreiraId;
     }
 
     public void addCurrentRouteToFavorites(){
+        //TODO
         MainActivity mainActivity = (MainActivity) getActivity();
         RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
-        fragment.addCarreiraToFavorites(currentCarreira);
-        mainActivity.openRouteFavoritesFragment(true);
-        mainActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                routeAdded.show();
-            }
-        });
+        if (fragment.containsCarreira(currentCarreira)){
+            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
+            fragment.removeStopFromFavorites(currentCarreiraId);
+            //mainActivity.openRouteFavoritesFragment(true);
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    routeDeleted.show();
+                }
+            });
+        }else{
+            //Carreira not in favorites List
+            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
+            fragment.addCarreiraToFavorites(currentCarreira);
+            //mainActivity.openRouteFavoritesFragment(true);
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    routeAdded.show();
+                }
+            });
+        }
+    }
+
+    public void changeCarreiraDrawable(Carreira carreira){
+        Drawable imageDrawable = getImageId(carreira.getColor());
+        Drawable textDrawable = new TextDrawable(getActivity().getResources(), carreira.getRouteId(), 20);
+        LayerDrawable finalDrawable = new LayerDrawable(new Drawable[] {imageDrawable, textDrawable});
+
+        finalDrawable.setLayerSize(0,routeImageView.getWidth(), routeImageView.getHeight());
+        //finalDrawable.setLayerSize(1, (int)(textDrawable.getIntrinsicWidth()*1.2), (int)(textDrawable.getIntrinsicHeight()*2));
+        finalDrawable.setLayerGravity(1, Gravity.CENTER_VERTICAL);
+        //finalDrawable.setLayerGravity(1, Gravity.CENTER_HORIZONTAL);
+
+        routeImageView.setImageDrawable(finalDrawable);
+    }
+
+    private Drawable getImageId(String color){
+        if (color.equals("#ED1944")){
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_ed1944, null);
+        }else if (color.equals("#C61D23")){
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_c61d23, null);
+        }else if (color.equals("#BB3E96")){
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_bb3e96, null);
+        }else if (color.equals("#3D85C6")){
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_3d85c6, null);
+        }else if (color.equals("#2A9057")){
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_2a9057, null);
+        }else{
+            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_00b8b0, null);
+        }
     }
 
 }

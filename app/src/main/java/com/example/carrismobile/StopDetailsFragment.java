@@ -3,6 +3,7 @@ package com.example.carrismobile;
 import android.app.AlertDialog;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,10 +28,11 @@ public class StopDetailsFragment extends Fragment {
     public List<RealTimeSchedule> currentStopRealTimeSchedules = new ArrayList<>();
     public ArrayAdapter<RealTimeSchedule> currentStopRealTimeSchedulesAdaptor;
     ListView list;
-    Button removeFavoriteButton;
     TextView stopTitle;
     TextView stopDetails;
+    Toolbar stopDetailsToolbar;
     AlertDialog confirmRemovalDialog;
+    AlertDialog confirmAdditionDialog;
     Stop currentStop = null;
     boolean currentlyDisplaying = false;
     @Override
@@ -41,34 +42,14 @@ public class StopDetailsFragment extends Fragment {
         list = v.findViewById(R.id.stopDetailsList);
         stopTitle = v.findViewById(R.id.textViewStopName);
         stopDetails = v.findViewById(R.id.textViewStopNameDetails);
-        removeFavoriteButton = v.findViewById(R.id.removeFavorite);
+        stopDetailsToolbar = v.findViewById(R.id.stopDetailstoolbar);
 
         confirmRemovalDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem removida com sucesso", "A paragem selecionada foi removida da lista de favoritos com sucesso");
+        confirmAdditionDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada com sucesso", "A paragem selecionada foi adiconada á lista de favoritos com sucesso");
+
 
         currentStopRealTimeSchedulesAdaptor = new ArrayAdapter<RealTimeSchedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentStopRealTimeSchedules);
         list.setAdapter(currentStopRealTimeSchedulesAdaptor);
-
-        removeFavoriteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        MainActivity mainActivity = (MainActivity) getActivity();
-                        StopFavoritesFragment fragment = (StopFavoritesFragment) mainActivity.stopFavoritesFragment;
-                        fragment.removeStopFromFavorites(currentStop.getStopID()+"");
-                        mainActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                confirmRemovalDialog.show();
-                            }
-                        });
-                        mainActivity.openstopFavoritesFragment(false);
-                    }
-                });
-                thread.start();
-            }
-        });
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -81,13 +62,7 @@ public class StopDetailsFragment extends Fragment {
                         MainActivity activity = (MainActivity) getActivity();
                         activity.openRouteDetailsFragment(true);
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                routeDetailFragment.getEditText().setText(busID.toString());
-                                routeDetailFragment.getButton().performClick();
-                            }
-                        });
+                        routeDetailFragment.loadCarreiraFromApi(busID);
                     }
                 });
                 thread1.start();
@@ -114,6 +89,8 @@ public class StopDetailsFragment extends Fragment {
                     if (toAdd != null){
                         currentStopRealTimeSchedules.clear();
                         currentStopRealTimeSchedules.addAll(toAdd);
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
                         //Log.d("DEBUG LIST", currentStopRealTimeSchedules.toString());
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
@@ -122,6 +99,11 @@ public class StopDetailsFragment extends Fragment {
                                 stopTitle.setText(stop.getTts_name());
                                 stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
                                 currentStop = stop;
+                                if (fragment.containsStop(stop)){
+                                    stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_24);
+                                }else{
+                                    stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_border_24);
+                                }
                             }
                         });
 
@@ -139,6 +121,36 @@ public class StopDetailsFragment extends Fragment {
                 }catch (Exception e){
                     Log.e("ERROR", e.getMessage());
                     return;
+                }
+            }
+        });
+        thread.start();
+    }
+
+    public void addCurrentStopToFavorites(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                StopFavoritesFragment fragment = (StopFavoritesFragment) mainActivity.stopFavoritesFragment;
+                if (fragment.containsStop(currentStop)){
+                    fragment.removeStopFromFavorites(currentStop.getStopID()+"");
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            confirmRemovalDialog.show();
+                            stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_border_24);
+                        }
+                    });
+                }else {
+                    fragment.addStopToFavorites(currentStop);
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            confirmAdditionDialog.show();
+                            stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_24);
+                        }
+                    });
                 }
             }
         });

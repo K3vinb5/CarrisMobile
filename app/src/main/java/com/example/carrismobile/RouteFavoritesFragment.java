@@ -2,7 +2,6 @@ package com.example.carrismobile;
 
 import static android.content.Context.MODE_PRIVATE;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -26,8 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import data_structure.Carreira;
-import data_structure.Stop;
-import kevin.carrismobile.adaptors.ImageListAdaptor;
+import kevin.carrismobile.adaptors.RouteImageListAdaptor;
 
 public class RouteFavoritesFragment extends Fragment {
 
@@ -36,7 +33,7 @@ public class RouteFavoritesFragment extends Fragment {
     Button seeStopsFavorites;
     List<Carreira> carreiraList = new ArrayList<>();
     List<Carreira> currentCarreiraList = new ArrayList<>();
-    ImageListAdaptor carreiraListAdapter;
+    RouteImageListAdaptor carreiraListAdapter;
     private static SharedPreferences mPrefs;
 
     @Override
@@ -85,7 +82,7 @@ public class RouteFavoritesFragment extends Fragment {
                                 }
 
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraList.size());
-                                carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                                carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
                             }
                         });
@@ -145,7 +142,7 @@ public class RouteFavoritesFragment extends Fragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                carreiraListAdapter = new ImageListAdaptor(getActivity(), currentCarreiraList, 0);
+                carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                 list.setAdapter(carreiraListAdapter);
             }
         });
@@ -171,7 +168,7 @@ public class RouteFavoritesFragment extends Fragment {
                                 editText.setText(""); //clears editText
                                 currentCarreiraList.clear();
                                 currentCarreiraList.addAll(carreiraList);
-                                carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                                carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
                             }
                         });
@@ -217,7 +214,7 @@ public class RouteFavoritesFragment extends Fragment {
                         editText.setText(""); //clears editText
                         currentCarreiraList.clear();
                         currentCarreiraList.addAll(carreiraList);
-                        carreiraListAdapter = new ImageListAdaptor(getActivity(), carreiraList, 0);
+                        carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                         list.setAdapter(carreiraListAdapter);
                     }
                 });
@@ -246,5 +243,9 @@ public class RouteFavoritesFragment extends Fragment {
     }
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
+    }
+
+    public boolean containsCarreira(Carreira carreira){
+        return carreiraList.contains(carreira);
     }
 }

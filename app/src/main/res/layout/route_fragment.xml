@@ -45,15 +45,15 @@
 
     <EditText
         android:id="@+id/editTextRoutes"
-        android:layout_width="192dp"
+        android:layout_width="wrap_content"
         android:layout_height="44dp"
-        android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
-        android:textColor="@color/lightYellow"
         android:ems="10"
         android:hint="Pesquisa Carreiras..."
-        android:textCursorDrawable="@null"
         android:inputType="text"
+        android:textColor="@color/lightYellow"
+        android:textCursorDrawable="@null"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 

@@ -12,13 +12,14 @@ import android.util.TypedValue;
 
 public class TextDrawable extends Drawable {
     private static final int DEFAULT_COLOR = Color.BLACK;
-    private static final int DEFAULT_TEXTSIZE = 15;
+    private int DEFAULT_TEXTSIZE;
     private Paint mPaint;
     private CharSequence mText;
     private int mIntrinsicWidth;
     private int mIntrinsicHeight;
 
-    public TextDrawable(Resources res, CharSequence text) {
+    public TextDrawable(Resources res, CharSequence text, int DEFAULT_TEXTSIZE) {
+        this.DEFAULT_TEXTSIZE = DEFAULT_TEXTSIZE;
         mText = text;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(DEFAULT_COLOR);

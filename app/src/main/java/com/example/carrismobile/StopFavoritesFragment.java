@@ -25,10 +25,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
-import api.Api;
-import data_structure.CarreiraBasic;
 import data_structure.Stop;
-import kevin.carrismobile.adaptors.ImageListAdaptor;
 import kevin.carrismobile.adaptors.MyCustomDialog;
 
 public class StopFavoritesFragment extends Fragment {
@@ -251,6 +248,9 @@ public class StopFavoritesFragment extends Fragment {
     }
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
+    }
+    public boolean containsStop(Stop stop){
+        return  stopList.contains(stop);
     }
 
     public void setRemoveListSelectionDecision(boolean removeListSelectionDecision) {

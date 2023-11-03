@@ -24,7 +24,7 @@ import data_structure.Carreira;
 import data_structure.CarreiraBasic;
 import gui.TextDrawable;
 
-public class ImageListAdaptor extends BaseAdapter {
+public class RouteImageListAdaptor extends BaseAdapter {
 
     Context context;
     Activity activity;
@@ -34,7 +34,7 @@ public class ImageListAdaptor extends BaseAdapter {
     List<CarreiraBasic> carreiraBasicList;
     LayoutInflater inflater;
 
-    public ImageListAdaptor(Activity activity, List<CarreiraBasic> carreiraBasicList){
+    public RouteImageListAdaptor(Activity activity, List<CarreiraBasic> carreiraBasicList){
         this.context = activity.getApplicationContext();
         this.activity = activity;
         this.inflater = LayoutInflater.from(context);
@@ -46,7 +46,7 @@ public class ImageListAdaptor extends BaseAdapter {
         }
     }
 
-    public ImageListAdaptor(Activity activity, List<Carreira> carreiraList, int a){
+    public RouteImageListAdaptor(Activity activity, List<Carreira> carreiraList, int a){
         this.context = activity.getApplicationContext();
         this.activity = activity;
         this.inflater = LayoutInflater.from(context);
@@ -92,9 +92,8 @@ public class ImageListAdaptor extends BaseAdapter {
         textView.setText(textList.get(i));
         ImageView imageView = (ImageView) view.findViewById(R.id.listImage);
         Drawable imageDrawable = imageList.get(i);
-        Drawable textDrawable = new TextDrawable(activity.getResources(), textIdLit.get(i));
+        Drawable textDrawable = new TextDrawable(activity.getResources(), textIdLit.get(i), 15);
 
-        int horizontalInset = (textDrawable.getIntrinsicWidth() - textDrawable.getIntrinsicWidth()) / 2;
         LayerDrawable finalDrawable = new LayerDrawable(new Drawable[] {imageDrawable, textDrawable});
         float scaleImageX = 1.2f;
         float scaleImageY = 1.55f;

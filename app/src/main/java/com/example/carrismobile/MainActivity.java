@@ -1,6 +1,5 @@
 package com.example.carrismobile;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -9,13 +8,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.window.OnBackInvokedDispatcher;
 
-import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.bottomnavigation.BottomNavigationItemView;
-import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +24,10 @@ public class MainActivity extends AppCompatActivity {
     public Fragment stopDetailsFragment = new StopDetailsFragment();
     public Fragment stopFavoritesFragment = new StopFavoritesFragment();
     public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
+    public Fragment moovitFragment = new MoovitFragment();
     public Fragment currentFragment = null;
-    public Fragment oldFragment = null;
+    public List<Fragment> oldFragment = new ArrayList<>();
+    private HashMap<Fragment, Integer> mapper= new HashMap<>();
     public boolean routeFavorite = true;
     public boolean stopFavorite = false;
     int currentIndexFragment = 0;
@@ -46,15 +46,27 @@ public class MainActivity extends AppCompatActivity {
         transaction.add(R.id.main_layout, stopDetailsFragment);
         transaction.add(R.id.main_layout, stopFavoritesFragment);
         transaction.add(R.id.main_layout, routeFavoritesFragment);
+        transaction.add(R.id.main_layout, moovitFragment);
+        transaction.hide(moovitFragment);
         transaction.hide(realTimeFragment);
         transaction.hide(routeDetailsFragment);
         transaction.hide(stopsMapFragment);
         transaction.hide(stopDetailsFragment);
         transaction.hide(stopFavoritesFragment);
         transaction.hide(routeFavoritesFragment);
+
+        mapper.put(routeDetailsFragment, 0);
+        mapper.put(realTimeFragment, 4);
+        mapper.put(routesFragment, 2);
+        mapper.put(stopsMapFragment, 3);
+        mapper.put(stopDetailsFragment, 0);
+        mapper.put(stopFavoritesFragment, 1);
+        mapper.put(routeFavoritesFragment, 1);
+        mapper.put(moovitFragment, 2);
+
         currentIndexFragment = 2;
         currentFragment = routesFragment;
-        oldFragment = routesFragment;
+        oldFragment.add(routesFragment);
         //transaction.hide(routesFragment);
         transaction.commit();
         runOnUiThread(new Runnable() {
@@ -77,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         //Application bottomBar
         if (item.getItemId() == R.id.bottomitem1) {
-            openRouteDetailsFragment(true);
+            openMoovitFragment();
             return super.onOptionsItemSelected(item);
         }else if(item.getItemId() == R.id.bottomitem2){
             openRealTimeAFragment();
@@ -114,6 +126,13 @@ public class MainActivity extends AppCompatActivity {
             RouteDetailsFragment fragment = (RouteDetailsFragment) this.routeDetailsFragment;
             fragment.addCurrentRouteToFavorites();
         }
+        //stopDetails topBar
+        if (item.getItemId() == R.id.stopDetailstopItem2){
+            StopDetailsFragment fragment = (StopDetailsFragment) this.stopDetailsFragment;
+            fragment.addCurrentStopToFavorites();
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -125,7 +144,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(realTimeFragment);
         transaction.commit();
-        oldFragment = currentFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }
         currentFragment = realTimeFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -137,8 +158,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routesFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = routesFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = routesFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
 
@@ -150,8 +172,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopsMapFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = stopsMapFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = stopsMapFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
     public void openstopFavoritesFragment(boolean animate){
@@ -170,8 +193,9 @@ public class MainActivity extends AppCompatActivity {
         }
         transaction.show(stopFavoritesFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = stopFavoritesFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = stopFavoritesFragment;
     }
     public void openRouteFavoritesFragment(boolean animate){
         routeFavorite = true;
@@ -186,8 +210,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeFavoritesFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = routeFavoritesFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = routeFavoritesFragment;
     }
     public void openRouteDetailsFragment(boolean animate){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -200,8 +225,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeDetailsFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = routeDetailsFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = routeDetailsFragment;
     }
     public void openstopDetailsFragment(boolean animate){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -214,16 +240,31 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopDetailsFragment);
         transaction.commit();
-        oldFragment = currentFragment;
-        currentFragment = stopDetailsFragment;
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = stopDetailsFragment;
+    }
+
+    public void openMoovitFragment(){
+        int oldIndexFragment = currentIndexFragment;
+        currentIndexFragment = 0; //keeps track of current fragment
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
+        transaction.hide(currentFragment);
+        transaction.show(moovitFragment);
+        transaction.commit();
+        if(oldFragment.size() < 11){
+            oldFragment.add(currentFragment);
+        }        currentFragment = moovitFragment;
+        checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
 
     private void slideRight(FragmentTransaction transaction){
-        transaction.setCustomAnimations(R.anim.slide_in, R.anim.fade_out, R.anim.fade_in, R.anim.slide_out); //slideRight
+        transaction.setCustomAnimations(R.anim.slide_in, R.anim.fade_out); //slideRight
     }
 
     private void slideLeft(FragmentTransaction transaction){
-        transaction.setCustomAnimations(R.anim.fade_in, R.anim.slide_out, R.anim.slide_in, R.anim.fade_out);
+        transaction.setCustomAnimations(R.anim.fade_in, R.anim.slide_out);
     }
 
     private void decideAnimation(FragmentTransaction transaction, int oldIndex, int newIndex){
@@ -244,5 +285,20 @@ public class MainActivity extends AppCompatActivity {
                 bottomAppBar.getMenu().getItem(currentIndexFragment).setChecked(true);
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(oldFragment.size() > 1){
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.hide(currentFragment);
+            transaction.show(oldFragment.get(oldFragment.size() - 1));
+            currentFragment = oldFragment.get(oldFragment.size() - 1);
+            checkRightMenu(mapper.get(oldFragment.get(oldFragment.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
+            oldFragment.remove(oldFragment.size() - 1);
+            transaction.commit();
+        }else{
+            super.onBackPressed();
+        }
     }
 }

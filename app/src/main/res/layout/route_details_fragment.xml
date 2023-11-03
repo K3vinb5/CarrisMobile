@@ -7,7 +7,7 @@
     tools:context=".RouteDetailsFragment">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/routeDetailsToolbar"
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:background="?attr/colorPrimary"
@@ -21,14 +21,13 @@
 
     <ImageView
         android:id="@+id/loadingImage"
-        android:layout_width="420dp"
+        android:layout_width="0dp"
         android:layout_height="618dp"
-        android:layout_marginTop="10dp"
         android:src="@drawable/ic_loading"
         android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/mapview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
@@ -67,58 +66,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scheduleView" />
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="105dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lightYellow"
-        android:text="Atualizar"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="97dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
-        android:ems="10"
-        android:inputType="text"
-        android:textColor="@color/extraLightYellow"
-        android:textColorHighlight="@color/extraLightYellow"
-        android:textColorHint="@color/extraLightYellow"
-        android:textColorLink="@color/lightYellow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
     <ListView
         android:id="@+id/scheduleView"
         android:layout_width="175dp"
         android:layout_height="240dp"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="85dp"
+        android:layout_marginTop="11dp"
         android:layout_marginEnd="15dp"
-        android:visibility="invisible"
         android:background="@drawable/rectangle"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/pathView"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/schedulesListText" />
 
     <ListView
         android:id="@+id/pathView"
         android:layout_width="175dp"
         android:layout_height="240dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="85dp"
+        android:layout_marginTop="11dp"
         android:layout_marginEnd="5dp"
-        android:visibility="invisible"
         android:background="@drawable/rectangle"
+        android:visibility="invisible"
         app:layout_constraintEnd_toStartOf="@+id/scheduleView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText">
+        app:layout_constraintTop_toBottomOf="@+id/pathListText">
 
     </ListView>
 
@@ -127,13 +99,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="179dp"
-        android:layout_marginTop="11dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="175dp"
         android:text=""
         android:textColor="@color/extraLightYellow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
     <TextView
         android:layout_width="205dp"
@@ -149,12 +121,12 @@
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="126dp"
+        android:layout_width="150dp"
         android:layout_height="40dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="30dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/routeDetailsToolbar" />
 
     <TextView
         android:id="@+id/pathListText"
@@ -168,7 +140,7 @@
         android:textColor="@color/extraLightYellow"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
     <TextView
         android:id="@+id/schedulesListText"
@@ -183,5 +155,15 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
+
+    <ImageView
+        android:id="@+id/routeImageView"
+        android:layout_width="101dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="15dp"
+        android:src="@drawable/color_ed1944"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/routeDetailsToolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

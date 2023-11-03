@@ -73,18 +73,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewStopName" />
 
-    <Button
-        android:id="@+id/removeFavorite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        android:layout_marginEnd="-20dp"
-        android:backgroundTint="@color/lightYellow"
-        android:scaleX="0.7"
-        android:scaleY="0.8"
-        android:text="Remover dos Favoritos"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewStopName" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
