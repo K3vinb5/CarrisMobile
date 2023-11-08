@@ -23,17 +23,19 @@ import android.widget.ListView;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import data_structure.Stop;
 import kevin.carrismobile.adaptors.MyCustomDialog;
+import kevin.carrismobile.adaptors.StopImageListAdaptor;
 
 public class StopFavoritesFragment extends Fragment {
 
     private static SharedPreferences mPrefs;
     private List<Stop> stopList = new ArrayList<>();
     private List<Stop> currentStopList = new ArrayList<>();
-    private ArrayAdapter<Stop> stopListAdaptor;
+    private StopImageListAdaptor stopImageListAdaptor;
     boolean removeListSelectionDecision = false;
     ListView list;
     Button seeRoutesFavorites;
@@ -106,9 +108,10 @@ public class StopFavoritesFragment extends Fragment {
                                         currentStopList.add(st);
                                     }
                                 }
-
+                                currentStopList.sort(Comparator.comparing(Stop::getTts_name));
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentStopList.size());
-                                stopListAdaptor.notifyDataSetChanged();
+                                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
+                                list.setAdapter(stopImageListAdaptor);
                             }
                         });
                     }
@@ -149,11 +152,12 @@ public class StopFavoritesFragment extends Fragment {
             Log.d("Stop Recovered", stopToAdd.getTts_name());
         }
         currentStopList.addAll(stopList);
+        currentStopList.sort(Comparator.comparing(Stop::getTts_name));
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                stopListAdaptor = new ArrayAdapter<Stop>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentStopList);
-                list.setAdapter(stopListAdaptor);
+                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
+                list.setAdapter(stopImageListAdaptor);
             }
         });
     }
@@ -177,7 +181,9 @@ public class StopFavoritesFragment extends Fragment {
                                 editText.setText(""); //clears editText
                                 currentStopList.clear();
                                 currentStopList.addAll(stopList);
-                                stopListAdaptor.notifyDataSetChanged();
+                                currentStopList.sort(Comparator.comparing(Stop::getTts_name));
+                                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
+                                list.setAdapter(stopImageListAdaptor);
                             }
                         });
                         Log.d("SUCCESS", "Stop added to List successfully");
@@ -220,7 +226,9 @@ public class StopFavoritesFragment extends Fragment {
                         editText.setText(""); //clears editText
                         currentStopList.clear();
                         currentStopList.addAll(stopList);
-                        stopListAdaptor.notifyDataSetChanged();
+                        currentStopList.sort(Comparator.comparing(Stop::getTts_name));
+                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
+                        list.setAdapter(stopImageListAdaptor);
                     }
                 });
                 Log.d("SUCCESS", "Stop was removed from favorites list");

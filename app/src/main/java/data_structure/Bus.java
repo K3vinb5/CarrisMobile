@@ -1,5 +1,8 @@
 package data_structure;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Bus {
     private String id;
     private double lat;
@@ -9,6 +12,7 @@ public class Bus {
     private double heading;
     private String trip_id;
     private String pattern_id;
+    private String pattern_name = "Not setted";
     private long timestamp;
 
     public Bus(String id, double lat, double lon, String speed, double heading, String trip_id, String pattern_id, long timestamp) {
@@ -79,6 +83,18 @@ public class Bus {
         coordinates[0] = lat;
         coordinates[1] = lon;
         return coordinates;
+    }
+
+    public String getPattern_name() {
+        return pattern_name;
+    }
+
+    public void setPattern_name(String pattern_name) {
+        this.pattern_name = pattern_name;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     @Override

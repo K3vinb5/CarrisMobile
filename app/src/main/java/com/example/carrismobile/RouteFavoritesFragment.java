@@ -21,6 +21,7 @@ import android.widget.ListView;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import data_structure.Carreira;
@@ -80,7 +81,7 @@ public class RouteFavoritesFragment extends Fragment {
                                         currentCarreiraList.add(carreira);
                                     }
                                 }
-
+                                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraList.size());
                                 carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
@@ -139,6 +140,7 @@ public class RouteFavoritesFragment extends Fragment {
             Log.d("Carreira Recovered", carreiraToAdd.getName());
         }
         currentCarreiraList.addAll(carreiraList);
+        currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -168,6 +170,7 @@ public class RouteFavoritesFragment extends Fragment {
                                 editText.setText(""); //clears editText
                                 currentCarreiraList.clear();
                                 currentCarreiraList.addAll(carreiraList);
+                                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
                                 carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
                             }
@@ -214,6 +217,7 @@ public class RouteFavoritesFragment extends Fragment {
                         editText.setText(""); //clears editText
                         currentCarreiraList.clear();
                         currentCarreiraList.addAll(carreiraList);
+                        currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
                         carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                         list.setAdapter(carreiraListAdapter);
                     }
@@ -245,7 +249,12 @@ public class RouteFavoritesFragment extends Fragment {
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
     }
 
-    public boolean containsCarreira(Carreira carreira){
-        return carreiraList.contains(carreira);
+    public boolean containsCarreira(String carreiraId){
+        for (Carreira c: carreiraList){
+            if (c.getRouteId().equals(carreiraId)){
+                return true;
+            }
+        }
+        return false;
     }
 }

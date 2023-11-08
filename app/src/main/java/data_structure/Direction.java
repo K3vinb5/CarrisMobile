@@ -28,6 +28,10 @@ public class Direction implements Serializable {
         return headsign;
     }
 
+    public boolean isCorrectHeadsign(String pattern){
+        return pattern.equals(id);
+    }
+
     public List<Trip> getTrips() {
         return trips;
     }

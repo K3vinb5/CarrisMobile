@@ -3,6 +3,7 @@ package com.example.carrismobile;
 import static android.content.Context.INPUT_METHOD_SERVICE;
 
 import android.app.AlertDialog;
+import android.icu.text.Collator;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -21,8 +22,12 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import api.Api;
 import data_structure.CarreiraBasic;
@@ -39,6 +44,8 @@ public class RoutesFragment extends Fragment {
     ArrayAdapter<Stop> stopListAdaptor;
     List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
     List<Stop> stopsList = new ArrayList<>();
+    Lock listLock = new ReentrantLock();
+    boolean updateAdaptor = false;
     List<CarreiraBasic> currentCarreiraBasicList = new ArrayList<>();
     List<Stop> currentStopList = new ArrayList<>();
     AlertDialog dialog;
@@ -128,36 +135,38 @@ public class RoutesFragment extends Fragment {
                 Thread thread1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
-
+                        listLock.lock();
+                        currentCarreiraBasicList.clear();
+                        String original = editText.getText().toString();
+                        if(original.length() > 0){
+                            for (CarreiraBasic cb : carreiraBasicList){
+                                if (doesTextContain(cb.toString(), original)){
+                                    currentCarreiraBasicList.add(cb);
+                                }
+                            }
+                        }else{
+                            currentCarreiraBasicList.addAll(carreiraBasicList);
+                        }
+                        listLock.unlock();
+                    }
+                });
+                thread1.start();
+                Thread thread2 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraBasicList.size());
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                currentCarreiraBasicList.clear();
-                                String textModifiedString;
-                                String original = editText.getText().toString();
-                                if (editText.getText().length() > 0) {
-                                    textModifiedString = original.substring(0, 1).toUpperCase() + original.substring(1);
-                                }else{
-                                    textModifiedString = "       ";}
-                                //Carreiras
-                                for (CarreiraBasic cb : carreiraBasicList){
-                                    if (cb.toString().contains(original) || cb.toString().contains(textModifiedString)){
-                                        currentCarreiraBasicList.add(cb);
-                                    }
-                                }
-
-                                Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraBasicList.size());
+                                listLock.lock();
                                 imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
                                 list.setAdapter(imagesListAdapter);
+                                listLock.unlock();
                             }
                         });
                     }
                 });
-                try{
-                    thread1.start();
-                }catch (Exception e){
-                    return;
-                }
+                thread2.start();
             }
         });
 
@@ -184,6 +193,29 @@ public class RoutesFragment extends Fragment {
             }
         });
         return v;
+    }
+
+    public static boolean doesTextContain(String text1, String text2) {
+        // Normalize and remove accents from both texts
+        String normalizedText1 = normalizeAndRemoveAccents(text1);
+        String normalizedText2 = normalizeAndRemoveAccents(text2);
+
+        // Perform a case-insensitive substring check
+        return normalizedText1.toLowerCase().contains(normalizedText2.toLowerCase());
+    }
+
+    private static String normalizeAndRemoveAccents(String text) {
+        // Normalize the text to NFD form to separate accents and characters
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
+
+        // Use a regular expression to remove accents and non-alphanumeric characters
+        String regex = "\\p{InCombiningDiacriticalMarks}+";
+        String stripped = normalized.replaceAll(regex, "");
+
+        // Remove non-alphanumeric characters and convert to lowercase
+        stripped = stripped.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+
+        return stripped;
     }
 
 }

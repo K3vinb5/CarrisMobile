@@ -26,35 +26,20 @@ public class MoovitFragment extends Fragment {
         View v =  inflater.inflate(R.layout.moovit_fragment, container, false);
 
         mPrefs = getActivity().getSharedPreferences("MoovitFragmentPreferences", Context.MODE_PRIVATE);
-        if(loadObject("key_webView", WebView.class) != null){
-            webView = (WebView) loadObject("key_webView", WebView.class);
-        }else{
-            webView = v.findViewById(R.id.webview);
-            webView.setWebViewClient(new WebViewClient());
-            webView.loadUrl("https://moovitapp.com?customerId=3j8VGq2ULSUEr275vf81zA&metroId=2460&lang=pt");
-            WebSettings webSettings = webView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                webView.setForceDarkAllowed(true);
-                webSettings.setForceDark(WebSettings.FORCE_DARK_ON);
-            }
+        Log.d("Moovit Fragment", "No State to Load");
+        webView = v.findViewById(R.id.webview);
+        webView.setWebViewClient(new WebViewClient());
+        webView.loadUrl("https://moovitapp.com?customerId=3j8VGq2ULSUEr275vf81zA&metroId=2460&lang=pt");
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            webView.setForceDarkAllowed(true);
+            webSettings.setForceDark(WebSettings.FORCE_DARK_ON);
         }
 
         return v;
     }
-
-    public void setSize(int x, int y){
-
-    }
-
-    public int getWidth(){
-        return webView.getWidth();
-    }
-    public int getHeight(){
-        return webView.getHeight();
-    }
-
-    private static void storeObject(String json, String key){
+    static void storeObject(String json, String key){
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -70,16 +55,14 @@ public class MoovitFragment extends Fragment {
         });
         thread.start();
     }
+
+    public WebView getWebView() {
+        return webView;
+    }
+
     private static Object loadObject(String key, Class klass){
         return new Gson().fromJson(mPrefs.getString(key, null), klass);
     }
-
-    @Override
-    public void onStop() {
-        storeObject(new Gson().toJson(webView), "key_webView");
-        super.onStop();
-    }
-
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);

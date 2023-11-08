@@ -10,6 +10,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -17,6 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import api.Api;
 import data_structure.Bus;
+import data_structure.Carreira;
+import data_structure.Direction;
 
 public class BusBackgroundThread extends Thread{
 
@@ -43,7 +46,16 @@ public class BusBackgroundThread extends Thread{
                         List<Bus> listToAdd;
                         try{
                             listToAdd = Api.getBusFromLine(currentText);
+                            Carreira carreira = RealTimeFragment.currentCarreira;
                             if (listToAdd.size() > 0){
+                                List<Direction> carreiraDirectionList = carreira.getDirectionList();
+                                for (Bus b : listToAdd){
+                                    for(Direction d : carreiraDirectionList){
+                                        if (d.isCorrectHeadsign(b.getPattern_id())){
+                                            b.setPattern_name(d.getHeadsign());
+                                        }
+                                    }
+                                }
                                 RealTimeFragment.busList.clear();
                                 RealTimeFragment.busList.addAll(listToAdd);
                                 RealTimeFragment.updateBusesUI();
@@ -51,6 +63,7 @@ public class BusBackgroundThread extends Thread{
                                     @Override
                                     public void run() {
                                         if (RealTimeFragment.checkBox.isChecked()){
+                                            RealTimeFragment.updateTextView();
                                             map.getController().animateTo(RealTimeFragment.markerBusList.get(RealTimeFragment.currentSelectedBus).getPosition(), 16.5, 2500L);
                                             map.invalidate();
                                         }
@@ -63,6 +76,7 @@ public class BusBackgroundThread extends Thread{
                             MainActivity mainActivity = (MainActivity)RealTimeFragment.activity;
                             RealTimeFragment realTimeFragment = (RealTimeFragment) mainActivity.realTimeFragment;
                             realTimeFragment.showBackgroundThreadDialog();
+                            Log.d("BACKGROUND THREAD", "Exception Caught: " + e.getMessage());
                             return;
                         }
                         Log.println(Log.DEBUG, "BACKGROUND THREAD", getName() + "Ended");
@@ -87,6 +101,13 @@ public class BusBackgroundThread extends Thread{
                 break;
             }
         }
+    }
+
+    public synchronized void lockLock(){
+        lock.lock();
+    }
+    public synchronized void unlockLock(){
+        lock.unlock();
     }
 
 }

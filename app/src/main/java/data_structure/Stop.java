@@ -30,12 +30,13 @@ public class Stop implements Serializable {
     private String region_id;
     private String region_name;
     private List<String> lines;
+    private List<String> facilities;
     private List<RealTimeSchedule> realTimeSchedules = new ArrayList<>();
     private List<Schedule> scheduleList;
     private boolean init = false;
 
 
-    public Stop(int id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name, List<String> lines) {
+    public Stop(int id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name, List<String> lines, List<String> facilities) {
         this.id = id;
         this.name = name;
         this.tts_name = tts_name;
@@ -49,6 +50,7 @@ public class Stop implements Serializable {
         this.region_id = region_id;
         this.region_name = region_name;
         this.lines = lines;
+        this.facilities = facilities;
     }
 
     public int getStopID() {
@@ -159,6 +161,10 @@ public class Stop implements Serializable {
         }
     }
 
+    public List<String> getFacilities() {
+        return facilities;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -166,6 +172,7 @@ public class Stop implements Serializable {
     public String getDistrict_name() {
         return district_name;
     }
+
 
     @Override
     public String toString() {

@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -199,7 +198,7 @@ public class StopsMapFragment extends Fragment {
         stopsMarkerList.clear();
         for (Stop stop : listToAdd){
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.map_stop_selected, null);
+            Drawable d = ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.stop_stop_logo, null);
             marker.setIcon(d);
             stopsMarkerList.add(marker);
             marker.setPosition(new GeoPoint(stop.getCoordinates()[0], stop.getCoordinates()[1]));

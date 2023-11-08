@@ -116,6 +116,8 @@ public class RouteImageListAdaptor extends BaseAdapter {
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_3d85c6, null);
         }else if (string.equals("#2A9057")){
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2a9057, null);
+        }else if (string.equals("#FDB71A")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fdb71a, null);
         }else{
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00b8b0, null);
         }

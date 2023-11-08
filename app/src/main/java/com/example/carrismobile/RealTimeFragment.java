@@ -49,6 +49,7 @@ import java.util.List;
 import api.Api;
 import data_structure.Bus;
 import data_structure.Carreira;
+import data_structure.Direction;
 import data_structure.Path;
 import gui.BusBackgroundThread;
 import gui.CustomMarkerInfoWindow;
@@ -60,7 +61,7 @@ public class RealTimeFragment extends Fragment {
     public static Activity activity;
     Button button;
     Button nextButton;
-    TextView textView;
+    public static TextView textView;
     Button previousButton;
     EditText editText;
     public static CheckBox checkBox;
@@ -76,6 +77,7 @@ public class RealTimeFragment extends Fragment {
     public AlertDialog dialog;
     public AlertDialog backgroundDialog;
     public AlertDialog noCurrentBusesDialog;
+    public static Carreira currentCarreira;
     public static String currentText = "";
 
     @Override
@@ -98,7 +100,7 @@ public class RealTimeFragment extends Fragment {
         map.setTileSource(TileSourceFactory.OpenTopo);
         map.setMultiTouchControls(true);
         //map.setVisibility(View.INVISIBLE);
-        map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
+        map.getController().setCenter(new GeoPoint(38.73329737648646d, -9.14096412687648d));
         map.getController().setZoom(13.0);
         map.invalidate();
         CompassOverlay compassOverlay = new CompassOverlay(getActivity(), map);
@@ -121,30 +123,47 @@ public class RealTimeFragment extends Fragment {
                     @Override
                     public void run() {
                         if (backgroundThreadStarted){
-                            backgroundThread.getLock().lock();
+                            backgroundThread.lockLock();
                         }
                         currentText = editText.getText().toString();
                         List<Bus> listToAdd;
                         Carreira carreira;
                         try{
                             listToAdd = Api.getBusFromLine(currentText);
+                            Log.d("REALTIME TRACKING", "Bus List Loaded " + listToAdd);
                             carreira = Api.getCarreira(currentText);
+                            Log.d("REALTIME TRACKING", "Carreira Loaded " + carreira.getRouteId());
                             carreira.init();
+                            assert carreira != null;
+                            assert listToAdd != null;
                             carreira.updatePathsOnSelectedDirection(currentSelectedDirection);
-                            List<Path> pathListToAdd = carreira.getDirectionList().get(currentSelectedDirection).getPathList();
+                            List<Direction> carreiraDirectionList = carreira.getDirectionList();
+                            for (Bus b : listToAdd){
+                                for(Direction d : carreiraDirectionList){
+                                    if (d.isCorrectHeadsign(b.getPattern_id())){
+                                        b.setPattern_name(d.getHeadsign());
+                                    }
+                                }
+                            }
+                            currentCarreira = carreira;
+                            List<Path> pathListToAdd = currentCarreira.getDirectionList().get(currentSelectedDirection).getPathList();
                             busList.clear();
                             pathList.clear();
                             busList.addAll(listToAdd);
                             pathList.addAll(pathListToAdd);
                             connected = true;
                             if (listToAdd.size() == 0){
-                             connected = false;
+                                Log.d("REALTIME TRACKING", "Bus List Invalid (Empty)");
+                                connected = false;
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         noCurrentBusesDialog.show();
                                     }
                                 });
+                                return;
+                            }else{
+                                Log.d("REALTIME TRACKING", "Bus List Valid");
                             }
                         }catch (Exception e){
                             getActivity().runOnUiThread(new Runnable() {
@@ -154,56 +173,60 @@ public class RealTimeFragment extends Fragment {
                                 }
                             });
                             connected = false;
+                            Log.d("REALTIME TRACKING", "Exception Caught: \n" + e.getMessage());
                             return;
                         }
 
                         currentSelectedBus = 0;
-                        if (busList.size() > 0){
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateMarkers(pathList, map, getActivity());
-                                    updateBuses(busList, map, getActivity());
-                                    Log.println(Log.DEBUG, "BUS DEBUG", "UI UPDATED");
-                                    textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
-                                    GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
-                                    map.getController().animateTo(point, 16.5, 1500L);
-                                }
-                            });
-                        }
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateMarkers(pathList, map, getActivity());
+                                updateBuses(busList, map, getActivity());
+                                updateTextView();
+                                Log.println(Log.DEBUG, "BUS DEBUG", "GUI UPDATED");
+                                GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
+                                map.getController().animateTo(point, 16.5, 1500L);
+                            }
+                        });
+
                         if (backgroundThreadStarted){
-                            backgroundThread.getLock().unlock();
+                            backgroundThread.unlockLock();
                         }
+
+                        if(!backgroundThreadStarted && connected){
+                            backgroundThread.start();
+                            backgroundThreadStarted = true;
+                        }
+
                     }
                 });
                 thread.start();
-                if(!backgroundThreadStarted && connected){
-                    backgroundThread.start();
-                    backgroundThreadStarted = true;
-                }
             }
         });
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                backgroundThread.getLock().lock();
+                if (backgroundThreadStarted)
+                    backgroundThread.lockLock();
                 if (currentSelectedBus < busList.size() - 1){
                     currentSelectedBus ++;
-                    textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
+                    updateTextView();
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
 
                             @Override
                             public void run() {
-                                textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
+                                //textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
                                 GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
                                 map.getController().animateTo(point, 16.5, 2500L);
                                 map.invalidate();
                             }
                         });
                 }
-                backgroundThread.getLock().unlock();
+                if(backgroundThreadStarted)
+                    backgroundThread.unlockLock();
             }
 
         });
@@ -211,10 +234,11 @@ public class RealTimeFragment extends Fragment {
         previousButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                backgroundThread.getLock().lock();
+                if(backgroundThreadStarted)
+                    backgroundThread.lockLock();
                 if (currentSelectedBus > 0){
                     currentSelectedBus --;
-                    textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
+                    updateTextView();
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
                             @Override
@@ -225,17 +249,12 @@ public class RealTimeFragment extends Fragment {
                             }
                         });
                 }
-                backgroundThread.getLock().unlock();
+                if(backgroundThreadStarted)
+                    backgroundThread.unlockLock();
             }
         });
 
         return v;
-    }
-
-    public void openRouteDeitalActivity() {
-        backgroundThread.interrupt();
-        Intent intent = new Intent(getActivity(), RouteDetailsFragment.class);
-        startActivity(intent);
     }
 
     private static void updateMarkers(List<Path> pathList, MapView map, Activity activity){
@@ -297,7 +316,7 @@ public class RealTimeFragment extends Fragment {
     }
 
 
-    Drawable getRotateDrawable(final Bitmap b, final float angle) {
+    Drawable getRotateDrawable(Bitmap b, float angle) {
         final BitmapDrawable drawable = new BitmapDrawable(getResources(), b) {
             @Override
             public void draw(final Canvas canvas) {
@@ -317,6 +336,10 @@ public class RealTimeFragment extends Fragment {
                 backgroundDialog.show();
             }
         });
+    }
+
+    public static void updateTextView(){
+        textView.setText((currentSelectedBus + 1) + "/" + busList.size() + " - " + busList.get(currentSelectedBus).getStatus() + "\n" + busList.get(currentSelectedBus).getPattern_name());
     }
 
 }

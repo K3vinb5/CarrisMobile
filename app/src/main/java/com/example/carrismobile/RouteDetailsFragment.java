@@ -10,16 +10,13 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -42,7 +39,6 @@ import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
@@ -52,36 +48,37 @@ import java.util.concurrent.TimeUnit;
 import api.Api;
 import data_structure.Carreira;
 import data_structure.Direction;
-import data_structure.Path;
 import data_structure.Schedule;
 import data_structure.Stop;
 import gui.CustomMarkerInfoWindow;
 import gui.TextDrawable;
 import kevin.carrismobile.adaptors.MyCustomDialog;
+import kevin.carrismobile.adaptors.StopImageListAdaptor;
 
 public class RouteDetailsFragment extends Fragment {
 
     private static SharedPreferences mPrefs;
     static MapView map;
-    Button favoriteButton;
     Button routeStopDetails;
+    Button searchButton;
+    EditText editText;
     TextView textView;//
     ImageView routeImageView;
     Toolbar routeDetailsToolbar;
     TextView pathListText;//
     TextView schedulesListText;//
-    ListView pathView;//
+    ListView stopView;//
     ListView scheduleView;//
     Spinner spinner;//
     ImageView loadingImage;
 
     public static String currentCarreiraId = null;
     public static boolean uiIsVisible = false;//
-    public static int currentPathIndex = 0;//
+    public static int currentStopIndex = 0;//
     public static int currentDirectionIndex = 0;//
     public static Carreira currentCarreira = null;//
-    public static List<Path> pathList = new ArrayList<>();//
-    static ArrayAdapter<Path> pathAdapter = null;
+    public static List<Stop> stopList = new ArrayList<>();
+    static StopImageListAdaptor stopImageListAdaptor;
     public static List<Direction> directionList = new ArrayList<>();//
     static ArrayAdapter<Direction> directionArrayAdapter = null;
     public static List<Schedule> scheduleList = new ArrayList<>();//
@@ -101,13 +98,14 @@ public class RouteDetailsFragment extends Fragment {
 
         mPrefs = getActivity().getSharedPreferences("RouteDetailsFragmentd", MODE_PRIVATE);
 
-        favoriteButton = v.findViewById(R.id.favoriteButton);
         routeStopDetails = v.findViewById(R.id.routeStopDetails);
+        searchButton = v.findViewById(R.id.searchButton);
+        editText = v.findViewById(R.id.editText);
         map = v.findViewById(R.id.mapview);
         textView = v.findViewById(R.id.textView);
         pathListText = v.findViewById(R.id.pathListText);
         schedulesListText = v.findViewById(R.id.schedulesListText);
-        pathView = v.findViewById(R.id.pathView);
+        stopView = v.findViewById(R.id.pathView);
         scheduleView = v.findViewById(R.id.scheduleView);
         spinner = v.findViewById(R.id.spinner);
         routeImageView = v.findViewById(R.id.routeImageView);
@@ -125,7 +123,6 @@ public class RouteDetailsFragment extends Fragment {
         schedulesListText.setVisibility(View.INVISIBLE);
         pathListText.setVisibility(View.INVISIBLE);
         map.setVisibility(View.INVISIBLE);
-        favoriteButton.setVisibility(View.INVISIBLE);
         routeStopDetails.setVisibility(View.INVISIBLE);
         textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
 
@@ -145,15 +142,18 @@ public class RouteDetailsFragment extends Fragment {
                     @Override
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
-                        pathList.clear();
+                        stopList.clear();
                         currentCarreira.updatePathsOnSelectedDirection(currentDirectionIndex);
-                        pathList.addAll(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList());
-                        currentPathIndex = 0;
+                        List<Stop> toAdd = new ArrayList<>();
+                        currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                        stopList.addAll(toAdd);
+                        currentStopIndex = 0;
 
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                pathAdapter.notifyDataSetChanged();
+                                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
+                                stopView.setAdapter(stopImageListAdaptor);
                             }
                         });
 
@@ -168,17 +168,17 @@ public class RouteDetailsFragment extends Fragment {
             }
         });
 
-        pathView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        stopView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Path currentPath = pathList.get(i);
-                        currentPathIndex = i;
-                        double[] coordinates = currentPath.getStop().getCoordinates();
+                        Stop currentStop = stopList.get(i);
+                        currentStopIndex = i;
+                        double[] coordinates = currentStop.getCoordinates();
                         scheduleList.clear();
-                        scheduleList.addAll(currentPath.getStop().getScheduleList());
+                        scheduleList.addAll(currentStop.getScheduleList());
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -190,7 +190,6 @@ public class RouteDetailsFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                favoriteButton.setVisibility(View.VISIBLE);
                                                 routeStopDetails.setVisibility(View.VISIBLE);
 
                                             }
@@ -203,7 +202,6 @@ public class RouteDetailsFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                favoriteButton.setVisibility(View.INVISIBLE);
                                                 routeStopDetails.setVisibility(View.INVISIBLE);
                                             }
                                         });
@@ -225,35 +223,12 @@ public class RouteDetailsFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Path currentPath = pathList.get(currentPathIndex);
-                        double[] coordinates = currentPath.getStop().getCoordinates();
+                        Stop currentStop = stopList.get(currentStopIndex);
+                        double[] coordinates = currentStop.getCoordinates();
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 map.getController().animateTo(new GeoPoint(coordinates[0], coordinates[1]));
-                            }
-                        });
-                    }
-                });
-                thread.start();
-            }
-        });
-
-        favoriteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Stop stoptoAdd = pathList.get(currentPathIndex).getStop();
-                        MainActivity mainActivity = (MainActivity) getActivity();
-                        StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
-                        fragment.addStopToFavorites(stoptoAdd);
-                        mainActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                stopAdded.show();
-                                //informs user of success;
                             }
                         });
                     }
@@ -268,11 +243,24 @@ public class RouteDetailsFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Stop currentStop = pathList.get(currentPathIndex).getStop();
+                        Stop currentStop = stopList.get(currentStopIndex);
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         mainActivity.openstopDetailsFragment(true);
                         stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                    }
+                });
+                thread.start();
+            }
+        });
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadCarreiraFromApi(editText.getText().toString());
                     }
                 });
                 thread.start();
@@ -297,14 +285,13 @@ public class RouteDetailsFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        pathView.setVisibility(View.INVISIBLE);
+                        stopView.setVisibility(View.INVISIBLE);
                         scheduleView.setVisibility(View.INVISIBLE);
                         textView.setVisibility(View.INVISIBLE);
                         map.setVisibility(View.INVISIBLE);
                         loadingImage.setVisibility(View.VISIBLE);
                         pathListText.setVisibility(View.INVISIBLE);
                         schedulesListText.setVisibility(View.INVISIBLE);
-                        favoriteButton.setVisibility((View.INVISIBLE));
                         routeImageView.setVisibility(((View.INVISIBLE)));
                         routeStopDetails.setVisibility(View.INVISIBLE);
 
@@ -334,33 +321,31 @@ public class RouteDetailsFragment extends Fragment {
                     connected = false;
                     return;
                 }
-
+                currentDirectionIndex = 0;
                 carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
-                currentPathIndex = 0;
-                double[] coordinates = carreira.getDirectionList().get(currentDirectionIndex).getPathList().get(currentPathIndex).getStop().getCoordinates();
+                currentStopIndex = 0;
+                List<Stop> toAdd = new ArrayList<>();
+                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                stopList.addAll(toAdd);
+                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
                 GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
                 directionList = carreira.getDirectionList();
-                pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
-                scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
+                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
 
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
-
-                scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
-                pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
-                directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
                 Carreira finalCarreira = carreira;
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        textView.setText(finalCarreira.getRouteId() + " - " + finalCarreira.getName());
+                        textView.setText(finalCarreira.getName());
                         uiIsVisible = true;
                         textView.setVisibility(View.VISIBLE);
                         scheduleView.setVisibility(View.VISIBLE);
-                        pathView.setVisibility(View.VISIBLE);
+                        stopView.setVisibility(View.VISIBLE);
                         pathListText.setVisibility(View.VISIBLE);
                         schedulesListText.setVisibility(View.VISIBLE);
                         routeImageView.setVisibility(View.VISIBLE);
@@ -368,21 +353,24 @@ public class RouteDetailsFragment extends Fragment {
                         changeCarreiraDrawable(finalCarreira);
                         changeCarreiraDrawable(finalCarreira);
 
-                        pathView.setAdapter(pathAdapter);
+                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
+                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
+                        stopView.setAdapter(stopImageListAdaptor);
                         scheduleView.setAdapter(scheduleArrayAdapter);
                         spinner.setAdapter(directionArrayAdapter);
 
-                        if (fragment.containsCarreira(finalCarreira)) {
-                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
-                        }else{
+                        if (fragment.containsCarreira(currentCarreira.getRouteId())) {
                             routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
+                        }else{
+                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
                         }
 
                         map.setVisibility(View.VISIBLE);
                         map.getController().setCenter(point);
                         map.getController().setZoom(17.0);
                         map.invalidate();
-                        updateMarkers(pathList, map, getActivity());
+                        updateMarkers(stopList, map, getActivity());
 
                         //Loading Screen
                         if (loadingImage.getAnimation() != null){
@@ -406,32 +394,31 @@ public class RouteDetailsFragment extends Fragment {
                 carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
-                currentPathIndex = 0;
-                double[] coordinates = carreira.getDirectionList().get(currentDirectionIndex).getPathList().get(currentPathIndex).getStop().getCoordinates();
+                currentStopIndex = 0;
+                List<Stop> toAdd = new ArrayList<>();
+                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                stopList.addAll(toAdd);
+                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
                 GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
                 directionList = carreira.getDirectionList();
-                pathList.addAll(carreira.getDirectionList().get(currentDirectionIndex).getPathList());
-                scheduleList.addAll(pathList.get(currentPathIndex).getStop().getScheduleList());
+                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
 
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
-                scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
-                pathAdapter = new ArrayAdapter<Path>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, pathList);
-                directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
                 Carreira finalCarreira = carreira;
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        textView.setText(finalCarreira.getRouteId() + " - " + finalCarreira.getName());
+                        textView.setText(finalCarreira.getName());
                         uiIsVisible = true;
                         textView.setVisibility(View.VISIBLE);
                         scheduleView.setVisibility(View.VISIBLE);
-                        pathView.setVisibility(View.VISIBLE);
+                        stopView.setVisibility(View.VISIBLE);
                         pathListText.setVisibility(View.VISIBLE);
                         schedulesListText.setVisibility(View.VISIBLE);
 
-                        if (fragment.containsCarreira(currentCarreira)){
+                        if (fragment.containsCarreira(carreira.getRouteId())){
                             routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
                         }else{
                             routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
@@ -440,7 +427,10 @@ public class RouteDetailsFragment extends Fragment {
                         changeCarreiraDrawable(finalCarreira);
                         changeCarreiraDrawable(finalCarreira);
 
-                        pathView.setAdapter(pathAdapter);
+                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
+                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
+                        stopView.setAdapter(stopImageListAdaptor);
                         scheduleView.setAdapter(scheduleArrayAdapter);
                         spinner.setAdapter(directionArrayAdapter);
 
@@ -448,7 +438,7 @@ public class RouteDetailsFragment extends Fragment {
                         map.getController().setCenter(point);
                         map.getController().setZoom(17.0);
                         map.invalidate();
-                        updateMarkers(pathList, map, getActivity());
+                        updateMarkers(stopList, map, getActivity());
 
                         //Loading Screen
                         if (loadingImage.getAnimation() != null){
@@ -462,54 +452,25 @@ public class RouteDetailsFragment extends Fragment {
         thread.start();
     }
 
-    private static void updateMarkers(List<Path> pathList, MapView map, Activity activity){
+    private static void updateMarkers(List<Stop> stopList, MapView map, Activity activity){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
         }
 
-        for (Path path : pathList){
-            double[] coordinates = path.getStop().getCoordinates();
+        for (Stop s : stopList){
+            double[] coordinates = s.getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.map_stop_selected, null);
+            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
             marker.setIcon(d);
             markerList.add(marker);
             marker.setPosition(point);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String descrption = "Stop Id: " + path.getStop().getStopID() + "\nLocality: " + path.getStop().getLocality() + "\nMunicipality: " + path.getStop().getMunicipality_name();
-            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, path.getStop().getTts_name(), descrption);
+            String descrption = "Stop Id: " + s.getStopID() + "\nLocality: " + s.getLocality() + "\nMunicipality: " + s.getMunicipality_name();
+            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
             marker.setInfoWindow(miw);
             map.getOverlays().add(marker);
         }
-    }
-    private static void storeObject(String stringToSplit, String key){
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    Log.println(Log.DEBUG, "SPLIT STRING THREAD", "STARTED");
-                    int maxTransactionSize = 800000;
-
-                    int numberOfBytes = stringToSplit.getBytes().length;
-                    Log.println(Log.DEBUG, "SPLIT STRING THREAD", "SIZE: " + numberOfBytes + " | SIZE STRING: " + stringToSplit.length() + " | " + (numberOfBytes < maxTransactionSize));
-
-
-                    Log.println(Log.DEBUG, "SPLIT STRING THREAD", "SAVING");
-                    mPrefs.edit().putInt(key + "Size", 1).commit();
-                    mPrefs.edit().putString(key, stringToSplit).commit();
-                    Log.println(Log.DEBUG, "SPLIT STRING THREAD", "FINISH");
-                }catch (Exception e){
-                    Log.println(Log.DEBUG, "SPLIT STRING THREAD", "INTERRUPTED\n\n" + e.getMessage());
-                }
-            }
-        });
-        thread.start();
-
-    }
-
-    private static Object loadObject(String key, Class klass){
-        return new Gson().fromJson(mPrefs.getString(key, null), klass);
     }
     public String getCurrentCarreiraId() {
         return currentCarreiraId;
@@ -519,7 +480,7 @@ public class RouteDetailsFragment extends Fragment {
         //TODO
         MainActivity mainActivity = (MainActivity) getActivity();
         RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
-        if (fragment.containsCarreira(currentCarreira)){
+        if (fragment.containsCarreira(currentCarreira.getRouteId())){
             routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
             fragment.removeStopFromFavorites(currentCarreiraId);
             //mainActivity.openRouteFavoritesFragment(true);
@@ -556,19 +517,21 @@ public class RouteDetailsFragment extends Fragment {
         routeImageView.setImageDrawable(finalDrawable);
     }
 
-    private Drawable getImageId(String color){
-        if (color.equals("#ED1944")){
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_ed1944, null);
-        }else if (color.equals("#C61D23")){
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_c61d23, null);
-        }else if (color.equals("#BB3E96")){
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_bb3e96, null);
-        }else if (color.equals("#3D85C6")){
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_3d85c6, null);
-        }else if (color.equals("#2A9057")){
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_2a9057, null);
+    private Drawable getImageId(String string){
+        if (string.equals("#ED1944")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ed1944, null);
+        }else if (string.equals("#C61D23")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_c61d23, null);
+        }else if (string.equals("#BB3E96")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_bb3e96, null);
+        }else if (string.equals("#3D85C6")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_3d85c6, null);
+        }else if (string.equals("#2A9057")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_2a9057, null);
+        }else if (string.equals("#FDB71A")){
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fdb71a, null);
         }else{
-            return ResourcesCompat.getDrawable(getActivity().getResources(), R.drawable.color_00b8b0, null);
+            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_00b8b0, null);
         }
     }
 
