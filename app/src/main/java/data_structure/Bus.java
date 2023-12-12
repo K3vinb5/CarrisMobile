@@ -12,7 +12,7 @@ public class Bus {
     private double heading;
     private String trip_id;
     private String pattern_id;
-    private String pattern_name = "Not setted";
+    private String pattern_name = "Not settedw";
     private long timestamp;
 
     public Bus(String id, double lat, double lon, String speed, double heading, String trip_id, String pattern_id, long timestamp) {

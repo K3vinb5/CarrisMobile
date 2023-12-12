@@ -179,7 +179,7 @@ public class RoutesFragment extends Fragment {
                         try {
                             InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
 
                         }
                         String busID = currentCarreiraBasicList.get(i).getId()+"";

@@ -8,15 +8,10 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RotateDrawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -24,16 +19,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -72,7 +62,7 @@ public class RealTimeFragment extends Fragment {
     public static List<Marker> markerList = new ArrayList<>();
     public static List<Marker> markerBusList = new ArrayList<>();
     public static int currentSelectedBus = 0;
-    public int currentSelectedDirection = 0;
+    public int currentDirectionIndex = 0;
     public boolean connected = false;
     public AlertDialog dialog;
     public AlertDialog backgroundDialog;
@@ -116,7 +106,7 @@ public class RealTimeFragment extends Fragment {
                 try {
                     InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                } catch (Exception e) {
+                } catch (Exception ignored) {
 
                 }
                 Thread thread = new Thread(new Runnable() {
@@ -136,7 +126,7 @@ public class RealTimeFragment extends Fragment {
                             carreira.init();
                             assert carreira != null;
                             assert listToAdd != null;
-                            carreira.updatePathsOnSelectedDirection(currentSelectedDirection);
+                            //carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
                             List<Direction> carreiraDirectionList = carreira.getDirectionList();
                             for (Bus b : listToAdd){
                                 for(Direction d : carreiraDirectionList){
@@ -146,7 +136,7 @@ public class RealTimeFragment extends Fragment {
                                 }
                             }
                             currentCarreira = carreira;
-                            List<Path> pathListToAdd = currentCarreira.getDirectionList().get(currentSelectedDirection).getPathList();
+                            List<Path> pathListToAdd = currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList();
                             busList.clear();
                             pathList.clear();
                             busList.addAll(listToAdd);

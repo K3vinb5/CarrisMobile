@@ -32,8 +32,6 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
@@ -57,7 +55,7 @@ import kevin.carrismobile.adaptors.StopImageListAdaptor;
 
 public class RouteDetailsFragment extends Fragment {
 
-    private static SharedPreferences mPrefs;
+    //private static SharedPreferences mPrefs;
     static MapView map;
     Button routeStopDetails;
     Button searchButton;
@@ -96,7 +94,7 @@ public class RouteDetailsFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.route_details_fragment, container, false);
 
-        mPrefs = getActivity().getSharedPreferences("RouteDetailsFragmentd", MODE_PRIVATE);
+        //mPrefs = getActivity().getSharedPreferences("RouteDetailsFragmentd", MODE_PRIVATE);
 
         routeStopDetails = v.findViewById(R.id.routeStopDetails);
         searchButton = v.findViewById(R.id.searchButton);
@@ -135,28 +133,70 @@ public class RouteDetailsFragment extends Fragment {
         map.getController().setZoom(13.0);
         map.invalidate();
 
+        setSpinnerSetItemsSelectedListener();
+        setStopViewItemsSelectedListener();
+        setScheduleViewItemsSelectedListener();
+
+        routeStopDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Stop currentStop = stopList.get(currentStopIndex);
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                        mainActivity.openstopDetailsFragment(true);
+                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                    }
+                });
+                thread.start();
+            }
+        });
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadCarreiraFromApi(editText.getText().toString());
+                    }
+                });
+                thread.start();
+            }
+        });
+            //Click Button
+        return v;
+    }
+
+    private void setSpinnerSetItemsSelectedListener(){
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
-                        currentCarreira.updatePathsOnSelectedDirection(currentDirectionIndex);
+                        if (currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null){
+                            currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                        }
                         List<Stop> toAdd = new ArrayList<>();
                         currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                        assert toAdd.size() > 0;
                         stopList.addAll(toAdd);
                         currentStopIndex = 0;
-
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
                                 stopView.setAdapter(stopImageListAdaptor);
+                                //TODO not sure what the id is
+                                stopView.performItemClick(getView(), 0, getId());
                             }
                         });
-
                     }
                 });
                 thread.start();
@@ -167,15 +207,24 @@ public class RouteDetailsFragment extends Fragment {
                 return;
             }
         });
+    }
 
+    private void setStopViewItemsSelectedListener(){
         stopView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Stop currentStop = stopList.get(i);
                         currentStopIndex = i;
+                        if(stopList.size() == 0){
+                            List<Stop> toAdd = new ArrayList<>();
+                            currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                            assert toAdd.size() > 0;
+                            stopList.addAll(toAdd);
+                        }
+                        Stop currentStop = stopList.get(currentStopIndex);
+                        currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
                         double[] coordinates = currentStop.getCoordinates();
                         scheduleList.clear();
                         scheduleList.addAll(currentStop.getScheduleList());
@@ -216,7 +265,9 @@ public class RouteDetailsFragment extends Fragment {
                 thread.start();
             }
         });
+    }
 
+    private void setScheduleViewItemsSelectedListener(){
         scheduleView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -236,38 +287,72 @@ public class RouteDetailsFragment extends Fragment {
                 thread.start();
             }
         });
+    }
 
-        routeStopDetails.setOnClickListener(new View.OnClickListener() {
+
+    private void startWaitingAnimation(){
+        getActivity().runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View view) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Stop currentStop = stopList.get(currentStopIndex);
-                        MainActivity mainActivity = (MainActivity) getActivity();
-                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        mainActivity.openstopDetailsFragment(true);
-                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
-                    }
-                });
-                thread.start();
+            public void run() {
+                stopView.setVisibility(View.INVISIBLE);
+                scheduleView.setVisibility(View.INVISIBLE);
+                textView.setVisibility(View.INVISIBLE);
+                map.setVisibility(View.INVISIBLE);
+                loadingImage.setVisibility(View.VISIBLE);
+                pathListText.setVisibility(View.INVISIBLE);
+                schedulesListText.setVisibility(View.INVISIBLE);
+                routeImageView.setVisibility(((View.INVISIBLE)));
+                routeStopDetails.setVisibility(View.INVISIBLE);
+
+                RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                rotate.setDuration(20000);
+                rotate.setRepeatCount(5);
+                rotate.setInterpolator(new LinearInterpolator());
+                loadingImage.startAnimation(rotate);
             }
         });
+    }
 
-        searchButton.setOnClickListener(new View.OnClickListener() {
+    private void stopWaitingAnimation(Carreira finalCarreira, RouteFavoritesFragment fragment, GeoPoint point){
+        getActivity().runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View view) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadCarreiraFromApi(editText.getText().toString());
-                    }
-                });
-                thread.start();
+            public void run() {
+                textView.setText(finalCarreira.getName());
+
+                uiIsVisible = true;
+                textView.setVisibility(View.VISIBLE);
+                scheduleView.setVisibility(View.VISIBLE);
+                stopView.setVisibility(View.VISIBLE);
+                pathListText.setVisibility(View.VISIBLE);
+                schedulesListText.setVisibility(View.VISIBLE);
+                routeImageView.setVisibility(View.VISIBLE);
+
+                changeCarreiraDrawable(finalCarreira);
+                changeCarreiraDrawable(finalCarreira);
+
+                scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
+                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
+                directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
+                stopView.setAdapter(stopImageListAdaptor);
+                scheduleView.setAdapter(scheduleArrayAdapter);
+                spinner.setAdapter(directionArrayAdapter);
+
+                if (fragment.containsCarreira(currentCarreira.getRouteId())) {
+                    routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
+                }else{
+                    routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
+                }
+                map.setVisibility(View.VISIBLE);
+                map.getController().setCenter(point);
+                map.getController().setZoom(17.0);
+                map.invalidate();
+                updateMarkers(stopList, map, getActivity());
+                if (loadingImage.getAnimation() != null){
+                    loadingImage.getAnimation().cancel();
+                }
+                loadingImage.setVisibility(View.INVISIBLE);
             }
         });
-            //Click Button
-        return v;
     }
 
     public void loadCarreiraFromApi(String carreiraId){
@@ -279,29 +364,10 @@ public class RouteDetailsFragment extends Fragment {
                 try {
                     InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 //Loading Screen
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopView.setVisibility(View.INVISIBLE);
-                        scheduleView.setVisibility(View.INVISIBLE);
-                        textView.setVisibility(View.INVISIBLE);
-                        map.setVisibility(View.INVISIBLE);
-                        loadingImage.setVisibility(View.VISIBLE);
-                        pathListText.setVisibility(View.INVISIBLE);
-                        schedulesListText.setVisibility(View.INVISIBLE);
-                        routeImageView.setVisibility(((View.INVISIBLE)));
-                        routeStopDetails.setVisibility(View.INVISIBLE);
-
-                        RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-                        rotate.setDuration(20000);
-                        rotate.setRepeatCount(5);
-                        rotate.setInterpolator(new LinearInterpolator());
-                        loadingImage.startAnimation(rotate);
-                    }
-                });
+                startWaitingAnimation();
                 Carreira carreira = null;
                 try {
                     carreira = Api.getCarreira(carreiraId);
@@ -322,66 +388,29 @@ public class RouteDetailsFragment extends Fragment {
                     return;
                 }
                 currentDirectionIndex = 0;
-                carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
+                //carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;
+                stopList.clear();
                 List<Stop> toAdd = new ArrayList<>();
                 carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                assert toAdd.size() > 0;
                 stopList.addAll(toAdd);
                 double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
                 GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
                 directionList = carreira.getDirectionList();
-                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
+                //assert stopList.get(currentStopIndex).getScheduleList() != null;
+                if(stopList.get(currentStopIndex).getScheduleList() != null){
+                    scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
+                }
 
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
                 Carreira finalCarreira = carreira;
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        textView.setText(finalCarreira.getName());
-                        uiIsVisible = true;
-                        textView.setVisibility(View.VISIBLE);
-                        scheduleView.setVisibility(View.VISIBLE);
-                        stopView.setVisibility(View.VISIBLE);
-                        pathListText.setVisibility(View.VISIBLE);
-                        schedulesListText.setVisibility(View.VISIBLE);
-                        routeImageView.setVisibility(View.VISIBLE);
 
-                        changeCarreiraDrawable(finalCarreira);
-                        changeCarreiraDrawable(finalCarreira);
-
-                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
-                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
-                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
-                        stopView.setAdapter(stopImageListAdaptor);
-                        scheduleView.setAdapter(scheduleArrayAdapter);
-                        spinner.setAdapter(directionArrayAdapter);
-
-                        if (fragment.containsCarreira(currentCarreira.getRouteId())) {
-                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
-                        }else{
-                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
-                        }
-
-                        map.setVisibility(View.VISIBLE);
-                        map.getController().setCenter(point);
-                        map.getController().setZoom(17.0);
-                        map.invalidate();
-                        updateMarkers(stopList, map, getActivity());
-
-                        //Loading Screen
-                        if (loadingImage.getAnimation() != null){
-                            loadingImage.getAnimation().cancel();
-                        }
-                        loadingImage.setVisibility(View.INVISIBLE);
-                    }
-                });
-
-
-
+                stopWaitingAnimation(finalCarreira, fragment, point);
             }
         });
         thread.start();
@@ -391,7 +420,8 @@ public class RouteDetailsFragment extends Fragment {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
+                startWaitingAnimation();
+                carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;
@@ -407,46 +437,8 @@ public class RouteDetailsFragment extends Fragment {
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
                 Carreira finalCarreira = carreira;
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        textView.setText(finalCarreira.getName());
-                        uiIsVisible = true;
-                        textView.setVisibility(View.VISIBLE);
-                        scheduleView.setVisibility(View.VISIBLE);
-                        stopView.setVisibility(View.VISIBLE);
-                        pathListText.setVisibility(View.VISIBLE);
-                        schedulesListText.setVisibility(View.VISIBLE);
+                stopWaitingAnimation(finalCarreira, fragment, point);
 
-                        if (fragment.containsCarreira(carreira.getRouteId())){
-                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
-                        }else{
-                            routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_border_24);
-                        }
-
-                        changeCarreiraDrawable(finalCarreira);
-                        changeCarreiraDrawable(finalCarreira);
-
-                        scheduleArrayAdapter = new ArrayAdapter<Schedule>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, scheduleList);
-                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
-                        directionArrayAdapter = new ArrayAdapter<Direction>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, directionList);
-                        stopView.setAdapter(stopImageListAdaptor);
-                        scheduleView.setAdapter(scheduleArrayAdapter);
-                        spinner.setAdapter(directionArrayAdapter);
-
-                        map.setVisibility(View.VISIBLE);
-                        map.getController().setCenter(point);
-                        map.getController().setZoom(17.0);
-                        map.invalidate();
-                        updateMarkers(stopList, map, getActivity());
-
-                        //Loading Screen
-                        if (loadingImage.getAnimation() != null){
-                            loadingImage.getAnimation().cancel();
-                        }
-                        loadingImage.setVisibility(View.INVISIBLE);
-                    }
-                });
             }
         });
         thread.start();
@@ -477,7 +469,6 @@ public class RouteDetailsFragment extends Fragment {
     }
 
     public void addCurrentRouteToFavorites(){
-        //TODO
         MainActivity mainActivity = (MainActivity) getActivity();
         RouteFavoritesFragment fragment = (RouteFavoritesFragment) mainActivity.routeFavoritesFragment;
         if (fragment.containsCarreira(currentCarreira.getRouteId())){
@@ -510,9 +501,7 @@ public class RouteDetailsFragment extends Fragment {
         LayerDrawable finalDrawable = new LayerDrawable(new Drawable[] {imageDrawable, textDrawable});
 
         finalDrawable.setLayerSize(0,routeImageView.getWidth(), routeImageView.getHeight());
-        //finalDrawable.setLayerSize(1, (int)(textDrawable.getIntrinsicWidth()*1.2), (int)(textDrawable.getIntrinsicHeight()*2));
         finalDrawable.setLayerGravity(1, Gravity.CENTER_VERTICAL);
-        //finalDrawable.setLayerGravity(1, Gravity.CENTER_HORIZONTAL);
 
         routeImageView.setImageDrawable(finalDrawable);
     }

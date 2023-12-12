@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +44,8 @@ public class Api {
     public static Direction getDirection(String pattern){
         try {
             Gson gson = new Gson();
-            Direction direction = gson.fromJson(getJson(DIRECTIONURL + pattern), Direction.class);
-            return  direction;
+            return gson.fromJson(getJson(DIRECTIONURL + pattern), Direction.class);
+
         }catch (Exception e ){
             e.printStackTrace();
         }
@@ -62,7 +63,7 @@ public class Api {
         }
     }
 
-    public static List<RealTimeSchedule> getRealTimeStops(String stopId){
+    public static List<RealTimeSchedule> getRealTimeStops(String stopId) throws SocketTimeoutException {
         try {
             Gson gson = new Gson();
             JsonArray jsonArray = new JsonParser().parse(getJson(REALTIMESTOPURL + stopId + "/realtime")).getAsJsonArray();

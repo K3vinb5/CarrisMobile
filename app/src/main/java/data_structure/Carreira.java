@@ -1,5 +1,7 @@
 package data_structure;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import java.io.File;
@@ -51,32 +53,35 @@ public class Carreira implements Serializable {
         }
     }
 
-    public void updateSchedulesInStops(){
-        for (Direction direction : this.getDirectionList()){
-            for (Path path : direction.getPathList()){
-                for (Trip trip : direction.getTrips()){
-                    for (Schedule schedule : trip.getSchedules()){
-                        if ( path.getStop().getStopID() == schedule.getStopId() /*&& !path.getStop().containsSchedule(schedule)*/){
-                            path.getStop().getScheduleList().add(schedule);
-                        }
-                    }
-                }
-            }
-        }
+    public void updateSchedulesOnStopOnGivenDirectionAndStop(int directionIndex, int stopIndex){
+        Carreira currentCarreira = this;
+        Direction currentDirection = currentCarreira.getDirectionList().get(directionIndex);
+        //TODO still not working
+        Log.d("UpdatePathsOnSelectedDirection was called", "Starting updatePathsOnSelectedDirection");
+        Stop stopToUpdate = currentDirection.getPathList().get(stopIndex).getStop();
+        stopToUpdate.init();
+        List<Schedule> schedules = stopToUpdate.getScheduleList();
+        List<RealTimeSchedule> realTimeSchedules = new ArrayList<>();
+        realTimeSchedules.addAll(getSchedules(stopToUpdate.getStopID(), 5));
+        //RouteDetails will make sure to catch the error (I hope so)
+        realTimeSchedules.removeIf(realTimeSchedule -> !realTimeSchedule.getPattern_id().equals(currentDirection.getDirectionId()));
+        //TODO travel_time not being assigned correct
+        realTimeSchedules.forEach(realTimeSchedule -> schedules.add(new Schedule(stopToUpdate.getStopID(), realTimeSchedule.getScheduled_arrival(), "")));
+        //Log.e("Stop Schedule added", schedules.toString());
     }
 
-    public void updatePathsOnSelectedDirection(int directionId){
-        Direction currentDirection = this.getDirectionList().get(directionId);
-        List <Path> currentPathList = currentDirection.getPathList();
-        List <Trip> currentTripList = currentDirection.getTrips();
-        for (int i = 0; i < currentPathList.size(); i++){
-            currentPathList.get(i).getStop().init();
-            List<Schedule> schedules = new ArrayList<>();
-            for (int j = 0; j < currentTripList.size(); j++){
-                schedules.add(currentTripList.get(j).getScheduleAtSelectedStop(i));
-            }
-            currentPathList.get(i).getStop().getScheduleList().addAll(schedules);
+    public static List<RealTimeSchedule> getSchedules(int stopId, int attempt){
+        String newStopId = stopId+"";
+        while(newStopId.length() < 6){
+            newStopId = "0" + newStopId;
         }
+        List<RealTimeSchedule> realTimeScheduleList = new ArrayList<>();
+        try{
+            realTimeScheduleList = Api.getRealTimeStops(newStopId);
+        }catch (Exception e){
+            return getSchedules(stopId, attempt + 1);
+        }
+        return realTimeScheduleList;
     }
 
     public List<Direction> getDirectionList() {
