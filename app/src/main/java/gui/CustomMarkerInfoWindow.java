@@ -29,4 +29,5 @@ public class CustomMarkerInfoWindow extends MarkerInfoWindow {
         textViewTitle.setText(this.title);
         textViewDescription.setText(this.description);
     }
+
 }

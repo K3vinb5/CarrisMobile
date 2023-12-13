@@ -1,11 +1,5 @@
 package gui;
 
-import com.example.carrismobile.MainActivity;
-import com.example.carrismobile.RealTimeFragment;
-import com.example.carrismobile.StopsMapFragment;
-
-import org.osmdroid.views.overlay.Marker;
-
 import java.util.List;
 
 import data_structure.Stop;

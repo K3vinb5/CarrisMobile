@@ -8,10 +8,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.webkit.WebView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
     public Fragment moovitFragment = new MoovitFragment();
     public Fragment currentFragment = null;
-    public List<Fragment> oldFragment = new ArrayList<>();
+    public List<Fragment> oldFragmentsList = new ArrayList<>();
     private HashMap<Fragment, Integer> mapper= new HashMap<>();
     public boolean routeFavorite = true;
     public boolean stopFavorite = false;
@@ -58,17 +56,17 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(routeFavoritesFragment);
 
         mapper.put(routeDetailsFragment, 0);
-        mapper.put(realTimeFragment, 4);
-        mapper.put(routesFragment, 2);
-        mapper.put(stopsMapFragment, 3);
         mapper.put(stopDetailsFragment, 0);
         mapper.put(stopFavoritesFragment, 1);
         mapper.put(routeFavoritesFragment, 1);
+        mapper.put(routesFragment, 2);
         mapper.put(moovitFragment, 2);
+        mapper.put(stopsMapFragment, 3);
+        mapper.put(realTimeFragment, 4);
 
         currentIndexFragment = 2;
         currentFragment = routesFragment;
-        oldFragment.add(routesFragment);
+        oldFragmentsList.add(routesFragment);
         //transaction.hide(routesFragment);
         transaction.commit();
         runOnUiThread(new Runnable() {
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //Application bottomBar
+        //Application bottomBar (fuck switch statements)
         if (item.getItemId() == R.id.bottomitem1) {
             openMoovitFragment();
             return super.onOptionsItemSelected(item);
@@ -146,8 +144,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(realTimeFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }
         currentFragment = realTimeFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
@@ -160,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routesFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = routesFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -174,8 +172,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopsMapFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = stopsMapFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -195,8 +193,8 @@ public class MainActivity extends AppCompatActivity {
         }
         transaction.show(stopFavoritesFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = stopFavoritesFragment;
     }
     public void openRouteFavoritesFragment(boolean animate){
@@ -212,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeFavoritesFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = routeFavoritesFragment;
     }
     public void openRouteDetailsFragment(boolean animate){
@@ -227,8 +225,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(routeDetailsFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = routeDetailsFragment;
     }
     public void openstopDetailsFragment(boolean animate){
@@ -242,8 +240,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(stopDetailsFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = stopDetailsFragment;
     }
 
@@ -255,8 +253,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.hide(currentFragment);
         transaction.show(moovitFragment);
         transaction.commit();
-        if(oldFragment.size() < 11){
-            oldFragment.add(currentFragment);
+        if(oldFragmentsList.size() < 11){
+            oldFragmentsList.add(currentFragment);
         }        currentFragment = moovitFragment;
         checkRightMenu(oldIndexFragment, currentIndexFragment);
     }
@@ -268,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
     private void slideLeft(FragmentTransaction transaction){
         transaction.setCustomAnimations(R.anim.fade_in, R.anim.slide_out);
     }
-
+    
     private void decideAnimation(FragmentTransaction transaction, int oldIndex, int newIndex){
         if (newIndex > oldIndex){
             slideLeft(transaction);
@@ -288,16 +286,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    //deprecated I know, but it works and I haven't found anything newer similar yet
     @Override
     public void onBackPressed() {
-        if(oldFragment.size() > 1){
+        if(oldFragmentsList.size() > 1){
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.hide(currentFragment);
-            transaction.show(oldFragment.get(oldFragment.size() - 1));
-            currentFragment = oldFragment.get(oldFragment.size() - 1);
-            checkRightMenu(mapper.get(oldFragment.get(oldFragment.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
-            oldFragment.remove(oldFragment.size() - 1);
+            transaction.show(oldFragmentsList.get(oldFragmentsList.size() - 1));
+            currentFragment = oldFragmentsList.get(oldFragmentsList.size() - 1);
+            checkRightMenu(mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
+            oldFragmentsList.remove(oldFragmentsList.size() - 1);
             transaction.commit();
         }else{
             super.onBackPressed();

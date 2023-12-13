@@ -68,8 +68,7 @@ public class StopsBackgroundThread extends Thread{
                                     return;
                                 }
                                 for (Stop stop : stopList){
-                                    StopThread stopThread = new StopThread(coordinates,stop.getCoordinates(), stopToAddList, stop);
-                                    stopThread.start();
+                                    new StopThread(coordinates,stop.getCoordinates(), stopToAddList, stop).start();
                                 }
                                 Log.d("STOP BACKGROUND THREAD", "STOPS CLOSE " + stopToAddList.size());
                                 mainActivity.runOnUiThread(new Runnable() {

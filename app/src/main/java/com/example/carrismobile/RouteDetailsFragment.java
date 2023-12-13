@@ -1,7 +1,6 @@
 package com.example.carrismobile;
 
 import static android.content.Context.INPUT_METHOD_SERVICE;
-import static android.content.Context.MODE_PRIVATE;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -10,7 +9,6 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
@@ -303,6 +301,7 @@ public class RouteDetailsFragment extends Fragment {
                 schedulesListText.setVisibility(View.INVISIBLE);
                 routeImageView.setVisibility(((View.INVISIBLE)));
                 routeStopDetails.setVisibility(View.INVISIBLE);
+                spinner.setVisibility(View.INVISIBLE);
 
                 RotateAnimation rotate = new RotateAnimation(0, 360 * 10, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                 rotate.setDuration(20000);
@@ -320,8 +319,15 @@ public class RouteDetailsFragment extends Fragment {
                 textView.setText(finalCarreira.getName());
 
                 uiIsVisible = true;
+
+                if (loadingImage.getAnimation() != null){
+                    loadingImage.getAnimation().cancel();
+                }
+                loadingImage.setVisibility(View.INVISIBLE);
+
                 textView.setVisibility(View.VISIBLE);
                 scheduleView.setVisibility(View.VISIBLE);
+                spinner.setVisibility(View.VISIBLE);
                 stopView.setVisibility(View.VISIBLE);
                 pathListText.setVisibility(View.VISIBLE);
                 schedulesListText.setVisibility(View.VISIBLE);
@@ -347,10 +353,6 @@ public class RouteDetailsFragment extends Fragment {
                 map.getController().setZoom(17.0);
                 map.invalidate();
                 updateMarkers(stopList, map, getActivity());
-                if (loadingImage.getAnimation() != null){
-                    loadingImage.getAnimation().cancel();
-                }
-                loadingImage.setVisibility(View.INVISIBLE);
             }
         });
     }

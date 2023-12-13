@@ -4,14 +4,18 @@ import static android.content.Context.INPUT_METHOD_SERVICE;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RotateDrawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -279,13 +283,12 @@ public class RealTimeFragment extends Fragment {
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
             Marker marker = new Marker(map);
             Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.cm_bus_regular, null);
-            RotateDrawable d1= new RotateDrawable();
+            RotateDrawable d1 = new RotateDrawable();
+            d1.setDrawable(d);
             d1.setFromDegrees(0f);
             d1.setToDegrees((float)bus.getHeading());
-            d1.setPivotX(d.getIntrinsicWidth()/2);
-            d1.setPivotX(d.getIntrinsicHeight()/2);
-            d1.setDrawable(d);
-            marker.setIcon(d1.getDrawable());
+            d1.setLevel(10000);
+            marker.setIcon(d1.getCurrent());
             markerBusList.add(marker);
             marker.setPosition(point);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
@@ -306,17 +309,30 @@ public class RealTimeFragment extends Fragment {
     }
 
 
-    Drawable getRotateDrawable(Bitmap b, float angle) {
-        final BitmapDrawable drawable = new BitmapDrawable(getResources(), b) {
+    private static Drawable getRotateDrawable(Bitmap b, float angle, Activity activity) {
+        final BitmapDrawable drawable = new BitmapDrawable(activity.getApplicationContext().getResources(), b) {
             @Override
             public void draw(final Canvas canvas) {
                 canvas.save();
-                canvas.rotate(angle, b.getWidth() / 2, b.getHeight() / 2);
+                canvas.rotate(angle, b.getWidth() / 2f, b.getHeight() / 2f);
                 super.draw(canvas);
                 canvas.restore();
             }
         };
         return drawable;
+    }
+
+    private static Drawable getRotateDrawable2(final Drawable d, final float angle) {
+        final Drawable[] arD = { d };
+        return new LayerDrawable(arD) {
+            @Override
+            public void draw(final Canvas canvas) {
+                canvas.save();
+                canvas.rotate(angle, d.getBounds().width() / 2, d.getBounds().height() / 2);
+                super.draw(canvas);
+                canvas.restore();
+            }
+        };
     }
 
     public void showBackgroundThreadDialog(){
