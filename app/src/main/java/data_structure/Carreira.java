@@ -1,8 +1,11 @@
 package data_structure;
 
+import android.net.http.HttpException;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+
+import org.jsoup.HttpStatusException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.HttpRetryException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +57,7 @@ public class Carreira implements Serializable {
         }
     }
 
-    public void updateSchedulesOnStopOnGivenDirectionAndStop(int directionIndex, int stopIndex){
+    public void updateSchedulesOnStopOnGivenDirectionAndStop(int directionIndex, int stopIndex) throws IllegalStateException{
         Carreira currentCarreira = this;
         Direction currentDirection = currentCarreira.getDirectionList().get(directionIndex);
         //TODO still not working
@@ -62,7 +66,7 @@ public class Carreira implements Serializable {
         stopToUpdate.init();
         List<Schedule> schedules = stopToUpdate.getScheduleList();
         List<RealTimeSchedule> realTimeSchedules = new ArrayList<>();
-        realTimeSchedules.addAll(getSchedules(stopToUpdate.getStopID(), 5));
+        realTimeSchedules.addAll(getSchedules(stopToUpdate.getStopID(), 0,5));
         //RouteDetails will make sure to catch the error (I hope so)
         realTimeSchedules.removeIf(realTimeSchedule -> !realTimeSchedule.getPattern_id().equals(currentDirection.getDirectionId()));
         //TODO travel_time not being assigned correct
@@ -70,7 +74,10 @@ public class Carreira implements Serializable {
         //Log.e("Stop Schedule added", schedules.toString());
     }
 
-    public static List<RealTimeSchedule> getSchedules(int stopId, int attempt){
+    public static List<RealTimeSchedule> getSchedules(int stopId, int attempt, int maxAttempt) throws IllegalArgumentException {
+        if (attempt == maxAttempt){
+            throw new IllegalArgumentException("Attempt has reached maxAttempt");
+        }
         String newStopId = stopId+"";
         while(newStopId.length() < 6){
             newStopId = "0" + newStopId;
@@ -79,7 +86,7 @@ public class Carreira implements Serializable {
         try{
             realTimeScheduleList = Api.getRealTimeStops(newStopId);
         }catch (Exception e){
-            return getSchedules(stopId, attempt + 1);
+            return getSchedules(stopId, attempt + 1, maxAttempt);
         }
         return realTimeScheduleList;
     }

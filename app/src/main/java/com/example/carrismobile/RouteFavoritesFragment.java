@@ -125,29 +125,35 @@ public class RouteFavoritesFragment extends Fragment {
     }
 
     private void init(){
-        mPrefs = getActivity().getSharedPreferences("RouteFavoritesFragment", MODE_PRIVATE);
-        String size;
-        size = (String)loadObject("key_carreiraList_size", String.class);
-        if (size == null){
-            Log.d("STOP FAVORITES INIT", "SIZE WAS NULL");
-            storeObject(new Gson().toJson("0"), "key_carreiraList_size");
-            init();
-            return;
-        }
-        for (int i = 0; i < Integer.parseInt(size); i++){
-            Carreira carreiraToAdd = (Carreira)loadObject("key_carreiraList_carreira_" + i, Carreira.class);
-            carreiraList.add(carreiraToAdd);
-            Log.d("Carreira Recovered", carreiraToAdd.getName());
-        }
-        currentCarreiraList.addAll(carreiraList);
-        currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
-        getActivity().runOnUiThread(new Runnable() {
+        Thread initThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
-                list.setAdapter(carreiraListAdapter);
+                mPrefs = getActivity().getSharedPreferences("RouteFavoritesFragment", MODE_PRIVATE);
+                String size;
+                size = (String)loadObject("key_carreiraList_size", String.class);
+                if (size == null){
+                    Log.d("STOP FAVORITES INIT", "SIZE WAS NULL");
+                    storeObject(new Gson().toJson("0"), "key_carreiraList_size");
+                    init();
+                    return;
+                }
+                for (int i = 0; i < Integer.parseInt(size); i++){
+                    Carreira carreiraToAdd = (Carreira)loadObject("key_carreiraList_carreira_" + i, Carreira.class);
+                    carreiraList.add(carreiraToAdd);
+                    Log.d("Carreira Recovered", carreiraToAdd.getName());
+                }
+                currentCarreiraList.addAll(carreiraList);
+                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
+                        list.setAdapter(carreiraListAdapter);
+                    }
+                });
             }
         });
+        initThread.start();
     }
 
     public void addCarreiraToFavorites(Carreira carreira){

@@ -136,30 +136,37 @@ public class StopFavoritesFragment extends Fragment {
     }
 
     private void init(){
-        mPrefs = getActivity().getSharedPreferences("StopFavoritesFragment", MODE_PRIVATE);
-        //mPrefs.edit().clear().apply();
-        String size;
-        size = (String)loadObject("key_stopList_size", String.class);
-        if (size == null){
-            Log.d("STOP FAVORITES INIT", "SIZE WAS NULL");
-            storeObject(new Gson().toJson("0"), "key_stopList_size");
-            init();
-            return;
-        }
-        for (int i = 0; i < Integer.parseInt(size); i++){
-            Stop stopToAdd = (Stop)loadObject("key_stopList_stop_" + i, Stop.class);
-            stopList.add(stopToAdd);
-            Log.d("Stop Recovered", stopToAdd.getTts_name());
-        }
-        currentStopList.addAll(stopList);
-        currentStopList.sort(Comparator.comparing(Stop::getTts_name));
-        getActivity().runOnUiThread(new Runnable() {
+        Thread initThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
-                list.setAdapter(stopImageListAdaptor);
+                mPrefs = getActivity().getSharedPreferences("StopFavoritesFragment", MODE_PRIVATE);
+                //mPrefs.edit().clear().apply();
+                String size;
+                size = (String)loadObject("key_stopList_size", String.class);
+                if (size == null){
+                    Log.d("STOP FAVORITES INIT", "SIZE WAS NULL");
+                    storeObject(new Gson().toJson("0"), "key_stopList_size");
+                    init();
+                    return;
+                }
+                for (int i = 0; i < Integer.parseInt(size); i++){
+                    Stop stopToAdd = (Stop)loadObject("key_stopList_stop_" + i, Stop.class);
+                    stopList.add(stopToAdd);
+                    Log.d("Stop Recovered", stopToAdd.getTts_name());
+                }
+                currentStopList.addAll(stopList);
+                currentStopList.sort(Comparator.comparing(Stop::getTts_name));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        stopImageListAdaptor = new StopImageListAdaptor(getActivity(), currentStopList);
+                        list.setAdapter(stopImageListAdaptor);
+                    }
+                });
             }
         });
+        initThread.start();
+
     }
 
     public void addStopToFavorites(Stop stop){

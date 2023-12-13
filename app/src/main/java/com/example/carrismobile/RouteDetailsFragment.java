@@ -179,7 +179,17 @@ public class RouteDetailsFragment extends Fragment {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
                         if (currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null){
-                            currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                            try{
+                                currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                            }catch (Exception ignore){
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        dialog.show();
+                                    }
+                                });
+                                connected = false;
+                            }
                         }
                         List<Stop> toAdd = new ArrayList<>();
                         currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
@@ -222,7 +232,17 @@ public class RouteDetailsFragment extends Fragment {
                             stopList.addAll(toAdd);
                         }
                         Stop currentStop = stopList.get(currentStopIndex);
-                        currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
+                        try{
+                            currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
+                        }catch (Exception ignore){
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.show();
+                                }
+                            });
+                            connected = false;
+                        }
                         double[] coordinates = currentStop.getCoordinates();
                         scheduleList.clear();
                         scheduleList.addAll(currentStop.getScheduleList());
@@ -423,7 +443,18 @@ public class RouteDetailsFragment extends Fragment {
             @Override
             public void run() {
                 startWaitingAnimation();
-                carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                try{
+                    carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                }catch (Exception ignore){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.show();
+                        }
+                    });
+                    connected = false;
+
+                }
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;
