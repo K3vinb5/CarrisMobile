@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
-    <item android:id="@+id/stopFavoritesItem1"
+    <item android:id="@+id/topItem1"
         android:icon="@drawable/baseline_more_vert_24"
         android:title="Item 1"
         app:showAsAction="always"
@@ -11,12 +11,5 @@
         android:orderInCategory="2"/>
     />
 
-    <item android:id="@+id/stopFavoritesItem2"
-        android:icon="@drawable/baseline_arrow_back_24"
-        android:title="Item 1"
-        app:showAsAction="always"
-        android:onClick="onOptionsItemSelected"
-        android:orderInCategory="1"/>
-    />
 
 </menu>

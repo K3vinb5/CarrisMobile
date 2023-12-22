@@ -5,7 +5,7 @@
     android:id="@+id/frameLayout3"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".StopFavoritesFragment">
+    tools:context="kevin.carrismobile.fragments.StopFavoritesFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/stopFavoritestoolbar"

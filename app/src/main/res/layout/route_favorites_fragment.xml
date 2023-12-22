@@ -5,7 +5,7 @@
     android:id="@+id/frameLayout4"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RouteFavoritesFragment">
+    tools:context="kevin.carrismobile.fragments.RouteFavoritesFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarRouteFavorites"

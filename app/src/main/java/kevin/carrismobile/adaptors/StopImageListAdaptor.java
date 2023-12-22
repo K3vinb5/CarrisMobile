@@ -19,7 +19,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import data_structure.Stop;
+import kevin.carrismobile.data.Stop;
 
 public class StopImageListAdaptor extends BaseAdapter {
 

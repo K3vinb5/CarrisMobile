@@ -20,9 +20,9 @@ import com.example.carrismobile.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import data_structure.Carreira;
-import data_structure.CarreiraBasic;
-import gui.TextDrawable;
+import kevin.carrismobile.data.Carreira;
+import kevin.carrismobile.data.CarreiraBasic;
+import kevin.carrismobile.gui.TextDrawable;
 
 public class RouteImageListAdaptor extends BaseAdapter {
 
