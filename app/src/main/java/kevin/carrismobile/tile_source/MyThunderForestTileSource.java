@@ -64,7 +64,6 @@ public class MyThunderForestTileSource extends OnlineTileSourceBase {
             "https://c.tile.thunderforest.com/{map}/"};
 
     private final int mMap;
-    private String mMapId;
 
     /**
      * return the name asociated with a map.
@@ -79,18 +78,10 @@ public class MyThunderForestTileSource extends OnlineTileSourceBase {
      * creates a new Thunderforest tile source, loading the access token and mapid from the manifest
      */
     public MyThunderForestTileSource(final int aMap) {
-        super(uiMap[aMap], 0, 17, 256, ".png", baseUrl, "Maps © Thunderforest, Data © OpenStreetMap contributors.");
+        super(uiMap[aMap], 0, 18, 256, ".png", baseUrl, "Maps © Thunderforest, Data © OpenStreetMap contributors.");
         mMap = aMap;
-        mMapId = getApiKey();
         //this line will ensure uniqueness in the tile cache
         //mName="thunderforest"+aMap+mMapId;
-    }
-
-    /**
-     * Reads the map id from the manifest.<br>
-     */
-    public final String getApiKey() {
-        return apiKey;
     }
 
     @Override
@@ -102,11 +93,18 @@ public class MyThunderForestTileSource extends OnlineTileSourceBase {
         url.append("/");
         url.append(MapTileIndex.getY(pMapTileIndex));
         url.append(".png?");
-        url.append("apikey=").append(mMapId);
+        url.append("apikey=").append(apiKey);
         String res = url.toString();
         //Log.d(IMapView.LOGTAG, res);
 
         return res;
+    }
+
+    /**
+     * Reads the map id from the manifest.<br>
+     */
+    public final String getApiKey() {
+        return apiKey;
     }
 
     /**
@@ -118,7 +116,6 @@ public class MyThunderForestTileSource extends OnlineTileSourceBase {
 
     public void setApiKey(String apiKey){
         this.apiKey = apiKey;
-        mMapId = apiKey;
     }
 
 }

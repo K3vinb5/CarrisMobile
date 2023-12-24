@@ -1,9 +1,5 @@
 package kevin.carrismobile.data;
 
-import android.util.Log;
-
-import androidx.annotation.Nullable;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,7 +13,7 @@ import kevin.carrismobile.api.Api;
 
 public class Stop implements Serializable {
 
-    private int id;
+    private String id;
     private String name;
     private String tts_name;
     private double lat;
@@ -36,7 +32,7 @@ public class Stop implements Serializable {
     private boolean init = false;
 
 
-    public Stop(int id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name, List<String> lines, List<String> facilities) {
+    public Stop(String id, String name, String tts_name, double lat, double lon, String locality, int municipality_id, String municipality_name, int district_id, String district_name, String region_id, String region_name, List<String> lines, List<String> facilities) {
         this.id = id;
         this.name = name;
         this.tts_name = tts_name;
@@ -53,7 +49,7 @@ public class Stop implements Serializable {
         this.facilities = facilities;
     }
 
-    public int getStopID() {
+    public String getStopID() {
         return id;
     }
 
@@ -141,20 +137,25 @@ public class Stop implements Serializable {
             return out;
         }
     }
-
+    public List<RealTimeSchedule> getOfflineRealTimeSchedules(){
+        if (realTimeSchedules==null){
+            realTimeSchedules = new ArrayList<>();
+        }
+        return realTimeSchedules;
+    }
     public List<RealTimeSchedule> getRealTimeSchedules(){
-        if (realTimeSchedules!= null && realTimeSchedules.size() > 0){
+        if (realTimeSchedules!= null && !realTimeSchedules.isEmpty()){
             return  realTimeSchedules;
         }else{
             List<RealTimeSchedule> newRealTimeSchedulesList;
             try{
-                String callId = Integer.toString(this.id);
+                String callId = id;
                 while (callId.length() < 6){
                     callId = "0" + callId;
                 }
                 newRealTimeSchedulesList = Api.getRealTimeStops(callId);
             }catch (Exception e){
-                Log.d("API ERROR", "ERROR RETRIEVING SCHEDULES");
+                //Log.d("API ERROR", "ERROR RETRIEVING SCHEDULES");
                 return new ArrayList<RealTimeSchedule>();
             }
             return  newRealTimeSchedulesList;
@@ -165,7 +166,7 @@ public class Stop implements Serializable {
         return facilities;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -180,7 +181,7 @@ public class Stop implements Serializable {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(Object obj) {
         Stop stopCompare = (Stop) obj;
         return this.getStopID() == stopCompare.getStopID();
     }

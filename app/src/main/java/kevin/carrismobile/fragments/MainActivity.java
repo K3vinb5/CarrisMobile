@@ -1,23 +1,52 @@
 package kevin.carrismobile.fragments;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.carrismobile.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.Gson;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
+
+import kevin.carrismobile.api.Offline;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+    public static SharedPreferences mPrefs;
     public Fragment realTimeFragment = new RealTimeFragment();
     public Fragment routeDetailsFragment = new RouteDetailsFragment();
     public Fragment routesFragment = new RoutesFragment();
@@ -37,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPrefs = getSharedPreferences("Main", MODE_PRIVATE);
         setContentView(R.layout.activity_main);
         bottomAppBar = findViewById(R.id.bottomAppBar);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -60,8 +90,13 @@ public class MainActivity extends AppCompatActivity {
                 bottomAppBar.getMenu().getItem(currentIndexFragment).setChecked(true);
             }
         });
+        //TODO temp
+        mPrefs.edit().clear().apply();
+        copyAsset(R.raw.routes, Offline.ROUTES_KEY);
+        copyAsset(R.raw.stop_times, Offline.STOP_TIMES_KEY);
+        copyAsset(R.raw.stops, Offline.STOPS_KEY);
+        copyAsset(R.raw.trips, Offline.TRIPS_KEY);
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -201,6 +236,40 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private void copyAsset(int resource, String key){
+        InputStream in = getResources().openRawResource(resource);
+        StringBuilder textBuilder = new StringBuilder();
+        try (Reader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            int c = 0;
+            while ((c = reader.read()) != -1) {
+                    textBuilder.append((char) c);
+            }
+            mPrefs.edit().putString(key, textBuilder.toString()).apply();
+            Log.d("SUCCESS SAVING " + key, Integer.toString(textBuilder.toString().length()));
+        }catch (Exception e){
+                Log.e("ERROR SAVING " + key, e.getMessage());
+        }
+    }
+    private void storeObject(String json, String key){
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    Log.println(Log.DEBUG, "STORE THREAD", "SAVING");
+                    mPrefs.edit().putString(key, json).apply();
+                    Log.println(Log.DEBUG, "STORE THREAD", "FINISH");
+                }catch (Exception e){
+                    Log.println(Log.ERROR, "STORE THREAD", "INTERRUPTED\n\n" + e.getMessage());
+                }
+            }
+        });
+        thread.start();
+    }
+    private Object loadObject(String key, Class klass){
+        return new Gson().fromJson(mPrefs.getString(key, null), klass);
+    }
+
     //deprecated I know, but it works and I haven't found anything newer that could substitute it yet
     @Override
     public void onBackPressed() {

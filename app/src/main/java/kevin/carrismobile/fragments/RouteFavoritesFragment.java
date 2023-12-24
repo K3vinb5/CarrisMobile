@@ -106,8 +106,12 @@ public class RouteFavoritesFragment extends Fragment {
                     public void run() {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         RouteDetailsFragment fragment = (RouteDetailsFragment) mainActivity.routeDetailsFragment;
-                        fragment.loadCarreira(currentCarreiraList.get(i));
                         mainActivity.openFragment(fragment, 0, false);
+                        if (currentCarreiraList.get(i).isOnline()){
+                            fragment.loadCarreiraFromFavorites(currentCarreiraList.get(i));
+                        }else{
+                            fragment.loadCarreiraOfflineFromFavorites(currentCarreiraList.get(i));
+                        }
                     }
                 });
                 thread.start();

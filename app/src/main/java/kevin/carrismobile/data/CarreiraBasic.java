@@ -1,10 +1,9 @@
 package kevin.carrismobile.data;
 
-import androidx.annotation.NonNull;
-
 public class CarreiraBasic {
 
     private String id;
+    private boolean online;
     private String long_name;
     private String color;
 
@@ -25,7 +24,12 @@ public class CarreiraBasic {
     public String getLong_name() {
         return long_name;
     }
-
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+    public boolean isOnline() {
+        return online;
+    }
     public String getColor() {
         return color;
     }
@@ -42,7 +46,6 @@ public class CarreiraBasic {
         return new CarreiraBasic(carreira.getRouteId(), carreira.getName(), carreira.getColor());
     }
 
-    @NonNull
     @Override
     public String toString() {
         return this.getId() + " - " + this.getLong_name();

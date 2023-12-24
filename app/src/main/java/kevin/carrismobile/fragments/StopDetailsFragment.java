@@ -60,11 +60,15 @@ public class StopDetailsFragment extends Fragment {
                     @Override
                     public void run() {
 
-                        String busID = currentStop.getRealTimeSchedules().get(i).getLine_id()+"";
+                        String selectedId = currentStop.getRealTimeSchedules().get(i).getLine_id()+"";
                         MainActivity activity = (MainActivity) getActivity();
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         activity.openFragment(routeDetailFragment, 0, true);
-                        routeDetailFragment.loadCarreiraFromApi(busID);
+                        if(selectedId.length() > 3){
+                            routeDetailFragment.loadCarreiraFromApi(selectedId);
+                        }else{
+                            routeDetailFragment.loadCarreiraOffline(selectedId);
+                        }
                     }
                 });
                 thread1.start();
@@ -128,7 +132,54 @@ public class StopDetailsFragment extends Fragment {
         });
         thread.start();
     }
+    public void loadNewOfflineStop(Stop stop){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<RealTimeSchedule> toAdd = new ArrayList<>();
+                try{
+                    toAdd = stop.getOfflineRealTimeSchedules(); //requires API
+                    Log.d("STOP SCHEDULES", toAdd.toString());
+                    if (toAdd != null){
+                        currentStopRealTimeSchedules.clear();
+                        currentStopRealTimeSchedules.addAll(toAdd);
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
+                        //Log.d("DEBUG LIST", currentStopRealTimeSchedules.toString());
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                currentStopRealTimeSchedulesAdaptor.notifyDataSetChanged();
+                                stopTitle.setText(stop.getTts_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                currentStop = stop;
+                                if (fragment.containsStop(stop)){
+                                    stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_24);
+                                }else{
+                                    stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_border_24);
+                                }
+                            }
+                        });
 
+                    }else{
+                        Log.d("DEBUG LIST", "TO ADD IS NULL");
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopTitle.setText(stop.getTts_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                currentStop = stop;
+                            }
+                        });
+                    }
+                }catch (Exception e){
+                    Log.e("ERROR", e.getMessage());
+                    return;
+                }
+            }
+        });
+        thread.start();
+    }
     public void addCurrentStopToFavorites(){
         Thread thread = new Thread(new Runnable() {
             @Override

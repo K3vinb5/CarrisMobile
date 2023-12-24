@@ -1,23 +1,19 @@
 package kevin.carrismobile.data;
 
-import android.util.Log;
-
-import androidx.annotation.Nullable;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.HttpRetryException;
 import java.util.ArrayList;
 import java.util.List;
-
-import kevin.carrismobile.api.Api;
-
+import kevin.carrismobile.api.*;
 public class Carreira implements Serializable {
 
     private String id;
+    public boolean online;
     private String long_name;
     private String color;
     private List<Direction> directionList;
@@ -33,31 +29,40 @@ public class Carreira implements Serializable {
     public String getName() {
         return long_name;
     }
-
     public String getRouteId() {
         return id;
     }
-
+    public void setPatterns(List<String> patterns) {
+        this.patterns = patterns;
+    }
     public List<String> getPatterns() {
         return patterns;
     }
-
     public List<String> getRoutes() {
         return routes;
     }
-
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+    public boolean isOnline() {
+        return online;
+    }
+    public void setDirectionList(List<Direction> directionList) {
+        this.directionList = directionList;
+    }
     public void init(){
         directionList = new ArrayList<>();
+        int index = 0;
         for (String pattern : patterns){
-            directionList.add(Api.getDirection(pattern));
+            directionList.add(Api.getDirection(pattern, id, index));
+            index++;
         }
     }
 
     public void updateSchedulesOnStopOnGivenDirectionAndStop(int directionIndex, int stopIndex) throws IllegalStateException{
         Carreira currentCarreira = this;
         Direction currentDirection = currentCarreira.getDirectionList().get(directionIndex);
-        //TODO still not working
-        Log.d("UpdatePathsOnSelectedDirection was called", "Starting updatePathsOnSelectedDirection");
+        //Log.d("UpdatePathsOnSelectedDirection was called", "Starting updatePathsOnSelectedDirection");
         Stop stopToUpdate = currentDirection.getPathList().get(stopIndex).getStop();
         stopToUpdate.init();
         List<Schedule> schedules = stopToUpdate.getScheduleList();
@@ -70,7 +75,7 @@ public class Carreira implements Serializable {
         //Log.e("Stop Schedule added", schedules.toString());
     }
 
-    public static List<RealTimeSchedule> getSchedules(int stopId, int attempt, int maxAttempt) throws IllegalArgumentException {
+    public static List<RealTimeSchedule> getSchedules(String stopId, int attempt, int maxAttempt) throws IllegalArgumentException {
         if (attempt == maxAttempt){
             throw new IllegalArgumentException("Attempt has reached maxAttempt");
         }
@@ -134,7 +139,7 @@ public class Carreira implements Serializable {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(Object obj) {
         Carreira carreiraToCompare = (Carreira) obj;
         return this.getRouteId() == carreiraToCompare.getRouteId();
     }

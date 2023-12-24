@@ -31,4 +31,8 @@ public class Trip implements Serializable {
         return schedule.get(stopSequence);
     }
 
+    @Override
+    public String toString() {
+        return this.getTripId();
+    }
 }

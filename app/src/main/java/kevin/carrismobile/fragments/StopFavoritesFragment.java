@@ -68,7 +68,11 @@ public class StopFavoritesFragment extends Fragment {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         mainActivity.openFragment(stopDetailsFragment, 0, false);
-                        stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
+                        if (selectedStop.getStopID().length() > 5){
+                            stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
+                        }else{
+                            stopDetailsFragment.loadNewOfflineStop(selectedStop);
+                        }
                     }
                 });
                 thread.start();
@@ -208,7 +212,7 @@ public class StopFavoritesFragment extends Fragment {
                 Stop stopToRemove = null;
                 boolean stopFound = false;
                 for (Stop stop : stopList){
-                    if (stopId.equals(Integer.toString(stop.getStopID()))){
+                    if (stopId.equals(stop.getStopID())){
                         stopToRemove = stop;
                         stopFound = true;
                         break;

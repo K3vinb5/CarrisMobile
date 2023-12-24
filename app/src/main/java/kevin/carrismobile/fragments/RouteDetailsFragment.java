@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
@@ -34,7 +32,6 @@ import android.widget.TextView;
 
 import com.example.carrismobile.R;
 
-import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
@@ -47,6 +44,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import kevin.carrismobile.api.Api;
+import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.Carreira;
 import kevin.carrismobile.data.Direction;
 import kevin.carrismobile.data.Schedule;
@@ -148,7 +146,11 @@ public class RouteDetailsFragment extends Fragment {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         mainActivity.openFragment(stopDetailsFragment, 0, true);
-                        stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                        if (currentCarreira.isOnline()){
+                            stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                        }else{
+                            stopDetailsFragment.loadNewOfflineStop(currentStop);
+                        }
                     }
                 });
                 thread.start();
@@ -181,7 +183,7 @@ public class RouteDetailsFragment extends Fragment {
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
-                        if (currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null){
+                        if (currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null && currentCarreira.isOnline()){
                             try{
                                 currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
                             }catch (Exception ignore){
@@ -202,12 +204,14 @@ public class RouteDetailsFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                updateMarkers(stopList, map, getActivity());
                                 stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
                                 stopView.setAdapter(stopImageListAdaptor);
                                 //TODO not sure what the id is
                                 stopView.performItemClick(getView(), 0, getId());
                             }
                         });
+
                     }
                 });
                 thread.start();
@@ -235,16 +239,18 @@ public class RouteDetailsFragment extends Fragment {
                             stopList.addAll(toAdd);
                         }
                         Stop currentStop = stopList.get(currentStopIndex);
-                        try{
-                            currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
-                        }catch (Exception ignore){
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.show();
-                                }
-                            });
-                            connected = false;
+                        if (currentCarreira.isOnline()){
+                            try{
+                                currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
+                            }catch (Exception ignore){
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        dialog.show();
+                                    }
+                                });
+                                connected = false;
+                            }
                         }
                         double[] coordinates = currentStop.getCoordinates();
                         scheduleList.clear();
@@ -442,23 +448,79 @@ public class RouteDetailsFragment extends Fragment {
         thread.start();
     }
 
-    public void loadCarreira(Carreira carreira){
+    public void loadCarreiraFromFavorites(Carreira carreira){
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 startWaitingAnimation();
-                try{
-                    carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
-                }catch (Exception ignore){
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.show();
-                        }
-                    });
-                    connected = false;
+                if (currentCarreira.isOnline()){
+                    try{
+                        carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                    }catch (Exception ignore){
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.show();
+                            }
+                        });
+                        connected = false;
 
+                    }
                 }
+                currentCarreira = carreira;
+                currentCarreiraId = carreira.getRouteId();
+                currentStopIndex = 0;
+                List<Stop> toAdd = new ArrayList<>();
+                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                stopList.addAll(toAdd);
+                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
+                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+                directionList = carreira.getDirectionList();
+                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
+
+                MainActivity activity = (MainActivity)getActivity();
+                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
+
+                Carreira finalCarreira = carreira;
+                stopWaitingAnimation(finalCarreira, fragment, point);
+
+            }
+        });
+        thread.start();
+    }
+
+    public void loadCarreiraOffline(String carreiraId){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startWaitingAnimation();
+                Carreira carreira = Offline.getCarreira(carreiraId);
+                currentCarreira = carreira;
+                currentCarreiraId = carreira.getRouteId();
+                currentStopIndex = 0;
+                List<Stop> toAdd = new ArrayList<>();
+                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
+                stopList.addAll(toAdd);
+                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
+                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+                directionList = carreira.getDirectionList();
+                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
+
+                MainActivity activity = (MainActivity)getActivity();
+                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
+
+                Carreira finalCarreira = carreira;
+                stopWaitingAnimation(finalCarreira, fragment, point);
+
+            }
+        });
+        thread.start();
+    }
+    public void loadCarreiraOfflineFromFavorites(Carreira carreira){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startWaitingAnimation();
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;

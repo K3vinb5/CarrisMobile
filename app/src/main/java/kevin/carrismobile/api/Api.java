@@ -9,17 +9,11 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
-import kevin.carrismobile.data.Bus;
-import kevin.carrismobile.data.Carreira;
-import kevin.carrismobile.data.CarreiraBasic;
-import kevin.carrismobile.data.Direction;
-import kevin.carrismobile.data.RealTimeSchedule;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 public class Api {
-    private String line;
     public static final String CARREIRAURL = "https://api.carrismetropolitana.pt/lines/";
     public static final String CARREIRALISTURL = "https://api.carrismetropolitana.pt/lines";
     public static final String DIRECTIONURL = "https://api.carrismetropolitana.pt/patterns/";
@@ -40,10 +34,13 @@ public class Api {
         return output;
     }
 
-    public static Direction getDirection(String pattern){
+    public static Direction getDirection(String pattern, String routeId, int directionIndex){
         try {
             Gson gson = new Gson();
-            return gson.fromJson(getJson(DIRECTIONURL + pattern), Direction.class);
+            Direction direction = gson.fromJson(getJson(DIRECTIONURL + pattern), Direction.class);
+            direction.setRouteId(routeId);
+            direction.setDirectionIndexInRoute(directionIndex);
+            return  direction;
 
         }catch (Exception e ){
             e.printStackTrace();
@@ -55,6 +52,7 @@ public class Api {
         try {
             Gson gson = new Gson();
             Carreira carreira = gson.fromJson(getJson(CARREIRAURL + id), Carreira.class);
+            carreira.setOnline(true);
             return carreira;
         }catch (Exception e ){
             e.printStackTrace();
@@ -81,21 +79,6 @@ public class Api {
         try {
             Gson gson = new Gson();
             List<Bus> busList = new ArrayList<>();
-            //List<String> vehicleIds = new ArrayList<>();
-            //Carreira carreira = getCarreira(carreiraID);
-            //List<Path> pathList = carreira.getDirectionList().get(0).getPathList();
-
-            /*for (Direction direction: carreira.getDirectionList()) {
-                for (Path stop : direction.getPathList()) {
-                    JsonArray jsonArray = new JsonParser().parse(getJson(REALTIMESTOPURL + stop.getStop().getStopID() + "/realtime")).getAsJsonArray();
-                    for (JsonElement jsonElement : jsonArray) {
-                        RealTimeSchedule rs = gson.fromJson(jsonElement, RealTimeSchedule.class);
-                        if (!vehicleIds.contains(rs.getVehicle_id()) && rs.getTrip_id().split("_")[0].equals(carreiraID)) {
-                            vehicleIds.add(rs.getVehicle_id());
-                        }
-                    }
-                }
-            }*/
 
             JsonArray jsonBusArray = new JsonParser().parse(getJson(BUSREALTIMESTOPURL)).getAsJsonArray();
 
@@ -120,6 +103,7 @@ public class Api {
         try {
             Gson gson = new Gson();
             CarreiraBasic carreira = gson.fromJson(getJson(CARREIRAURL + id), CarreiraBasic.class);
+            carreira.setOnline(true);
             return carreira;
         }catch (Exception e ){
             e.printStackTrace();
@@ -134,6 +118,7 @@ public class Api {
             List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
             for (JsonElement jsonElement : jsonCarreiraArray){
                 CarreiraBasic carreira = gson.fromJson(jsonElement, CarreiraBasic.class);
+                carreira.setOnline(true);
                 carreiraBasicList.add(carreira);
             }
             return carreiraBasicList;
@@ -180,11 +165,4 @@ public class Api {
         }
         return null;
     }
-
-    /*public static void main(String[] args) {
-        List<Bus> busList = getBusFromLine("2823");
-        for (Bus bus : busList){
-            System.out.println(bus + "\n");
-        }
-    }*/
 }

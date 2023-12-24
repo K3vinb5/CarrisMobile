@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import kevin.carrismobile.api.Api;
+import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.CarreiraBasic;
 import kevin.carrismobile.data.Stop;
 import kevin.carrismobile.adaptors.RouteImageListAdaptor;
@@ -59,39 +60,15 @@ public class RoutesFragment extends Fragment {
         editText = v.findViewById(R.id.editTextRoutes);
 
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
-
         Gson gson = new Gson();
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread thread1 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<Stop> toAdd;
-                        try{
-                            toAdd = Api.getStopList();
-                            connected = true;
-                        }catch (Exception e){
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.show();
-                                }
-                            });
-                            connected = false;
-                            return;
-                        }
-                        stopsList.addAll(toAdd);
-                        currentStopList.addAll(stopsList);
-                        //TODO Might need UiThread
-                        stopListAdaptor = new ArrayAdapter<Stop>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, currentStopList);
-                    }
-                });
-                //thread1.start();
                 List<CarreiraBasic> toAdd;
                 try{
                     toAdd = Api.getCarreiraBasicList();
                     carreiraBasicList.addAll(toAdd);
+                    carreiraBasicList.addAll(Offline.getCarreiraList());
                     connected = true;
                 }catch (Exception e){
                     getActivity().runOnUiThread(new Runnable() {
@@ -181,11 +158,16 @@ public class RoutesFragment extends Fragment {
                         } catch (Exception ignored) {
 
                         }
-                        String busID = currentCarreiraBasicList.get(i).getId()+"";
+                        boolean online = currentCarreiraBasicList.get(i).isOnline();
+                        String selectedId = currentCarreiraBasicList.get(i).getId()+"";
                         MainActivity activity = (MainActivity) getActivity();
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         activity.openFragment(routeDetailFragment, 0, true);
-                        routeDetailFragment.loadCarreiraFromApi(busID);
+                        if(online){
+                            routeDetailFragment.loadCarreiraFromApi(selectedId);
+                        }else {
+                            routeDetailFragment.loadCarreiraOffline(selectedId);
+                        }
                     }
                 });
                 thread1.start();
