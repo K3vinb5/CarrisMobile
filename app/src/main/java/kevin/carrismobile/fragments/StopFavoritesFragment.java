@@ -68,7 +68,7 @@ public class StopFavoritesFragment extends Fragment {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         mainActivity.openFragment(stopDetailsFragment, 0, false);
-                        if (selectedStop.getStopID().length() > 5){
+                        if (selectedStop.isOnline()){
                             stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
                         }else{
                             stopDetailsFragment.loadNewOfflineStop(selectedStop);

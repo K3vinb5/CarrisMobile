@@ -183,7 +183,7 @@ public class RouteDetailsFragment extends Fragment {
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
-                        if (currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null && currentCarreira.isOnline()){
+                        if ( currentCarreira.isOnline() && currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null){
                             try{
                                 currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
                             }catch (Exception ignore){
@@ -195,6 +195,9 @@ public class RouteDetailsFragment extends Fragment {
                                 });
                                 connected = false;
                             }
+                        }
+                        if (!currentCarreira.isOnline()){
+                            Offline.updateDirectionIndex(currentCarreira, currentDirectionIndex);
                         }
                         List<Stop> toAdd = new ArrayList<>();
                         currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));

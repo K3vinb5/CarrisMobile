@@ -135,6 +135,7 @@ public class Api {
             List<Stop> stopList = new ArrayList<>();
             for (JsonElement jsonElement : jsonCarreiraArray){
                 Stop stop = gson.fromJson(jsonElement, Stop.class);
+                stop.setOnline(true);
                 stopList.add(stop);
             }
             return stopList;
@@ -159,6 +160,7 @@ public class Api {
         try{
             Gson gson = new Gson();
             Stop stop = gson.fromJson(getJson(REALTIMESTOPURL + stopId), Stop.class);
+            stop.setOnline(true);
             return stop;
         }catch (Exception e){
             e.printStackTrace();

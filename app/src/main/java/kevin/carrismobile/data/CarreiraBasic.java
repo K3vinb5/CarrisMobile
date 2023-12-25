@@ -1,5 +1,7 @@
 package kevin.carrismobile.data;
 
+import androidx.annotation.Nullable;
+
 public class CarreiraBasic {
 
     private String id;
@@ -44,6 +46,14 @@ public class CarreiraBasic {
 
     public static CarreiraBasic newCarreiraBasicFromCarreira(Carreira carreira){
         return new CarreiraBasic(carreira.getRouteId(), carreira.getName(), carreira.getColor());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj instanceof CarreiraBasic){
+            return ((CarreiraBasic)obj).getId().equals(this.getId());
+        }
+        return false;
     }
 
     @Override

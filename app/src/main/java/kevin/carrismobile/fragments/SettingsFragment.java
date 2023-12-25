@@ -53,8 +53,21 @@ public class SettingsFragment extends Fragment {
         bingMapsSwitch = v.findViewById(R.id.bingMapsSwitch);
         resetButton = v.findViewById(R.id.resetPreferences);
         mPrefs = getActivity().getSharedPreferences("SettingsFragment", MODE_PRIVATE);
-        openTopoSwitch.setChecked(true);
-
+        if (loadObject("key_topo", String.class) == null){
+            storeObject(new Gson().toJson("1"), "key_topo");
+            openTopoSwitch.setChecked(true);
+        }else{
+            String topo_switched = (String)loadObject("key_topo", String.class);
+            String thunderForest_switched = (String)loadObject("key_tunderForest", String.class);
+            String bingMaps_switched = (String)loadObject("key_bingMaps", String.class);
+            if (topo_switched != null && topo_switched.equals("1")){
+                openTopoSwitch.performClick();
+            }else if(thunderForest_switched != null && thunderForest_switched.equals("1")){
+                thunderForestSwitch.performClick();
+            }else if(bingMaps_switched != null && bingMaps_switched.equals("1")){
+                bingMapsSwitch.performClick();
+            }
+        }
         setOpenTopoSwitchOnClickListener();
         setBingMapsSwitchOnClickListener();
         setThunderForestSwitchOnClickListener();
@@ -95,7 +108,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
-
+                storeObject(new Gson().toJson("1"), "key_topo");
             }
         });
     }
@@ -130,6 +143,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
+                storeObject(new Gson().toJson("1"), "key_bingMaps");
             }
         });
     }
@@ -163,6 +177,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
+                storeObject(new Gson().toJson("1"), "key_thunderForest");
             }
         });
     }

@@ -14,6 +14,7 @@ import kevin.carrismobile.api.Api;
 public class Stop implements Serializable {
 
     private String id;
+    private boolean online;
     private String name;
     private String tts_name;
     private double lat;
@@ -48,34 +49,33 @@ public class Stop implements Serializable {
         this.lines = lines;
         this.facilities = facilities;
     }
-
     public String getStopID() {
         return id;
     }
-
     public double[] getCoordinates(){
         double[] list = new double[2];
         list[0] = lat;
         list[1] = lon;
         return list;
     }
-
     public String getTts_name() {
         return tts_name;
     }
-
     public String getLocality() {
         return locality;
     }
-
     public String getMunicipality_name() {
         return municipality_name;
     }
-
     public List<Schedule> getScheduleList() {
             return scheduleList;
     }
-
+    public boolean isOnline() {
+        return online;
+    }
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
     public void init(){
         if (!init){
             init = true;

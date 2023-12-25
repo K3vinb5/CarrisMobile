@@ -57,6 +57,12 @@ public class Carreira implements Serializable {
             directionList.add(Api.getDirection(pattern, id, index));
             index++;
         }
+        //TODO not sure how it impacts performance
+        for(Direction direction : directionList){
+            for (Path path : direction.getPathList()){
+                path.getStop().setOnline(true);
+            }
+        }
     }
 
     public void updateSchedulesOnStopOnGivenDirectionAndStop(int directionIndex, int stopIndex) throws IllegalStateException{

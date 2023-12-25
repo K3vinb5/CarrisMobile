@@ -2,7 +2,7 @@ package kevin.carrismobile.data;
 
 public class RealTimeSchedule {
 
-    private int line_id;
+    private String line_id;
     private String route_id;
     private String pattern_id;
     private String trip_id;
@@ -11,7 +11,7 @@ public class RealTimeSchedule {
     private String scheduled_arrival;
     private String vehicle_id;
 
-    public RealTimeSchedule(int line_id, String route_id, String pattern_id, String trip_id, String headsign, int stop_sequence, String scheduled_arrival, String vehicle_id) {
+    public RealTimeSchedule(String line_id, String route_id, String pattern_id, String trip_id, String headsign, int stop_sequence, String scheduled_arrival, String vehicle_id) {
         this.line_id = line_id;
         this.route_id = route_id;
         this.pattern_id = pattern_id;
@@ -22,7 +22,7 @@ public class RealTimeSchedule {
         this.vehicle_id = vehicle_id;
     }
 
-    public int getLine_id() {
+    public String getLine_id() {
         return line_id;
     }
 
