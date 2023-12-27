@@ -195,6 +195,8 @@ public class RoutesFragment extends Fragment {
         spinnerList.add("Carris Metropolitana");
         spinnerList.add("Carris");
         spinnerList.add("CP - Comboios Urbanos");
+        spinnerList.add("Fertagus");
+        spinnerList.add("MobiCascais");
         spinnerListAdaptor = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, spinnerList);
         spinner.setAdapter(spinnerListAdaptor);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -225,6 +227,20 @@ public class RoutesFragment extends Fragment {
                         currentCarreiraBasicList.clear();
                         currentCarreiraBasicList.addAll(carreiraBasicList);
                         currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("1"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    case 4:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("2"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    case 5:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("3"));
                         Log.d("DEBUG", currentCarreiraBasicList.toString());
                         updateList();
                         break;

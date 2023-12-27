@@ -34,6 +34,8 @@ public class Offline {
         mPrefsMaps = activity.getSharedPreferences("OfflineAgencyMap", Context.MODE_PRIVATE);
         OfflineCarris.initCarrisOffline(activity);
         OfflineCP.initCPOffline(activity);
+        OfflineMobiCascais.initMobiCascaisOffline(activity);
+        OfflineFerTagus.initFertagusOffline(activity);
         if (!mPrefsMaps.contains(AGENCY_SERVICE_KEY)){
             copyResource(R.raw.agency_service, AGENCY_SERVICE_KEY,activity, mPrefsMaps);
             Log.w("WARNING SHARED PREFERENCES", "Agency files not found");
@@ -51,11 +53,15 @@ public class Offline {
 
     public static Carreira getCarreira(String id){
         String agency = agencyServiceMap.get(id);
-        if (agency.equals("0")){
-            return OfflineCarris.getCarreira(id);
-        }
-        else if(agency.equals("1")){
-            return OfflineCP.getCarreira(id);
+        switch (agency) {
+            case "0":
+                return OfflineCarris.getCarreira(id);
+            case "1":
+                return OfflineCP.getCarreira(id);
+            case "2":
+                return OfflineFerTagus.getCarreira(id);
+            case "3":
+                return OfflineMobiCascais.getCarreira(id);
         }
         return null;
     }
@@ -65,15 +71,25 @@ public class Offline {
         List<CarreiraBasic> returnList = new ArrayList<>();
         returnList.addAll(OfflineCarris.getCarreiraList());
         returnList.addAll(OfflineCP.getCarreiraList());
+        returnList.addAll(OfflineFerTagus.getCarreiraList());
+        returnList.addAll(OfflineMobiCascais.getCarreiraList());
         return returnList;
     }
 
     public static void updateDirectionIndex(Carreira carreira, int directionIndex){
-        //OfflineCarris
-        if (carreira.getAgency_id().equals("0")){
-            OfflineCarris.updateDirectionIndex(carreira, directionIndex);
-        }else if(carreira.getAgency_id().equals("1")){
-            OfflineCP.updateDirectionIndex(carreira, directionIndex);
+        switch (carreira.getAgency_id()) {
+            case "0":
+                OfflineCarris.updateDirectionIndex(carreira, directionIndex);
+                break;
+            case "1":
+                OfflineCP.updateDirectionIndex(carreira, directionIndex);
+                break;
+            case "2":
+                OfflineFerTagus.updateDirectionIndex(carreira, directionIndex);
+                break;
+            case "3":
+                OfflineMobiCascais.updateDirectionIndex(carreira, directionIndex);
+                break;
         }
     }
     public static void copyResource(int resource, String key, Activity activity, SharedPreferences mPrefs){

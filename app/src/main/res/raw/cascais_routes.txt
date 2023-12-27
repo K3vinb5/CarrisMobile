@@ -1,0 +1,45 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color,route_sort_order
+M02,mobi_cascais_bus,M02,Cascais Terminal via Malveira da Serra (Circular),,3,,ce5504,ffffff,2
+M03,mobi_cascais_bus,M03,CascaiShopping via Torre (Circular),,3,,b10086,ffffff,3
+M04,mobi_cascais_bus,M04,Cascais Terminal via Torre (Circular),,3,,b10086,ffffff,4
+M05,mobi_cascais_bus,M05,Cascais Terminal via Qta. da Marinha e Guincho (Circular),,3,,0d7215,ffffff,5
+M06,mobi_cascais_bus,M06,Cascais Terminal - Estoril Estação via Fisgas,,3,,0071ca,ffffff,6
+M07,mobi_cascais_bus,M07,Cascais Terminal - Estoril Estação via Amoreira,,3,,cc9b00,ffffff,7
+M08,mobi_cascais_bus,M08,Cascais Terminal via Alvide (Circular),,3,,ad0101,ffffff,8
+M09,mobi_cascais_bus,M09,Cascais Terminal via Cobre e Bairro Santana (Circular),,3,,049684,ffffff,9
+M10,mobi_cascais_bus,M10,Malveira da Serra - CascaiShopping Terminal via Zambujeiro,,3,,b10086,ffffff,10
+M11,mobi_cascais_bus,M11,Cascais Terminal - Estoril Estação via Cabreiro e Atrozela,,3,,ad0101,ffffff,11
+M12,mobi_cascais_bus,M12,Cascais Terminal - Estoril Estação via Amoreira,,3,,cc9b00,ffffff,12
+M13,mobi_cascais_bus,M13,Cascais Terminal - Estoril Estação via Manique,,3,,0d7215,ffffff,13
+M01,mobi_cascais_bus,M01,Parede Terminal - CascaiShopping via Estoril,,3,,ce5504,ffffff,1
+M16,mobi_cascais_bus,M16,S. Domingos de Rana - Campus Carcavelos,,3,,4e0963,ffffff,16
+M20,mobi_cascais_bus,M20,Estoril Estação - Bairro da Cadeia do Linhó via Amoreira,,3,,b10086,ffffff,20
+M21,mobi_cascais_bus,M21,Carcavelos Estação - Talaíde,,3,,049684,ffffff,21
+M23,mobi_cascais_bus,M23,Talaíde - Estoril Estação,,3,,0d7215,ffffff,23
+M24,mobi_cascais_bus,M24,Carcavelos Estação - Manique,,3,,4e0963,ffffff,24
+M30,mobi_cascais_bus,M30,Parede Terminal - Abóbada,,3,,0071ca,ffffff,30
+M31,mobi_cascais_bus,M31,Carcavelos Estação - Hospital de Cascais via Bicesse,,3,,0071ca,ffffff,31
+M32,mobi_cascais_bus,M32,Parede Terminal - Trajouce via Murtal,,3,,cc9b00,ffffff,32
+M35,mobi_cascais_bus,M35,Trajouce Norte - Carcavelos Estação via S. Domingos de Rana,,3,,ad0101,ffffff,35
+M36,mobi_cascais_bus,M36,Trajouce Norte - Carcavelos Estação via Outeiro da Polima,,3,,4e0963,ffffff,36
+M38,mobi_cascais_bus,M38,Estoril Estação - CascaiShopping,,3,,5A8400,ffffff,38
+M14,mobi_cascais_bus,M14,Cascais Terminal via Murches e Malveira da Serra (Circular),,3,,049684,ffffff,14
+M15,mobi_cascais_bus,M15,Cascais Terminal via Areia e Guincho (Circular),,3,,ce5504,ffffff,15
+M17,mobi_cascais_bus,M17,Cascais Terminal - Bairro da Cadeia do Linhó via Alvide e Hospital,,3,,049684,ffffff,17
+M18,mobi_cascais_bus,M18,Cascais Terminal - Bairro da Cadeia do Linhó via Abuxarda,,3,,4e0963,ffffff,18
+M19,mobi_cascais_bus,M19,Estoril Estação via Galiza e Pau Gordo (Circular),,3,,0d7215,ffffff,19
+M22,mobi_cascais_bus,M22,Carcavelos Estação - Cascais Terminal via Manique,,3,,ad0101,ffffff,22
+M25,mobi_cascais_bus,M25,Parede Terminal via Carcavelos e S.D. Rana (Circular),,3,,0071ca,ffffff,25
+M26,mobi_cascais_bus,M26,Parede Terminal via Matarraque (Circular),,3,,ce5504,ffffff,26
+M27,mobi_cascais_bus,M27,Cascais Estação (Circular),,3,,0071ca,ffffff,27
+M28,mobi_cascais_bus,M28,Malveira da Serra - CascaiShopping Terminal via Depósitos da Água,,3,,049684,ffffff,28
+M29,mobi_cascais_bus,M29,São João do Estoril Estação - CascaiShopping Terminal,,3,,ad0101,ffffff,29
+M33,mobi_cascais_bus,M33,Arneiro via S. D. Rana e Tires (Circular),,3,,4e0963,ffffff,33
+M34,mobi_cascais_bus,M34,Cascais Terminal - Costa da Guia,,3,,ce5504,ffffff,34
+M37,mobi_cascais_bus,M37,São Domingos de Rana (Circular),,3,,880e4f,ffffff,37
+M39,mobi_cascais_bus,M39,Cascais Estação (Largo) - Hospital de Cascais,,3,,ad0101,ffffff,39
+M40,mobi_cascais_bus,M40,Hospital de Cascais - Malveira da Serra (Circular),,3,,A92023,ffffff,40
+M41,mobi_cascais_bus,M41,Carcavelos Estação (Circular),,3,,0d7215,ffffff,41
+M42,mobi_cascais_bus,M42,Conceição da Abóboda - Escola Secundária de Carcavelos,"",3,,A92023,ffffff,42
+M43,mobi_cascais_bus,M43,Cascais Estação (Largo) via Guincho (Circular),,3,,007DBD,ffffff,43
+M44,mobi_cascais_bus,M44,Cascais Estação (Largo) - Quinta do Pisão,,3,,066A40,ffffff,44
