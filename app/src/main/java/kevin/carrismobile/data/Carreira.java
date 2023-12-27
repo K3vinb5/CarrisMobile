@@ -12,6 +12,7 @@ import java.util.List;
 import kevin.carrismobile.api.*;
 public class Carreira implements Serializable {
 
+    private String agency_id;
     private String id;
     public boolean online;
     private String long_name;
@@ -44,8 +45,14 @@ public class Carreira implements Serializable {
     public void setOnline(boolean online) {
         this.online = online;
     }
+    public void setAgency_id(String agency_id) {
+        this.agency_id = agency_id;
+    }
     public boolean isOnline() {
         return online;
+    }
+    public String getAgency_id() {
+        return agency_id;
     }
     public void setDirectionList(List<Direction> directionList) {
         this.directionList = directionList;
@@ -61,6 +68,7 @@ public class Carreira implements Serializable {
         for(Direction direction : directionList){
             for (Path path : direction.getPathList()){
                 path.getStop().setOnline(true);
+                path.getStop().setAgency_id("-1");
             }
         }
     }

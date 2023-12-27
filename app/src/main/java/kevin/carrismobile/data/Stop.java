@@ -14,6 +14,7 @@ import kevin.carrismobile.api.Api;
 public class Stop implements Serializable {
 
     private String id;
+    private String agency_id;
     private boolean online;
     private String name;
     private String tts_name;
@@ -73,6 +74,15 @@ public class Stop implements Serializable {
     public boolean isOnline() {
         return online;
     }
+
+    public String getAgency_id() {
+        return agency_id;
+    }
+
+    public void setAgency_id(String agency_id) {
+        this.agency_id = agency_id;
+    }
+
     public void setOnline(boolean online) {
         this.online = online;
     }

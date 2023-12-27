@@ -1,5 +1,7 @@
 package kevin.carrismobile.data;
 
+import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,17 @@ public class Trip implements Serializable {
 
     public Schedule getScheduleAtSelectedStop(int stopSequence){
         return schedule.get(stopSequence);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof String){
+            return this.getTripId().equals(obj);
+        }
+        if (obj instanceof Trip){
+            return this.getTripId().equals(((Trip)obj).getTripId());
+        }
+        return false;
     }
 
     @Override

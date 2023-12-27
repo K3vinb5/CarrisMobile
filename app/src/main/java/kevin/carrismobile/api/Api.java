@@ -53,6 +53,7 @@ public class Api {
             Gson gson = new Gson();
             Carreira carreira = gson.fromJson(getJson(CARREIRAURL + id), Carreira.class);
             carreira.setOnline(true);
+            carreira.setAgency_id("-1");
             return carreira;
         }catch (Exception e ){
             e.printStackTrace();
@@ -104,6 +105,7 @@ public class Api {
             Gson gson = new Gson();
             CarreiraBasic carreira = gson.fromJson(getJson(CARREIRAURL + id), CarreiraBasic.class);
             carreira.setOnline(true);
+            carreira.setAgency_id("-1");
             return carreira;
         }catch (Exception e ){
             e.printStackTrace();
@@ -119,6 +121,7 @@ public class Api {
             for (JsonElement jsonElement : jsonCarreiraArray){
                 CarreiraBasic carreira = gson.fromJson(jsonElement, CarreiraBasic.class);
                 carreira.setOnline(true);
+                carreira.setAgency_id("-1");
                 carreiraBasicList.add(carreira);
             }
             return carreiraBasicList;
@@ -136,6 +139,7 @@ public class Api {
             for (JsonElement jsonElement : jsonCarreiraArray){
                 Stop stop = gson.fromJson(jsonElement, Stop.class);
                 stop.setOnline(true);
+                stop.setAgency_id("-1");
                 stopList.add(stop);
             }
             return stopList;
@@ -161,6 +165,7 @@ public class Api {
             Gson gson = new Gson();
             Stop stop = gson.fromJson(getJson(REALTIMESTOPURL + stopId), Stop.class);
             stop.setOnline(true);
+            stop.setAgency_id("-1");
             return stop;
         }catch (Exception e){
             e.printStackTrace();

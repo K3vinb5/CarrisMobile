@@ -18,12 +18,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import com.example.carrismobile.R;
-import com.google.gson.Gson;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import kevin.carrismobile.api.Api;
 import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.CarreiraBasic;
+import kevin.carrismobile.data.Direction;
 import kevin.carrismobile.data.Stop;
 import kevin.carrismobile.adaptors.RouteImageListAdaptor;
 import kevin.carrismobile.custom.MyCustomDialog;
@@ -40,14 +42,13 @@ public class RoutesFragment extends Fragment {
 
     ListView list;
     EditText editText;
+    Spinner spinner;
     RouteImageListAdaptor imagesListAdapter;
-    ArrayAdapter<Stop> stopListAdaptor;
+    ArrayAdapter<String> spinnerListAdaptor;
+    List<String> spinnerList = new ArrayList<>();
     List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
-    List<Stop> stopsList = new ArrayList<>();
     Lock listLock = new ReentrantLock();
-    boolean updateAdaptor = false;
     List<CarreiraBasic> currentCarreiraBasicList = new ArrayList<>();
-    List<Stop> currentStopList = new ArrayList<>();
     AlertDialog dialog;
     public boolean connected = false;
     @Override
@@ -58,43 +59,46 @@ public class RoutesFragment extends Fragment {
 
         list = v.findViewById(R.id.main_list);
         editText = v.findViewById(R.id.editTextRoutes);
-
+        spinner = v.findViewById(R.id.listFilterSpinner);
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
-        Gson gson = new Gson();
-        Thread thread = new Thread(new Runnable() {
+        initCarreiraBasicList();
+        setSpinnerList();
+        setEditText();
+        setList();
+        return v;
+    }
+
+    private void setList() {
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void run() {
-                List<CarreiraBasic> toAdd;
-                try{
-                    toAdd = Api.getCarreiraBasicList();
-                    carreiraBasicList.addAll(toAdd);
-                    carreiraBasicList.addAll(Offline.getCarreiraList());
-                    connected = true;
-                }catch (Exception e){
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.show();
-                        }
-                    });
-                    connected = false;
-                    return;
-                }
-                currentCarreiraBasicList.addAll(carreiraBasicList);
-                getActivity().runOnUiThread(new Runnable() {
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Thread thread1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
-                        list.setAdapter(imagesListAdapter);
+                        try {
+                            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                        } catch (Exception ignored) {
+
+                        }
+                        boolean online = currentCarreiraBasicList.get(i).isOnline();
+                        String selectedId = currentCarreiraBasicList.get(i).getId()+"";
+                        MainActivity activity = (MainActivity) getActivity();
+                        RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
+                        activity.openFragment(routeDetailFragment, 0, true);
+                        if(online){
+                            routeDetailFragment.loadCarreiraFromApi(selectedId);
+                        }else {
+                            routeDetailFragment.loadCarreiraOffline(selectedId);
+                        }
                     }
                 });
-
+                thread1.start();
             }
         });
-        thread.start();
+    }
 
-
-
+    private void setEditText() {
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -131,49 +135,108 @@ public class RoutesFragment extends Fragment {
                     @Override
                     public void run() {
                         Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraBasicList.size());
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                listLock.lock();
-                                imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
-                                list.setAdapter(imagesListAdapter);
-                                listLock.unlock();
-                            }
-                        });
+                        updateList();
                     }
                 });
                 thread2.start();
             }
         });
+    }
 
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    private void initCarreiraBasicList() {
+        Thread thread = new Thread(new Runnable() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Thread thread1 = new Thread(new Runnable() {
+            public void run() {
+                List<CarreiraBasic> toAdd;
+                try{
+                    toAdd = Api.getCarreiraBasicList();
+                    carreiraBasicList.addAll(toAdd);
+                    carreiraBasicList.addAll(Offline.getCarreiraList());
+                    carreiraBasicList.sort(Comparator.comparing(CarreiraBasic::getId));
+                    connected = true;
+                }catch (Exception e){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.show();
+                        }
+                    });
+                    connected = false;
+                    return;
+                }
+                currentCarreiraBasicList.addAll(carreiraBasicList);
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                        } catch (Exception ignored) {
-
-                        }
-                        boolean online = currentCarreiraBasicList.get(i).isOnline();
-                        String selectedId = currentCarreiraBasicList.get(i).getId()+"";
-                        MainActivity activity = (MainActivity) getActivity();
-                        RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
-                        activity.openFragment(routeDetailFragment, 0, true);
-                        if(online){
-                            routeDetailFragment.loadCarreiraFromApi(selectedId);
-                        }else {
-                            routeDetailFragment.loadCarreiraOffline(selectedId);
-                        }
+                        imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                        list.setAdapter(imagesListAdapter);
                     }
                 });
-                thread1.start();
+
             }
         });
-        return v;
+        thread.start();
+    }
+
+    private void updateList(){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                listLock.lock();
+                imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                list.setAdapter(imagesListAdapter);
+                listLock.unlock();
+            }
+        });
+    }
+
+    private void setSpinnerList() {
+        spinnerList.add("Todas");
+        spinnerList.add("Carris Metropolitana");
+        spinnerList.add("Carris");
+        spinnerList.add("CP - Comboios Urbanos");
+        spinnerListAdaptor = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, spinnerList);
+        spinner.setAdapter(spinnerListAdaptor);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                switch (i){
+                    case 0:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    case 1:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("-1"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    case 2:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("0"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    case 3:
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("1"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();
+                        break;
+                    default:
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
     }
 
     public static boolean doesTextContain(String text1, String text2) {
