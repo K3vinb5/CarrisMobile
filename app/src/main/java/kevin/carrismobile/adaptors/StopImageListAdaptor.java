@@ -37,7 +37,7 @@ public class StopImageListAdaptor extends BaseAdapter {
         this.stopList = stopList;
         for (Stop s : stopList){
             textList.add(s.getTts_name());
-            imageList.add(getImageId(s.getFacilities(), s.getTts_name()));
+            imageList.add(getImageId(s.getFacilities(), s.getTts_name(), s.getAgency_id(), activity));
         }
     }
 
@@ -75,22 +75,33 @@ public class StopImageListAdaptor extends BaseAdapter {
         return view;
     }
 
-    private Drawable getImageId(List<String> facilities, String tts_name){
-        if (facilities.contains("subway")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_metro_logo, null);
-        }else if(facilities.contains("train")){
+    public static Drawable getImageId(List<String> facilities, String tts_name, String agency_id, Activity activity){
+        if(agency_id.equals("-1")) {
+            if (facilities.contains("subway")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_metro_logo, null);
+            } else if (facilities.contains("train")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_train_logo, null);
+            } else if (facilities.contains("light_rail")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_lightrail_logo, null);
+            } else if (facilities.contains("boat")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_boat_logo, null);
+            } else if (facilities.contains("hospital")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_hospital_logo, null);
+            } else if (doesTextContain(tts_name, "escola")) {
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_school_logo, null);
+            }else{
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
+            }
+        }else if(agency_id.equals("0")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_carris_min, null);
+        } else if (agency_id.equals("1")) {
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_train_logo, null);
-        }else if(facilities.contains("light_rail")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_lightrail_logo, null);
-        }else if(facilities.contains("boat")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_boat_logo, null);
-        }else if(facilities.contains("hospital")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_hospital_logo, null);
-        }else if(doesTextContain(tts_name, "escola")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_school_logo, null);
-        }else {
+        }else if(agency_id.equals("2")){
+            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_train_logo, null);
+        }else if(agency_id.equals("3")){
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
         }
+        return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
     }
 
     public static boolean doesTextContain(String text1, String text2) {

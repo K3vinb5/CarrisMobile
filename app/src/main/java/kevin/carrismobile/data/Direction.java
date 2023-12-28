@@ -12,6 +12,7 @@ public class Direction implements Serializable {
 
     private String id;
     private String headsign;
+    private String shape_id;
     private List<Path> path = new ArrayList<>();
     private List<Trip> trips = new ArrayList<>();
 
@@ -68,6 +69,10 @@ public class Direction implements Serializable {
 
     public List<Trip> getTrips() {
         return trips;
+    }
+
+    public String getShape_id() {
+        return shape_id;
     }
 
     @Override

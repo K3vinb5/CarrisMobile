@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import kevin.carrismobile.api.Api;
 import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.Carreira;
 import kevin.carrismobile.data.Direction;
+import kevin.carrismobile.data.Point;
 import kevin.carrismobile.data.Schedule;
 import kevin.carrismobile.data.Stop;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
@@ -57,7 +60,7 @@ import kevin.carrismobile.adaptors.StopImageListAdaptor;
 public class RouteDetailsFragment extends Fragment {
 
     //private static SharedPreferences mPrefs;
-    static MapView map;
+    public MapView map;
     Button routeStopDetails;
     Button searchButton;
     EditText editText;
@@ -71,23 +74,23 @@ public class RouteDetailsFragment extends Fragment {
     Spinner spinner;//
     ImageView loadingImage;
 
-    public static String currentCarreiraId = null;
-    public static boolean uiIsVisible = false;//
-    public static int currentStopIndex = 0;//
-    public static int currentDirectionIndex = 0;//
-    public static Carreira currentCarreira = null;//
-    public static List<Stop> stopList = new ArrayList<>();
-    static StopImageListAdaptor stopImageListAdaptor;
-    public static List<Direction> directionList = new ArrayList<>();//
-    static ArrayAdapter<Direction> directionArrayAdapter = null;
-    public static List<Schedule> scheduleList = new ArrayList<>();//
-    static ArrayAdapter<Schedule> scheduleArrayAdapter = null;
+    private static String currentCarreiraId = null;
+    private boolean uiIsVisible = false;//
+    private int currentStopIndex = 0;//
+    private int currentDirectionIndex = 0;//
+    private Carreira currentCarreira = null;//
+    public List<Stop> stopList = new ArrayList<>();
+    private StopImageListAdaptor stopImageListAdaptor;
+    private List<Direction> directionList = new ArrayList<>();//
+    private ArrayAdapter<Direction> directionArrayAdapter = null;
+    public List<Schedule> scheduleList = new ArrayList<>();//
+    private ArrayAdapter<Schedule> scheduleArrayAdapter = null;
     public AlertDialog dialog;
     public AlertDialog stopAdded;
     public AlertDialog routeAdded;
     public AlertDialog routeDeleted;
     public boolean connected;
-    public static List<Marker> markerList = new ArrayList<>();//
+    public List<Marker> markerList = new ArrayList<>();//
 
 
     @Override
@@ -144,10 +147,11 @@ public class RouteDetailsFragment extends Fragment {
                     public void run() {
                         Stop currentStop = stopList.get(currentStopIndex);
                         MainActivity mainActivity = (MainActivity) getActivity();
+                        assert mainActivity != null;
                         StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
                         mainActivity.openFragment(stopDetailsFragment, 0, true);
                         if (currentCarreira.isOnline()){
-                            stopDetailsFragment.loadNewStop(currentStop.getStopID()+"");
+                            stopDetailsFragment.loadNewStop(currentStop.getStopID());
                         }else{
                             stopDetailsFragment.loadNewOfflineStop(currentStop);
                         }
@@ -187,12 +191,7 @@ public class RouteDetailsFragment extends Fragment {
                             try{
                                 currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
                             }catch (Exception ignore){
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        dialog.show();
-                                    }
-                                });
+                                getActivity().runOnUiThread(() -> dialog.show());
                                 connected = false;
                             }
                         }
@@ -204,15 +203,12 @@ public class RouteDetailsFragment extends Fragment {
                         assert toAdd.size() > 0;
                         stopList.addAll(toAdd);
                         currentStopIndex = 0;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateMarkers(stopList, map, getActivity());
-                                stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
-                                stopView.setAdapter(stopImageListAdaptor);
-                                //TODO not sure what the id is
-                                stopView.performItemClick(getView(), 0, getId());
-                            }
+                        getActivity().runOnUiThread(() -> {
+                            updateMarkers(stopList, map);
+                            stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
+                            stopView.setAdapter(stopImageListAdaptor);
+                            //TODO not sure what the id is
+                            stopView.performItemClick(getView(), 0, getId());
                         });
 
                     }
@@ -385,7 +381,7 @@ public class RouteDetailsFragment extends Fragment {
                 map.getController().setCenter(point);
                 map.getController().setZoom(17.0);
                 map.invalidate();
-                updateMarkers(stopList, map, getActivity());
+                updateMarkers(stopList, map);
             }
         });
     }
@@ -485,8 +481,7 @@ public class RouteDetailsFragment extends Fragment {
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
-                Carreira finalCarreira = carreira;
-                stopWaitingAnimation(finalCarreira, fragment, point);
+                stopWaitingAnimation(carreira, fragment, point);
 
             }
         });
@@ -514,8 +509,7 @@ public class RouteDetailsFragment extends Fragment {
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
-                Carreira finalCarreira = carreira;
-                stopWaitingAnimation(finalCarreira, fragment, point);
+                stopWaitingAnimation(carreira, fragment, point);
 
             }
         });
@@ -540,24 +534,24 @@ public class RouteDetailsFragment extends Fragment {
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
 
-                Carreira finalCarreira = carreira;
-                stopWaitingAnimation(finalCarreira, fragment, point);
+                stopWaitingAnimation(carreira, fragment, point);
 
             }
         });
         thread.start();
     }
 
-    private static void updateMarkers(List<Stop> stopList, MapView map, Activity activity){
+    private void updateMarkers(List<Stop> stopList, MapView map){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
         }
-
+        List<GeoPoint> geoPointList = new ArrayList<>();
         for (Stop s : stopList){
             double[] coordinates = s.getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+            geoPointList.add(point);
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
+            Drawable d = StopImageListAdaptor.getImageId(s.getFacilities(), s.getTts_name(), s.getAgency_id(), getActivity());
             marker.setIcon(d);
             markerList.add(marker);
             marker.setPosition(point);
@@ -565,8 +559,31 @@ public class RouteDetailsFragment extends Fragment {
             String descrption = "Stop Id: " + s.getStopID() + "\nLocality: " + s.getLocality() + "\nMunicipality: " + s.getMunicipality_name();
             MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
             marker.setInfoWindow(miw);
-            map.getOverlays().add(marker);
         }
+        Polyline line = new Polyline(map, true, false);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (currentCarreira.isOnline()){
+                    Direction currentDirection = currentCarreira.getDirectionList().get(currentDirectionIndex);
+                    Log.d("DEBUG", currentDirection.getShape_id());
+                    List<Point> pointList = Api.getPoints(currentDirection.getShape_id());
+                    pointList.forEach(point -> line.addPoint(new GeoPoint(point.getLat(), point.getLon())));
+                    String hexCode = currentCarreira.getColor().substring(1);
+                    int resultRed = Integer.valueOf(hexCode.substring(0, 2), 16);
+                    int resultGreen = Integer.valueOf(hexCode.substring(2, 4), 16);
+                    int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
+                    line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
+                    line.setWidth(7.5f);
+                    map.getOverlays().add(line);
+                    markerList.forEach(marker -> map.getOverlays().add(marker));
+                }else{
+                    geoPointList.forEach(line::addPoint);
+                    map.getOverlays().add(line);
+                    markerList.forEach(marker -> map.getOverlays().add(marker));
+                }
+            }
+        }).start();
     }
     public String getCurrentCarreiraId() {
         return currentCarreiraId;
@@ -590,12 +607,7 @@ public class RouteDetailsFragment extends Fragment {
             routeDetailsToolbar.getMenu().getItem(1).setIcon(R.drawable.baseline_star_24);
             fragment.addCarreiraToFavorites(currentCarreira);
             //mainActivity.openRouteFavoritesFragment(true);
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    routeAdded.show();
-                }
-            });
+            mainActivity.runOnUiThread(() -> routeAdded.show());
         }
     }
 
@@ -611,22 +623,32 @@ public class RouteDetailsFragment extends Fragment {
     }
 
     private Drawable getImageId(String string){
-        if (string.equals("#ED1944")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ed1944, null);
-        }else if (string.equals("#C61D23")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_c61d23, null);
-        }else if (string.equals("#BB3E96")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_bb3e96, null);
-        }else if (string.equals("#3D85C6")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_3d85c6, null);
-        }else if (string.equals("#2A9057")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_2a9057, null);
-        }else if (string.equals("#FDB71A")){
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fdb71a, null);
-        }else{
-            return ResourcesCompat.getDrawable(getResources(), R.drawable.color_00b8b0, null);
+        switch (string) {
+            case "#ED1944":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ed1944, null);
+            case "#C61D23":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_c61d23, null);
+            case "#BB3E96":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_bb3e96, null);
+            case "#3D85C6":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_3d85c6, null);
+            case "#2A9057":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_2a9057, null);
+            case "#FDB71A":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fdb71a, null);
+            case "color_cascais":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_cascais, null);
+            case "color_carris":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_carris, null);
+            case "color_cp":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_cp, null);
+            case "color_fertagus":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fertagus, null);
+            default:
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_00b8b0, null);
         }
     }
+
 
     public MapView getMap() {
         return map;

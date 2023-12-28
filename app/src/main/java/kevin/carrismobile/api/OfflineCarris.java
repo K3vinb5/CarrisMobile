@@ -56,7 +56,7 @@ public class OfflineCarris {
         Carreira carreira = null;
         String carreiraId = null;
         String long_name = "";
-        String color = "0x0000FF";
+        String color = "color_carris";
         List<String> patternList = new ArrayList<>();
         List<Direction> directionList = new ArrayList<>();
         try{
@@ -134,7 +134,7 @@ public class OfflineCarris {
         String[] lastLine;
         String carreiraId = null;
         String long_name = "";
-        String color = "0x0000FF";
+        String color = "color_carris";
         List<String> patternList = new ArrayList<>();
         List<Direction> directionList = new ArrayList<>();
         try{

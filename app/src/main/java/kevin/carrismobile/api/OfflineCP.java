@@ -73,7 +73,7 @@ public class OfflineCP {
         String[] lastLine;
         String carreiraId = null;
         String long_name = "";
-        String color = "0x00FF00";
+        String color = "color_cp";
         List<String> patternList = new ArrayList<>();
         List<Direction> directionList = new ArrayList<>();
         try{
@@ -156,7 +156,7 @@ public class OfflineCP {
         Carreira carreira = null;
         String carreiraId = null;
         String long_name = "";
-        String color = "0x00FF00";
+        String color = "color_cp";
         List<String> patternList = new ArrayList<>();
         List<Direction> directionList = new ArrayList<>();
         try{

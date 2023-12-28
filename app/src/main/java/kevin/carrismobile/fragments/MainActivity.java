@@ -66,10 +66,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Offline.init(this);
+        Activity activity = this;
         bottomAppBar = findViewById(R.id.bottomAppBar);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.main_layout, routesFragment).commit();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Offline.init(activity);
+                transaction.add(R.id.main_layout, routesFragment).commit();
+            }
+        }).start();
         initFragment(R.id.main_layout, routeDetailsFragment, 2);
         initFragment(R.id.main_layout, realTimeFragment, 4);
         initFragment(R.id.main_layout, stopsMapFragment, 3);

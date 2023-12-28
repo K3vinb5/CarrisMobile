@@ -106,20 +106,29 @@ public class RouteImageListAdaptor extends BaseAdapter {
     }
 
     private Drawable getImageId(String string){
-        if (string.equals("#ED1944")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ed1944, null);
-        }else if (string.equals("#C61D23")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_c61d23, null);
-        }else if (string.equals("#BB3E96")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_bb3e96, null);
-        }else if (string.equals("#3D85C6")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_3d85c6, null);
-        }else if (string.equals("#2A9057")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2a9057, null);
-        }else if (string.equals("#FDB71A")){
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fdb71a, null);
-        }else{
-            return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00b8b0, null);
+        switch (string) {
+            case "#ED1944":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ed1944, null);
+            case "#C61D23":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_c61d23, null);
+            case "#BB3E96":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_bb3e96, null);
+            case "#3D85C6":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_3d85c6, null);
+            case "#2A9057":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2a9057, null);
+            case "#FDB71A":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fdb71a, null);
+            case "color_cascais":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_cascais, null);
+            case "color_carris":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_carris, null);
+            case "color_cp":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_cp, null);
+            case "color_fertagus":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fertagus, null);
+            default:
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00b8b0, null);
         }
     }
 }

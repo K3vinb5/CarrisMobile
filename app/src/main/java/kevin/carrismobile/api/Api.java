@@ -19,7 +19,7 @@ public class Api {
     public static final String DIRECTIONURL = "https://api.carrismetropolitana.pt/patterns/";
     public static final String REALTIMESTOPURL = "https://api.carrismetropolitana.pt/stops/";
     public static final String REALTIMELISTSTOPURL = "https://api.carrismetropolitana.pt/stops";
-
+    public static final String SHAPELISTURL = "https://api.carrismetropolitana.pt/shapes/";
     public static final String BUSREALTIMESTOPURL = "https://api.carrismetropolitana.pt/vehicles";
 
     public static String getJson(String url){
@@ -45,6 +45,14 @@ public class Api {
         }catch (Exception e ){
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static List<Point> getPoints(String shape_id){
+        try{
+            Shape shape = new Gson().fromJson(getJson(SHAPELISTURL + shape_id), Shape.class);
+            return shape.getPoints();
+        }catch (Exception ignore){}
         return null;
     }
 
