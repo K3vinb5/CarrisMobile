@@ -61,6 +61,7 @@ public class RoutesFragment extends Fragment {
         editText = v.findViewById(R.id.editTextRoutes);
         spinner = v.findViewById(R.id.listFilterSpinner);
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet");
+        Offline.init(getActivity());
         initCarreiraBasicList();
         setSpinnerList();
         setEditText();

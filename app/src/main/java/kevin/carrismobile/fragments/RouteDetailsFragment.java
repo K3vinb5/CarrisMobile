@@ -453,6 +453,10 @@ public class RouteDetailsFragment extends Fragment {
             @Override
             public void run() {
                 startWaitingAnimation();
+                currentCarreira = carreira;
+                currentCarreiraId = carreira.getRouteId();
+                currentStopIndex = 0;
+                currentDirectionIndex = 0;
                 if (currentCarreira.isOnline()){
                     try{
                         carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
@@ -467,10 +471,6 @@ public class RouteDetailsFragment extends Fragment {
 
                     }
                 }
-                currentCarreira = carreira;
-                currentCarreiraId = carreira.getRouteId();
-                currentStopIndex = 0;
-                currentDirectionIndex = 0;
                 List<Stop> toAdd = new ArrayList<>();
                 carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
                 stopList.addAll(toAdd);
@@ -524,6 +524,7 @@ public class RouteDetailsFragment extends Fragment {
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;
+                currentDirectionIndex = 0;
                 List<Stop> toAdd = new ArrayList<>();
                 carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
                 stopList.addAll(toAdd);
