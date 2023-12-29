@@ -188,14 +188,15 @@ public class RouteDetailsFragment extends Fragment {
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
-                        if ( currentCarreira.isOnline() && currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null){
                             try{
-                                currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                                if ( currentCarreira.isOnline() && currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null) {
+                                    currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
+                                }
                             }catch (Exception ignore){
                                 getActivity().runOnUiThread(() -> dialog.show());
                                 connected = false;
+                                return;
                             }
-                        }
                         if (!currentCarreira.isOnline()){
                             Offline.updateDirectionIndex(currentCarreira, currentDirectionIndex);
                         }

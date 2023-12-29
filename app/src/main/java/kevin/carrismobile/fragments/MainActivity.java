@@ -238,9 +238,14 @@ public class MainActivity extends AppCompatActivity {
             transaction.hide(currentFragment);
             transaction.show(oldFragmentsList.get(oldFragmentsList.size() - 1));
             currentFragment = oldFragmentsList.get(oldFragmentsList.size() - 1);
-            checkRightMenu(mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
-            oldFragmentsList.remove(oldFragmentsList.size() - 1);
-            transaction.commit();
+
+            Integer oldIndexFragment = mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1));
+            Integer newIndexFragment = mapper.get(currentFragment);
+            if ( oldIndexFragment != null && newIndexFragment != null){
+                checkRightMenu(oldIndexFragment.intValue(), newIndexFragment.intValue());
+                oldFragmentsList.remove(oldFragmentsList.size() - 1);
+                transaction.commit();
+            }
         }else{
             super.onBackPressed();
         }

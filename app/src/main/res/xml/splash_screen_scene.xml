@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:constraintSetEnd="@+id/end"
+        motion:constraintSetStart="@id/start"
+        motion:duration="2269">
+       <KeyFrameSet>
+       </KeyFrameSet>
+        <OnSwipe motion:maxAcceleration="4.21" />
+    </Transition>
+
+    <ConstraintSet android:id="@+id/start">
+        <Constraint
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="100dp"
+            android:layout_marginEnd="60dp"
+            android:rotation="-20"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:id="@+id/cloud1"
+            motion:transitionEasing="decelerate" />
+        <Constraint
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="100dp"
+            android:layout_marginEnd="60dp"
+            android:rotation="-20"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:id="@+id/cloud1Outline"
+            motion:transitionEasing="decelerate" />
+        <Constraint
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="100dp"
+            android:layout_marginEnd="60dp"
+            android:rotation="-40"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:id="@+id/cloud2"
+            motion:transitionEasing="decelerate" />
+        <Constraint
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="100dp"
+            android:layout_marginEnd="60dp"
+            android:rotation="-40"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:id="@+id/cloud2Outline"
+            motion:transitionEasing="decelerate" />
+        <Constraint
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="100dp"
+            android:rotation="200"
+            android:layout_marginStart="0dp"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:id="@+id/stopSign"
+            motion:transitionEasing="decelerate" />
+        <Constraint
+            android:scaleX="0.15"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="0.15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginEnd="100dp"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:layout_marginTop="50dp"
+            android:id="@+id/sideBus"
+            motion:transitionEasing="linear" />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint
+            android:scaleX="0.15"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="0.15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginEnd="0dp"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            android:layout_marginTop="50dp"
+            android:id="@+id/sideBus"
+            android:layout_marginStart="60dp"
+            motion:transitionEasing="standard" />
+        <Constraint
+            android:id="@+id/stopSign"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="60dp"
+            android:rotation="200"
+            android:layout_marginStart="40dp"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            motion:transitionEasing="accelerate" />
+        <Constraint
+            android:id="@+id/cloud1"
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="45dp"
+            android:layout_marginEnd="18dp"
+            android:rotation="-20"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            motion:transitionEasing="accelerate" />
+        <Constraint
+            android:id="@+id/cloud2"
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="55dp"
+            android:layout_marginEnd="55dp"
+            android:rotation="-40"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            motion:transitionEasing="accelerate" />
+        <Constraint
+            android:id="@+id/cloud1Outline"
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="45dp"
+            android:layout_marginEnd="18dp"
+            android:rotation="-20"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            motion:transitionEasing="accelerate" />
+        <Constraint
+            android:id="@+id/splashScreenBackground"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintVertical_bias="1.0"
+            motion:layout_constraintHorizontal_bias="1.0"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:transitionEasing="accelerate" />
+        <Constraint
+            android:id="@+id/cloud2Outline"
+            android:scaleX="1.2"
+            motion:layout_constraintEnd_toEndOf="@id/blank_icon_id"
+            android:scaleY="1.2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            motion:layout_constraintBottom_toBottomOf="@id/blank_icon_id"
+            android:layout_marginBottom="55dp"
+            android:layout_marginEnd="55dp"
+            android:rotation="-40"
+            motion:layout_constraintTop_toTopOf="@id/blank_icon_id"
+            motion:layout_constraintStart_toStartOf="@id/blank_icon_id"
+            motion:transitionEasing="accelerate" />
+    </ConstraintSet>
+</MotionScene>
