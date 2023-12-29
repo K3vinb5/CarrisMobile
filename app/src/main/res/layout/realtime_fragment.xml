@@ -71,7 +71,7 @@
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="5dp"
         android:backgroundTint="@color/lightYellow"
         android:text="Anterior"
         android:textColor="@color/black"
@@ -82,13 +82,13 @@
         android:id="@+id/nextButton"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
         android:backgroundTint="@color/lightYellow"
         android:text="Seguinte"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2" />
+        app:layout_constraintTop_toBottomOf="@+id/editText2" />
 
     <TextView
         android:id="@+id/textViewRealTimeFragment"

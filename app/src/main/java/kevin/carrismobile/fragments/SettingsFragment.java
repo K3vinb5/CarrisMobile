@@ -56,19 +56,26 @@ public class SettingsFragment extends Fragment {
         mapTilerSwitch = v.findViewById(R.id.mapTilerSwitch);
         resetButton = v.findViewById(R.id.resetPreferences);
         mPrefs = getActivity().getSharedPreferences("SettingsFragment", MODE_PRIVATE);
-        if (loadObject("key_topo", String.class) == null){
-            storeObject(new Gson().toJson("1"), "key_topo");
-            openTopoSwitch.setChecked(true);
+        String selectedSwitch = (String)loadObject("key_settings", String.class);
+        if (loadObject("key_settings", String.class) == null){
+            storeObject(new Gson().toJson("topo"), "key_settings");
+            openTopoSwitch.performClick();
         }else{
-            String topo_switched = (String)loadObject("key_topo", String.class);
-            String thunderForest_switched = (String)loadObject("key_tunderForest", String.class);
-            String bingMaps_switched = (String)loadObject("key_bingMaps", String.class);
-            if (topo_switched != null && topo_switched.equals("1")){
-                openTopoSwitch.performClick();
-            }else if(thunderForest_switched != null && thunderForest_switched.equals("1")){
-                thunderForestSwitch.performClick();
-            }else if(bingMaps_switched != null && bingMaps_switched.equals("1")){
-                bingMapsSwitch.performClick();
+            switch (selectedSwitch) {
+                case "topo":
+                    openTopoSwitch.performClick();
+                    break;
+                case "thunderForest":
+                    thunderForestSwitch.performClick();
+                    break;
+                case "bingMaps":
+                    bingMapsSwitch.performClick();
+                    break;
+                case "mapTiler":
+                    mapTilerSwitch.performClick();
+                    break;
+                default:
+                    openTopoSwitch.performClick();
             }
         }
         setOpenTopoSwitchOnClickListener();
@@ -114,7 +121,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
-                storeObject(new Gson().toJson("1"), "key_topo");
+                storeObject(new Gson().toJson("topo"), "key_settings");
             }
         });
     }
@@ -151,7 +158,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
-                storeObject(new Gson().toJson("1"), "key_bingMaps");
+                storeObject(new Gson().toJson("bingMaps"), "key_settings");
             }
         });
     }
@@ -187,7 +194,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
-                storeObject(new Gson().toJson("1"), "key_thunderForest");
+                storeObject(new Gson().toJson("thunderForest"), "key_settings");
             }
         });
     }
@@ -235,7 +242,7 @@ public class SettingsFragment extends Fragment {
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
-                storeObject(new Gson().toJson("1"), "key_mapTiler");
+                storeObject(new Gson().toJson("mapTiler"), "key_settings");
             }
         });
     }
