@@ -66,6 +66,7 @@ public class Carreira implements Serializable {
         }
         //TODO not sure how it impacts performance
         for(Direction direction : directionList){
+            direction.setPointList(Api.getPoints(direction.getShape_id()));
             for (Path path : direction.getPathList()){
                 path.getStop().setOnline(true);
                 path.getStop().setAgency_id("-1");

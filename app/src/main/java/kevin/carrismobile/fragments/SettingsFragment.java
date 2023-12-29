@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import kevin.carrismobile.custom.MyCustomDialog;
+import kevin.carrismobile.tile_source.MyMapTilerTileSource;
 import kevin.carrismobile.tile_source.MyThunderForestTileSource;
 
 
@@ -42,6 +43,7 @@ public class SettingsFragment extends Fragment {
     public Switch openTopoSwitch;
     public Switch thunderForestSwitch;
     public Switch bingMapsSwitch;
+    public Switch mapTilerSwitch;
     public Button resetButton;
 
     @Override
@@ -51,6 +53,7 @@ public class SettingsFragment extends Fragment {
         openTopoSwitch = v.findViewById(R.id.openTopoSwitch);
         thunderForestSwitch = v.findViewById(R.id.thunderForestSwitch);
         bingMapsSwitch = v.findViewById(R.id.bingMapsSwitch);
+        mapTilerSwitch = v.findViewById(R.id.mapTilerSwitch);
         resetButton = v.findViewById(R.id.resetPreferences);
         mPrefs = getActivity().getSharedPreferences("SettingsFragment", MODE_PRIVATE);
         if (loadObject("key_topo", String.class) == null){
@@ -71,6 +74,7 @@ public class SettingsFragment extends Fragment {
         setOpenTopoSwitchOnClickListener();
         setBingMapsSwitchOnClickListener();
         setThunderForestSwitchOnClickListener();
+        setMapTilerSwitchOnClickListener();
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -95,6 +99,8 @@ public class SettingsFragment extends Fragment {
                     thunderForestSwitch.setChecked(false);
                 }else if(bingMapsSwitch.isChecked()){
                     bingMapsSwitch.setChecked(false);
+                }else if(mapTilerSwitch.isChecked()){
+                    mapTilerSwitch.setChecked(false);
                 }else if(!openTopoSwitch.isChecked()){
                     openTopoSwitch.setChecked(true);
                 }
@@ -120,6 +126,8 @@ public class SettingsFragment extends Fragment {
                     openTopoSwitch.setChecked(false);
                 }else if(thunderForestSwitch.isChecked()){
                     thunderForestSwitch.setChecked(false);
+                }else if(mapTilerSwitch.isChecked()){
+                    mapTilerSwitch.setChecked(false);
                 }else if(!bingMapsSwitch.isChecked()){
                     bingMapsSwitch.setChecked(true);
                 }
@@ -155,6 +163,8 @@ public class SettingsFragment extends Fragment {
                     openTopoSwitch.setChecked(false);
                 }else if(bingMapsSwitch.isChecked()){
                     bingMapsSwitch.setChecked(false);
+                }else if(mapTilerSwitch.isChecked()){
+                    mapTilerSwitch.setChecked(false);
                 }else if(!thunderForestSwitch.isChecked()){
                     thunderForestSwitch.setChecked(true);
                 }
@@ -192,6 +202,42 @@ public class SettingsFragment extends Fragment {
                     dialogInterface.dismiss();
                 }).setNegativeButton("Close", (dialogInterface, i) -> dialogInterface.dismiss()).create();
         alertDialog.show();
+    }
+    private void setMapTilerSwitchOnClickListener(){
+        mapTilerSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (openTopoSwitch.isChecked()){
+                    openTopoSwitch.setChecked(false);
+                }else if(bingMapsSwitch.isChecked()){
+                    bingMapsSwitch.setChecked(false);
+                }else if(thunderForestSwitch.isChecked()){
+                    thunderForestSwitch.setChecked(false);
+                }else if(!mapTilerSwitch.isChecked()){
+                    mapTilerSwitch.setChecked(true);
+                }
+                MainActivity activity = (MainActivity) getActivity();
+                MapView map1 = ((StopsMapFragment) activity.stopsMapFragment).getMap();
+                MapView map2 = ((RealTimeFragment) activity.realTimeFragment).getMap();
+                MapView map3 = ((RouteDetailsFragment) activity.routeDetailsFragment).getMap();
+
+                MyMapTilerTileSource mapTilerSource = new MyMapTilerTileSource();
+                String apiKey = (String)loadObject("key_apiKey_mapTiler", String.class);
+                if (apiKey == null){
+                    showEditTextDialog("key_apiKey_mapTiler", "Map Tiler");
+                    apiKey = (String)loadObject("key_apiKey_mapTiler", String.class);
+                }
+                mapTilerSource.setApiKey(apiKey);
+
+                map1.setTileSource(mapTilerSource);
+                map2.setTileSource(mapTilerSource);
+                map3.setTileSource(mapTilerSource);
+                map1.invalidate();
+                map2.invalidate();
+                map3.invalidate();
+                storeObject(new Gson().toJson("1"), "key_mapTiler");
+            }
+        });
     }
     private void storeObject(String json, String key){
 

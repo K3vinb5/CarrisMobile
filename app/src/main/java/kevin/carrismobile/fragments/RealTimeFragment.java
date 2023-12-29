@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -33,17 +34,21 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import kevin.carrismobile.adaptors.StopImageListAdaptor;
 import kevin.carrismobile.api.Api;
 import kevin.carrismobile.data.Bus;
 import kevin.carrismobile.data.Carreira;
 import kevin.carrismobile.data.Direction;
 import kevin.carrismobile.data.Path;
+import kevin.carrismobile.data.Point;
+import kevin.carrismobile.data.Stop;
 import kevin.carrismobile.gui.BusBackgroundThread;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.custom.MyCustomDialog;
@@ -67,6 +72,7 @@ public class RealTimeFragment extends Fragment {
     public static int currentSelectedBus = 0;
     public int currentDirectionIndex = 0;
     public boolean connected = false;
+    public Polyline line = null;
     public AlertDialog dialog;
     public AlertDialog backgroundDialog;
     public AlertDialog noCurrentBusesDialog;
@@ -174,9 +180,10 @@ public class RealTimeFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                updateMarkers(pathList, map, getActivity());
+                                updateMarkers(pathList, map);
                                 updateBuses(busList, map, getActivity());
                                 updateTextView();
+                                updateDirectionIndex();
                                 Log.println(Log.DEBUG, "BUS DEBUG", "GUI UPDATED");
                                 GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
                                 map.getController().animateTo(point, 16.5, 1500L);
@@ -206,6 +213,8 @@ public class RealTimeFragment extends Fragment {
                 if (currentSelectedBus < busList.size() - 1){
                     currentSelectedBus ++;
                     updateTextView();
+                    updateDirectionIndex();
+                    updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
 
@@ -232,6 +241,8 @@ public class RealTimeFragment extends Fragment {
                 if (currentSelectedBus > 0){
                     currentSelectedBus --;
                     updateTextView();
+                    updateDirectionIndex();
+                    updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
                             @Override
@@ -250,24 +261,58 @@ public class RealTimeFragment extends Fragment {
         return v;
     }
 
-    private static void updateMarkers(List<Path> pathList, MapView map, Activity activity){
+    private void updateDirectionIndex() {
+        int newIndex = 0;
+        String directionId = busList.get(currentSelectedBus).getPattern_id();
+        for (Direction direction : currentCarreira.getDirectionList()){
+            if(direction.getDirectionId().equals(directionId)){
+                currentDirectionIndex = newIndex;
+            }
+            newIndex++;
+        }
+    }
+
+    private void updateMarkers(List<Path> pathList, MapView map){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
         }
-
+        markerList.clear();
+        List<GeoPoint> geoPointList = new ArrayList<>();
         for (Path path : pathList){
-            double[] coordinates = path.getStop().getCoordinates();
+            Stop s = path.getStop();
+            double[] coordinates = s.getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+            geoPointList.add(point);
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.map_pin, null);
+            Drawable d = StopImageListAdaptor.getImageId(s.getFacilities(), s.getTts_name(), s.getAgency_id(), getActivity());
             marker.setIcon(d);
             markerList.add(marker);
             marker.setPosition(point);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String descrption = "Stop Id: " + path.getStop().getStopID() + "\nLocality: " + path.getStop().getLocality() + "\nMunicipality: " + path.getStop().getMunicipality_name();
-            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, path.getStop().getTts_name(), descrption);
+            String descrption = "Stop Id: " + s.getStopID() + "\nLocality: " + s.getLocality() + "\nMunicipality: " + s.getMunicipality_name();
+            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
             marker.setInfoWindow(miw);
-            map.getOverlays().add(marker);
+        }
+        if (line != null){
+            map.getOverlays().remove(line);
+        }
+        line = new Polyline(map, true, false);
+        if (currentCarreira.isOnline()){
+            Direction currentDirection = currentCarreira.getDirectionList().get(currentDirectionIndex);
+            List<Point> pointList = currentDirection.getPointList();
+            pointList.forEach(point -> line.addPoint(new GeoPoint(point.getLat(), point.getLon())));
+            String hexCode = currentCarreira.getColor().substring(1);
+            int resultRed = Integer.valueOf(hexCode.substring(0, 2), 16);
+            int resultGreen = Integer.valueOf(hexCode.substring(2, 4), 16);
+            int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
+            line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
+            line.setWidth(7.5f);
+            map.getOverlays().add(line);
+            markerList.forEach(marker -> map.getOverlays().add(marker));
+        }else{
+            geoPointList.forEach(line::addPoint);
+            map.getOverlays().add(line);
+            markerList.forEach(marker -> map.getOverlays().add(marker));
         }
     }
 

@@ -91,6 +91,7 @@ public class RouteDetailsFragment extends Fragment {
     public AlertDialog routeDeleted;
     public boolean connected;
     public List<Marker> markerList = new ArrayList<>();//
+    public Polyline line = null;
 
 
     @Override
@@ -545,6 +546,7 @@ public class RouteDetailsFragment extends Fragment {
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
         }
+        markerList.clear();
         List<GeoPoint> geoPointList = new ArrayList<>();
         for (Stop s : stopList){
             double[] coordinates = s.getCoordinates();
@@ -560,30 +562,27 @@ public class RouteDetailsFragment extends Fragment {
             MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
             marker.setInfoWindow(miw);
         }
-        Polyline line = new Polyline(map, true, false);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (currentCarreira.isOnline()){
-                    Direction currentDirection = currentCarreira.getDirectionList().get(currentDirectionIndex);
-                    Log.d("DEBUG", currentDirection.getShape_id());
-                    List<Point> pointList = Api.getPoints(currentDirection.getShape_id());
-                    pointList.forEach(point -> line.addPoint(new GeoPoint(point.getLat(), point.getLon())));
-                    String hexCode = currentCarreira.getColor().substring(1);
-                    int resultRed = Integer.valueOf(hexCode.substring(0, 2), 16);
-                    int resultGreen = Integer.valueOf(hexCode.substring(2, 4), 16);
-                    int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
-                    line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
-                    line.setWidth(7.5f);
-                    map.getOverlays().add(line);
-                    markerList.forEach(marker -> map.getOverlays().add(marker));
-                }else{
-                    geoPointList.forEach(line::addPoint);
-                    map.getOverlays().add(line);
-                    markerList.forEach(marker -> map.getOverlays().add(marker));
-                }
-            }
-        }).start();
+        if (line != null){
+            map.getOverlays().remove(line);
+        }
+        line = new Polyline(map, true, false);
+        if (currentCarreira.isOnline()){
+            Direction currentDirection = currentCarreira.getDirectionList().get(currentDirectionIndex);
+            List<Point> pointList = currentDirection.getPointList();
+            pointList.forEach(point -> line.addPoint(new GeoPoint(point.getLat(), point.getLon())));
+            String hexCode = currentCarreira.getColor().substring(1);
+            int resultRed = Integer.valueOf(hexCode.substring(0, 2), 16);
+            int resultGreen = Integer.valueOf(hexCode.substring(2, 4), 16);
+            int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
+            line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
+            line.setWidth(7.5f);
+            map.getOverlays().add(line);
+            markerList.forEach(marker -> map.getOverlays().add(marker));
+        }else{
+            geoPointList.forEach(line::addPoint);
+            map.getOverlays().add(line);
+            markerList.forEach(marker -> map.getOverlays().add(marker));
+        }
     }
     public String getCurrentCarreiraId() {
         return currentCarreiraId;

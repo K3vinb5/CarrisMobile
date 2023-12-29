@@ -27,7 +27,7 @@
         android:layout_marginTop="10dp"
         android:text="Definições"
         android:textColor="@color/black"
-        android:textSize="25dp"
+        android:textSize="20dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -120,7 +120,31 @@
         android:textStyle="normal"
         app:layout_constraintStart_toEndOf="@+id/bingMapsSwitch"
         app:layout_constraintTop_toTopOf="@+id/bingMapsSwitch" />
-
+    <Switch
+        android:id="@+id/mapTilerSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:text=""
+        android:textColor="@color/extraLightYellow"
+        android:textColorHighlight="@color/yellow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bingMapsSwitch"
+        tools:checked="false"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+    <TextView
+        android:id="@+id/mapTilerDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="0dp"
+        android:text="Map Tiler (Api Key Required)"
+        android:textColor="@color/yellow"
+        android:textSize="15dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toEndOf="@+id/mapTilerSwitch"
+        app:layout_constraintTop_toTopOf="@+id/mapTilerSwitch" />
     <Button
         android:id="@+id/resetPreferences"
         android:layout_width="wrap_content"

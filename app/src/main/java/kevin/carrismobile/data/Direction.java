@@ -13,6 +13,7 @@ public class Direction implements Serializable {
     private String id;
     private String headsign;
     private String shape_id;
+    List<Point> pointList;
     private List<Path> path = new ArrayList<>();
     private List<Trip> trips = new ArrayList<>();
 
@@ -49,6 +50,13 @@ public class Direction implements Serializable {
         if(heuristic < this.heuristic){
             this.heuristic = heuristic;
         }
+    }
+    public List<Point> getPointList() {
+        return pointList;
+    }
+
+    public void setPointList(List<Point> pointList) {
+        this.pointList = pointList;
     }
 
     public String getDirectionId() {
