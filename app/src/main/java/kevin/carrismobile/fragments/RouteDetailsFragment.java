@@ -129,7 +129,7 @@ public class RouteDetailsFragment extends Fragment {
         textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(TileSourceFactory.OpenTopo);
+        map.setTileSource(SettingsFragment.getCurrentTileProvider());
 
         map.setMultiTouchControls(true);
         map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
@@ -578,6 +578,7 @@ public class RouteDetailsFragment extends Fragment {
             int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
             line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
             line.setWidth(7.5f);
+            line.setInfoWindow(null);
             map.getOverlays().add(line);
             markerList.forEach(marker -> map.getOverlays().add(marker));
         }else{

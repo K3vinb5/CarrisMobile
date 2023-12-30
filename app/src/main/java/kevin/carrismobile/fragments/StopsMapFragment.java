@@ -75,7 +75,7 @@ public class StopsMapFragment extends Fragment {
 
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(TileSourceFactory.OpenTopo);
+        map.setTileSource(SettingsFragment.getCurrentTileProvider());
 
         map.setMultiTouchControls(true);
         CompassOverlay compassOverlay = new CompassOverlay(getActivity(), map);

@@ -53,8 +53,10 @@ public class BusBackgroundThread extends Thread{
                                         }
                                     }
                                 }
-                                RealTimeFragment.busList.clear();
-                                RealTimeFragment.busList.addAll(listToAdd);
+                                synchronized (RealTimeFragment.busList){
+                                    RealTimeFragment.busList.clear();
+                                    RealTimeFragment.busList.addAll(listToAdd);
+                                }
                                 RealTimeFragment.updateBusesUI();
                                 RealTimeFragment.activity.runOnUiThread(new Runnable() {
                                     @Override
@@ -82,13 +84,16 @@ public class BusBackgroundThread extends Thread{
 
                 Log.println(Log.DEBUG,"BACKGROUND CALLER", "Call" + index);
                 index++;
-                List<Marker> currentBusList = RealTimeFragment.markerBusList;
-                TimeUnit.MILLISECONDS.sleep(5000);
-                if (!RealTimeFragment.markerBusList.equals(currentBusList)){
-                    for (Marker marker : currentBusList){
-                        RealTimeFragment.map.getOverlays().remove(marker);
+                synchronized (RealTimeFragment.markerBusList){
+                    List<Marker> currentBusList = RealTimeFragment.markerBusList;
+                    TimeUnit.MILLISECONDS.sleep(5000);
+                    if (!RealTimeFragment.markerBusList.equals(currentBusList)){
+                        for (Marker marker : currentBusList){
+                            RealTimeFragment.map.getOverlays().remove(marker);
+                        }
                     }
                 }
+
                 Log.println(Log.DEBUG, "BACKGROUND THREAD", thread.getName() + "STARTED");
                 lock.lock();
                 thread.start();

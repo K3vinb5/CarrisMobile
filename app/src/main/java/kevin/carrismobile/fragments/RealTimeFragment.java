@@ -58,9 +58,9 @@ public class RealTimeFragment extends Fragment {
     public static MapView map;
     public static Activity activity;
     Button button;
-    Button nextButton;
+    public static Button nextButton;
     public static TextView textView;
-    Button previousButton;
+    public static Button previousButton;
     EditText editText;
     public static CheckBox checkBox;
     public BusBackgroundThread backgroundThread = new BusBackgroundThread();
@@ -94,9 +94,8 @@ public class RealTimeFragment extends Fragment {
         checkBox = v.findViewById(R.id.checkBox);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(TileSourceFactory.OpenTopo);
+        map.setTileSource(SettingsFragment.getCurrentTileProvider());
 
         map.setMultiTouchControls(true);
         map.getController().setCenter(new GeoPoint(38.73329737648646d, -9.14096412687648d));
@@ -181,7 +180,7 @@ public class RealTimeFragment extends Fragment {
                             @Override
                             public void run() {
                                 updateMarkers(pathList, map);
-                                updateBuses(busList, map, getActivity());
+                                updateBusesUI();
                                 updateTextView();
                                 updateDirectionIndex();
                                 Log.println(Log.DEBUG, "BUS DEBUG", "GUI UPDATED");
@@ -214,6 +213,7 @@ public class RealTimeFragment extends Fragment {
                     currentSelectedBus ++;
                     updateTextView();
                     updateDirectionIndex();
+                    updateBusesUI();
                     updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
@@ -222,7 +222,9 @@ public class RealTimeFragment extends Fragment {
                             public void run() {
                                 //textView.setText((currentSelectedBus + 1) + "/" + busList.size() + "\n" + busList.get(currentSelectedBus).getStatus());
                                 GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
-                                map.getController().animateTo(point, 16.5, 2500L);
+                                if (checkBox.isChecked()){
+                                    map.getController().animateTo(point, 16.5, 2500L);
+                                }
                                 map.invalidate();
                             }
                         });
@@ -242,13 +244,16 @@ public class RealTimeFragment extends Fragment {
                     currentSelectedBus --;
                     updateTextView();
                     updateDirectionIndex();
+                    updateBusesUI();
                     updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
-                                map.getController().animateTo(point, 16.5, 2500L);
+                                if (checkBox.isChecked()){
+                                    map.getController().animateTo(point, 16.5, 2500L);
+                                }
                                 map.invalidate();
                             }
                         });
@@ -307,6 +312,7 @@ public class RealTimeFragment extends Fragment {
             int resultBlue = Integer.valueOf(hexCode.substring(4, 6), 16);
             line.setColor(Color.rgb(resultRed, resultGreen, resultBlue));
             line.setWidth(7.5f);
+            line.setInfoWindow(null);
             map.getOverlays().add(line);
             markerList.forEach(marker -> map.getOverlays().add(marker));
         }else{
@@ -322,11 +328,17 @@ public class RealTimeFragment extends Fragment {
             map.getOverlays().remove(marker);
         }
         markerBusList.clear();
+        int index = 0;
         for (Bus bus : busList){
             double[] coordinates = bus.getCoordinates();
             GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
             Marker marker = new Marker(map);
-            Drawable d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.cm_bus_regular, null);
+            Drawable d;
+            if (index!=currentSelectedBus){
+                d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.cm_bus, null);
+            }else{
+                d = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.cm_bus_regular, null);
+            }
             RotateDrawable d1 = new RotateDrawable();
             d1.setDrawable(d);
             d1.setFromDegrees(0f);
@@ -338,8 +350,9 @@ public class RealTimeFragment extends Fragment {
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
             String descrption = "Vehicle Id: " + bus.getVehicleId() + "\nSpeed: " + bus.getSpeed() + "\nPattern Id: " + bus.getPattern_id();
             MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, "Bus " + bus.getId(), descrption);
-            marker.setInfoWindow(miw);
+            marker.setOnMarkerClickListener(new BusClickListener(miw));
             map.getOverlays().add(marker);
+            index++;
         }
     }
 
@@ -347,36 +360,11 @@ public class RealTimeFragment extends Fragment {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                updateBuses(busList, map, activity);
+                synchronized (busList){
+                    updateBuses(busList, map, activity);
+                }
             }
         });
-    }
-
-
-    private static Drawable getRotateDrawable(Bitmap b, float angle, Activity activity) {
-        final BitmapDrawable drawable = new BitmapDrawable(activity.getApplicationContext().getResources(), b) {
-            @Override
-            public void draw(final Canvas canvas) {
-                canvas.save();
-                canvas.rotate(angle, b.getWidth() / 2f, b.getHeight() / 2f);
-                super.draw(canvas);
-                canvas.restore();
-            }
-        };
-        return drawable;
-    }
-
-    private static Drawable getRotateDrawable2(final Drawable d, final float angle) {
-        final Drawable[] arD = { d };
-        return new LayerDrawable(arD) {
-            @Override
-            public void draw(final Canvas canvas) {
-                canvas.save();
-                canvas.rotate(angle, d.getBounds().width() / 2, d.getBounds().height() / 2);
-                super.draw(canvas);
-                canvas.restore();
-            }
-        };
     }
 
     public void showBackgroundThreadDialog(){
@@ -394,5 +382,30 @@ public class RealTimeFragment extends Fragment {
 
     public MapView getMap() {
         return map;
+    }
+
+    static class BusClickListener implements Marker.OnMarkerClickListener{
+        MarkerInfoWindow miw;
+        public BusClickListener(MarkerInfoWindow miw){
+            this.miw=miw;
+        }
+        @Override
+        public boolean onMarkerClick(Marker marker, MapView mapView) {
+            int index = 0;
+            marker.closeInfoWindow();
+            for (Marker busMarker : markerBusList) {
+                if (busMarker.equals(marker)){
+                    if (currentSelectedBus != index){
+                        currentSelectedBus = index + 1;
+                        previousButton.performClick();
+                    }
+                    break;
+                }
+                index++;
+            }
+            marker.setInfoWindow(miw);
+            marker.showInfoWindow();
+            return false;
+        }
     }
 }

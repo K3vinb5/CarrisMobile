@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.main_layout, routesFragment).commit();
         mapper.put(routesFragment, 2);
+        initFragment(R.id.main_layout, settingsFragment, 2);
         initFragment(R.id.main_layout, routeDetailsFragment, 2);
         initFragment(R.id.main_layout, realTimeFragment, 4);
         initFragment(R.id.main_layout, stopsMapFragment, 3);
@@ -77,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         initFragment(R.id.main_layout, stopFavoritesFragment, 1);
         initFragment(R.id.main_layout, routeFavoritesFragment, 1);
         initFragment(R.id.main_layout, moovitFragment, 0);
-        initFragment(R.id.main_layout, settingsFragment, 2);
         currentIndexFragment = 2;
         currentFragment = routesFragment;
         oldFragmentsList.add(routesFragment);

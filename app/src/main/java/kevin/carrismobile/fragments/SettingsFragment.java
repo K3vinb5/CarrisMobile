@@ -22,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.bing.BingMapTileSource;
 import org.osmdroid.views.MapView;
@@ -40,6 +41,7 @@ import kevin.carrismobile.tile_source.MyThunderForestTileSource;
 public class SettingsFragment extends Fragment {
     private SharedPreferences mPrefs;
     public List<String> keys;
+    public static OnlineTileSourceBase currentTileProvider = TileSourceFactory.OpenTopo;
     public Switch openTopoSwitch;
     public Switch thunderForestSwitch;
     public Switch bingMapsSwitch;
@@ -98,6 +100,10 @@ public class SettingsFragment extends Fragment {
         return v;
     }
 
+    public static OnlineTileSourceBase getCurrentTileProvider() {
+        return currentTileProvider;
+    }
+
     private void setOpenTopoSwitchOnClickListener(){
         openTopoSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +124,7 @@ public class SettingsFragment extends Fragment {
                 map1.setTileSource(TileSourceFactory.OpenTopo);
                 map2.setTileSource(TileSourceFactory.OpenTopo);
                 map3.setTileSource(TileSourceFactory.OpenTopo);
+                currentTileProvider = TileSourceFactory.OpenTopo;
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
@@ -155,6 +162,8 @@ public class SettingsFragment extends Fragment {
                 map1.setTileSource(bingMap);
                 map2.setTileSource(bingMap);
                 map3.setTileSource(bingMap);
+
+                currentTileProvider = bingMap;
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
@@ -191,6 +200,7 @@ public class SettingsFragment extends Fragment {
                 map1.setTileSource(thunderForestTileSource);
                 map2.setTileSource(thunderForestTileSource);
                 map3.setTileSource(thunderForestTileSource);
+                currentTileProvider = thunderForestTileSource;
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
@@ -239,6 +249,7 @@ public class SettingsFragment extends Fragment {
                 map1.setTileSource(mapTilerSource);
                 map2.setTileSource(mapTilerSource);
                 map3.setTileSource(mapTilerSource);
+                currentTileProvider = mapTilerSource;
                 map1.invalidate();
                 map2.invalidate();
                 map3.invalidate();
