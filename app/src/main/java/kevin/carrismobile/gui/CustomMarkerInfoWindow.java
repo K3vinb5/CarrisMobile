@@ -24,8 +24,8 @@ public class CustomMarkerInfoWindow extends MarkerInfoWindow {
     @Override
     public void onOpen(Object item) {
         super.onOpen(item);
-        TextView textViewTitle = mView.findViewById(R.id.bubble_title);
-        TextView textViewDescription = mView.findViewById(R.id.bubble_description);
+        TextView textViewTitle = mView.findViewById(org.osmdroid.library.R.id.bubble_title);
+        TextView textViewDescription = mView.findViewById(org.osmdroid.library.R.id.bubble_description);
         textViewTitle.setText(this.title);
         textViewDescription.setText(this.description);
     }

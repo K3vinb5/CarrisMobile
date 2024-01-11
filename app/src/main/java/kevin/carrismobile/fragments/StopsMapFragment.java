@@ -23,8 +23,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.bing.BingMapTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
@@ -34,10 +32,9 @@ import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.gui.StopsBackgroundThread;
 import kevin.carrismobile.custom.MyCustomDialog;
@@ -56,7 +53,7 @@ public class StopsMapFragment extends Fragment {
     static List<Marker> markerList = new ArrayList<>();
     private List<Marker> stopsMarkerList = new ArrayList<>();
     GeoPoint currentLocation = new GeoPoint(0d,0d);
-    StopsBackgroundThread backgroundThread = new StopsBackgroundThread();
+    StopsBackgroundThread backgroundThread = new StopsBackgroundThread(this);
     public boolean backgroundThreadStarted = false;
     FusedLocationProviderClient fusedLocationProviderClient;
     @Override
@@ -75,7 +72,7 @@ public class StopsMapFragment extends Fragment {
 
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(SettingsFragment.getCurrentTileProvider());
+        map.setTileSource(SettingsFragment.getCurrentTileProvider(getContext()));
 
         map.setMultiTouchControls(true);
         CompassOverlay compassOverlay = new CompassOverlay(getActivity(), map);

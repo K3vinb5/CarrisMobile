@@ -1,7 +1,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/frameLayout6"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="kevin.carrismobile.fragments.SettingsFragment">
@@ -20,7 +19,6 @@
         app:menu="@menu/top_menu" />
 
     <TextView
-        android:id="@+id/main_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -46,7 +44,7 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <Switch
-        android:id="@+id/openTopoSwitch"
+        android:id="@+id/openStreetMapsSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -59,7 +57,31 @@
         tools:checked="false"
         tools:ignore="UseSwitchCompatOrMaterialXml" />
     <TextView
-        android:id="@+id/openTopoDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="0dp"
+        android:text="OpenStreetMaps (No Api Key)"
+        android:textColor="@color/yellow"
+        android:textSize="15dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toEndOf="@id/openStreetMapsSwitch"
+        app:layout_constraintTop_toTopOf="@id/openStreetMapsSwitch" />
+
+    <Switch
+        android:id="@+id/openTopoSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:text=""
+        android:textColor="@color/extraLightYellow"
+        android:textColorHighlight="@color/yellow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/openStreetMapsSwitch"
+        tools:checked="false"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -84,7 +106,6 @@
         tools:checked="false"
         tools:ignore="UseSwitchCompatOrMaterialXml" />
     <TextView
-        android:id="@+id/thunderForestDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -109,7 +130,6 @@
         tools:checked="false"
         tools:ignore="UseSwitchCompatOrMaterialXml" />
     <TextView
-        android:id="@+id/bingMapsDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -134,7 +154,6 @@
         tools:checked="false"
         tools:ignore="UseSwitchCompatOrMaterialXml" />
     <TextView
-        android:id="@+id/mapTilerDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"

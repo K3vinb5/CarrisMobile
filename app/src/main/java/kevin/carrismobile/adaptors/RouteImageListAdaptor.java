@@ -20,8 +20,8 @@ import com.example.carrismobile.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import kevin.carrismobile.data.Carreira;
-import kevin.carrismobile.data.CarreiraBasic;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.CarreiraBasic;
 import kevin.carrismobile.gui.TextDrawable;
 
 public class RouteImageListAdaptor extends BaseAdapter {
@@ -41,23 +41,21 @@ public class RouteImageListAdaptor extends BaseAdapter {
         this.carreiraBasicList = carreiraBasicList;
         for (CarreiraBasic cb : carreiraBasicList){
             textList.add(cb.getLong_name());
-            textIdLit.add(cb.getId());
+            textIdLit.add(cb.getRouteId());
             imageList.add(getImageId(cb.getColor()));
         }
     }
 
-    public RouteImageListAdaptor(Activity activity, List<Carreira> carreiraList, int a){
+    public RouteImageListAdaptor(Activity activity, List<CarreiraBasic> carreiraList, int a){
         this.context = activity.getApplicationContext();
         this.activity = activity;
         this.inflater = LayoutInflater.from(context);
         List<CarreiraBasic> carreiraBasicList = new ArrayList<>();
-        for (Carreira c : carreiraList){
-            carreiraBasicList.add(CarreiraBasic.newCarreiraBasicFromCarreira(c));
-        }
+        carreiraBasicList.addAll(carreiraList);
         this.carreiraBasicList = carreiraBasicList;
         for (CarreiraBasic cb : carreiraBasicList){
             textList.add(cb.getLong_name());
-            textIdLit.add(cb.getId());
+            textIdLit.add(cb.getRouteId());
             imageList.add(getImageId(cb.getColor()));
         }
     }
@@ -119,14 +117,24 @@ public class RouteImageListAdaptor extends BaseAdapter {
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2a9057, null);
             case "#FDB71A":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fdb71a, null);
+            case "#FFDC00":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ffdc00, null);
+            case "#F7941E":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_f7941e, null);
+            case "ED1C24":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ed1c24, null);
+            case "EC008C":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ec008c, null);
+            case "#091B7D":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_091b7d, null);
+            case "#8C8C99":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_8c8c99, null);
+            case "#2FB61E":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_2fb61e, null);
+            case "#00AEEF":
+                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00aeef, null);
             case "color_cascais":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_cascais, null);
-            case "color_carris":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_carris, null);
-            case "color_cp":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_cp, null);
-            case "color_fertagus":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_fertagus, null);
             default:
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_00b8b0, null);
         }

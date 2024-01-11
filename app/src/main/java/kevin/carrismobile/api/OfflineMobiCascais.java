@@ -1,20 +1,19 @@
 package kevin.carrismobile.api;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.carrismobile.R;
-import com.google.gson.Gson;
 
-import kevin.carrismobile.data.*;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.CarreiraBasic;
+import kevin.carrismobile.data.bus.Direction;
+import kevin.carrismobile.data.bus.Path;
+import kevin.carrismobile.data.bus.RealTimeSchedule;
+import kevin.carrismobile.data.bus.Schedule;
+import kevin.carrismobile.data.bus.Stop;
+import kevin.carrismobile.data.bus.Trip;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class OfflineMobiCascais {
@@ -144,7 +143,7 @@ public class OfflineMobiCascais {
                 }
                 carreiraId = nextLine[0];
                 long_name = nextLine[3];
-                CarreiraBasic currentCarreira = new CarreiraBasic(carreiraId, long_name, color);
+                CarreiraBasic currentCarreira = new CarreiraBasic(carreiraId, long_name, color, false);
                 currentCarreira.setOnline(false);
                 currentCarreira.setAgency_id("3");
                 carreiraList.add(currentCarreira);

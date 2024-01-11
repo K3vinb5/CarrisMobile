@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.custom.MyCustomDialog;
 import kevin.carrismobile.adaptors.StopImageListAdaptor;
 

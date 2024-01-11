@@ -8,12 +8,8 @@ import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RotateDrawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -29,7 +25,6 @@ import android.widget.TextView;
 
 import com.example.carrismobile.R;
 
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
@@ -42,13 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kevin.carrismobile.adaptors.StopImageListAdaptor;
-import kevin.carrismobile.api.Api;
-import kevin.carrismobile.data.Bus;
-import kevin.carrismobile.data.Carreira;
-import kevin.carrismobile.data.Direction;
-import kevin.carrismobile.data.Path;
-import kevin.carrismobile.data.Point;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.data.bus.Bus;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.Direction;
+import kevin.carrismobile.data.bus.Path;
+import kevin.carrismobile.data.bus.Point;
+import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.gui.BusBackgroundThread;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.custom.MyCustomDialog;
@@ -63,7 +58,7 @@ public class RealTimeFragment extends Fragment {
     public static Button previousButton;
     EditText editText;
     public static CheckBox checkBox;
-    public BusBackgroundThread backgroundThread = new BusBackgroundThread();
+    public BusBackgroundThread backgroundThread = new BusBackgroundThread(this);
     public boolean backgroundThreadStarted = false;
     public static List<Bus> busList = new ArrayList<>();
     public static List<Path> pathList = new ArrayList<>();
@@ -95,7 +90,7 @@ public class RealTimeFragment extends Fragment {
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(SettingsFragment.getCurrentTileProvider());
+        map.setTileSource(SettingsFragment.getCurrentTileProvider(getContext()));
 
         map.setMultiTouchControls(true);
         map.getController().setCenter(new GeoPoint(38.73329737648646d, -9.14096412687648d));
@@ -127,9 +122,9 @@ public class RealTimeFragment extends Fragment {
                         List<Bus> listToAdd;
                         Carreira carreira;
                         try{
-                            listToAdd = Api.getBusFromLine(currentText);
+                            listToAdd = CarrisMetropolitanaApi.getBusFromLine(currentText);
                             Log.d("REALTIME TRACKING", "Bus List Loaded " + listToAdd);
-                            carreira = Api.getCarreira(currentText);
+                            carreira = CarrisMetropolitanaApi.getCarreira(currentText);
                             Log.d("REALTIME TRACKING", "Carreira Loaded " + carreira.getRouteId());
                             carreira.init();
                             assert carreira != null;
@@ -213,8 +208,8 @@ public class RealTimeFragment extends Fragment {
                     currentSelectedBus ++;
                     updateTextView();
                     updateDirectionIndex();
-                    updateBusesUI();
                     updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
+                    updateBusesUI();
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
 
@@ -244,8 +239,8 @@ public class RealTimeFragment extends Fragment {
                     currentSelectedBus --;
                     updateTextView();
                     updateDirectionIndex();
-                    updateBusesUI();
                     updateMarkers(currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList(), map);
+                    updateBusesUI();
                     Log.println(Log.DEBUG, "Button", "Current Bus: " + currentSelectedBus);
                     getActivity().runOnUiThread(new Runnable() {
                             @Override

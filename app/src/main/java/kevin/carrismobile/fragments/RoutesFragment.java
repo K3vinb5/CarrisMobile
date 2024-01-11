@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kevin.carrismobile.api.Api;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.api.CarrisApi;
 import kevin.carrismobile.api.Offline;
-import kevin.carrismobile.data.CarreiraBasic;
-import kevin.carrismobile.data.Direction;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.bus.CarreiraBasic;
 import kevin.carrismobile.adaptors.RouteImageListAdaptor;
 import kevin.carrismobile.custom.MyCustomDialog;
 
@@ -83,12 +82,16 @@ public class RoutesFragment extends Fragment {
 
                         }
                         boolean online = currentCarreiraBasicList.get(i).isOnline();
-                        String selectedId = currentCarreiraBasicList.get(i).getId()+"";
+                        String selectedId = currentCarreiraBasicList.get(i).getRouteId()+"";
                         MainActivity activity = (MainActivity) getActivity();
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         activity.openFragment(routeDetailFragment, 0, true);
                         if(online){
-                            routeDetailFragment.loadCarreiraFromApi(selectedId);
+                            if(currentCarreiraBasicList.get(i).getAgency_id().equals("-1")){
+                                routeDetailFragment.loadCarreiraFromApi(selectedId, currentCarreiraBasicList.get(i).getAgency_id(), currentCarreiraBasicList.get(i).getLong_name(), currentCarreiraBasicList.get(i).getColor());
+                            }else if (currentCarreiraBasicList.get(i).getAgency_id().equals("0")){
+                                routeDetailFragment.loadCarreiraFromApi(selectedId, currentCarreiraBasicList.get(i).getAgency_id(), currentCarreiraBasicList.get(i).getLong_name(), currentCarreiraBasicList.get(i).getColor());
+                            }
                         }else {
                             routeDetailFragment.loadCarreiraOffline(selectedId);
                         }
@@ -150,10 +153,12 @@ public class RoutesFragment extends Fragment {
             public void run() {
                 List<CarreiraBasic> toAdd;
                 try{
-                    toAdd = Api.getCarreiraBasicList();
+                    toAdd = CarrisMetropolitanaApi.getCarreiraBasicList();
+                    carreiraBasicList.addAll(toAdd);
+                    toAdd = CarrisApi.getCarreiraBasicList();
                     carreiraBasicList.addAll(toAdd);
                     carreiraBasicList.addAll(Offline.getCarreiraList());
-                    carreiraBasicList.sort(Comparator.comparing(CarreiraBasic::getId));
+                    carreiraBasicList.sort(Comparator.comparing(CarreiraBasic::getRouteId));
                     connected = true;
                 }catch (Exception e){
                     getActivity().runOnUiThread(new Runnable() {
@@ -169,8 +174,10 @@ public class RoutesFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        listLock.lock();
                         imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
                         list.setAdapter(imagesListAdapter);
+                        listLock.unlock();
                     }
                 });
 
@@ -195,8 +202,8 @@ public class RoutesFragment extends Fragment {
         spinnerList.add("Todas");
         spinnerList.add("Carris Metropolitana");
         spinnerList.add("Carris");
-        spinnerList.add("CP - Comboios Urbanos");
-        spinnerList.add("Fertagus");
+        //spinnerList.add("CP - Comboios Urbanos");
+        //spinnerList.add("Fertagus");
         spinnerList.add("MobiCascais");
         spinnerListAdaptor = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.simple_list, R.id.listText, spinnerList);
         spinner.setAdapter(spinnerListAdaptor);
@@ -225,9 +232,14 @@ public class RoutesFragment extends Fragment {
                         updateList();
                         break;
                     case 3:
-                        currentCarreiraBasicList.clear();
+                        /*currentCarreiraBasicList.clear();
                         currentCarreiraBasicList.addAll(carreiraBasicList);
                         currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("1"));
+                        Log.d("DEBUG", currentCarreiraBasicList.toString());
+                        updateList();*/
+                        currentCarreiraBasicList.clear();
+                        currentCarreiraBasicList.addAll(carreiraBasicList);
+                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("3"));
                         Log.d("DEBUG", currentCarreiraBasicList.toString());
                         updateList();
                         break;

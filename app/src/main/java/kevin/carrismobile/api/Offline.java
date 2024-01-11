@@ -6,9 +6,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.carrismobile.R;
-import com.google.gson.Gson;
 
-import kevin.carrismobile.data.*;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.CarreiraBasic;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -32,10 +32,8 @@ public class Offline {
         mPrefsStopTimes = activity.getSharedPreferences("OfflineStopTimes", Context.MODE_PRIVATE);
         mPrefsTrips = activity.getSharedPreferences("OfflineTrips", Context.MODE_PRIVATE);
         mPrefsMaps = activity.getSharedPreferences("OfflineAgencyMap", Context.MODE_PRIVATE);
-        OfflineCarris.initCarrisOffline(activity);
         OfflineCP.initCPOffline(activity);
         OfflineMobiCascais.initMobiCascaisOffline(activity);
-        OfflineFerTagus.initFertagusOffline(activity);
         if (!mPrefsMaps.contains(AGENCY_SERVICE_KEY)){
             copyResource(R.raw.agency_service, AGENCY_SERVICE_KEY,activity, mPrefsMaps);
             Log.w("WARNING SHARED PREFERENCES", "Agency files not found");
@@ -54,12 +52,6 @@ public class Offline {
     public static Carreira getCarreira(String id){
         String agency = agencyServiceMap.get(id);
         switch (agency) {
-            case "0":
-                return OfflineCarris.getCarreira(id);
-            case "1":
-                return OfflineCP.getCarreira(id);
-            case "2":
-                return OfflineFerTagus.getCarreira(id);
             case "3":
                 return OfflineMobiCascais.getCarreira(id);
         }
@@ -69,24 +61,15 @@ public class Offline {
 
     public static List<CarreiraBasic> getCarreiraList(){
         List<CarreiraBasic> returnList = new ArrayList<>();
-        returnList.addAll(OfflineCarris.getCarreiraList());
-        returnList.addAll(OfflineCP.getCarreiraList());
-        returnList.addAll(OfflineFerTagus.getCarreiraList());
+        //returnList.addAll(OfflineCarris.getCarreiraList());
+        //returnList.addAll(OfflineCP.getCarreiraList());
+        //returnList.addAll(OfflineFerTagus.getCarreiraList());
         returnList.addAll(OfflineMobiCascais.getCarreiraList());
         return returnList;
     }
 
     public static void updateDirectionIndex(Carreira carreira, int directionIndex){
         switch (carreira.getAgency_id()) {
-            case "0":
-                OfflineCarris.updateDirectionIndex(carreira, directionIndex);
-                break;
-            case "1":
-                OfflineCP.updateDirectionIndex(carreira, directionIndex);
-                break;
-            case "2":
-                OfflineFerTagus.updateDirectionIndex(carreira, directionIndex);
-                break;
             case "3":
                 OfflineMobiCascais.updateDirectionIndex(carreira, directionIndex);
                 break;

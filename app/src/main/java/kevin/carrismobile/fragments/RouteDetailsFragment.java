@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -36,7 +35,6 @@ import com.example.carrismobile.R;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
@@ -45,13 +43,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import kevin.carrismobile.api.Api;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.api.CarrisApi;
 import kevin.carrismobile.api.Offline;
-import kevin.carrismobile.data.Carreira;
-import kevin.carrismobile.data.Direction;
-import kevin.carrismobile.data.Point;
-import kevin.carrismobile.data.Schedule;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.Direction;
+import kevin.carrismobile.data.bus.Point;
+import kevin.carrismobile.data.bus.Schedule;
+import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.gui.TextDrawable;
 import kevin.carrismobile.custom.MyCustomDialog;
@@ -129,7 +128,7 @@ public class RouteDetailsFragment extends Fragment {
         textView.setText("Insira o número da sua Carreira\ne pressione Atualizar");
 
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        map.setTileSource(SettingsFragment.getCurrentTileProvider());
+        map.setTileSource(SettingsFragment.getCurrentTileProvider(getContext()));
 
         map.setMultiTouchControls(true);
         map.getController().setCenter(new GeoPoint(38.73329737648646, -9.14096412687648));
@@ -168,7 +167,7 @@ public class RouteDetailsFragment extends Fragment {
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        loadCarreiraFromApi(editText.getText().toString());
+                        //loadCarreiraFromApi(editText.getText().toString());
                     }
                 });
                 thread.start();
@@ -189,17 +188,17 @@ public class RouteDetailsFragment extends Fragment {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
                         stopList.clear();
                             try{
-                                if ( currentCarreira.isOnline() && currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().get(0).getStop().getScheduleList() == null) {
-                                    currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
-                                }
+                                if ( currentCarreira.isOnline()) {
+                                    if(currentCarreira.getAgency_id().equals("-1")){
+                                        currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
+                                    }else if (currentCarreira.getAgency_id().equals("0")){
+                                        CarrisApi.updateDirectionAndStop(currentCarreira, currentDirectionIndex, currentStopIndex);
+                                    }                                }
                             }catch (Exception ignore){
                                 getActivity().runOnUiThread(() -> dialog.show());
                                 connected = false;
                                 return;
                             }
-                        if (!currentCarreira.isOnline()){
-                            Offline.updateDirectionIndex(currentCarreira, currentDirectionIndex);
-                        }
                         List<Stop> toAdd = new ArrayList<>();
                         currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
                         assert toAdd.size() > 0;
@@ -241,8 +240,13 @@ public class RouteDetailsFragment extends Fragment {
                         }
                         Stop currentStop = stopList.get(currentStopIndex);
                         if (currentCarreira.isOnline()){
-                            try{
+                            try {
+                                if(currentCarreira.getAgency_id().equals("-1")){
                                 currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
+                                }else if (currentCarreira.getAgency_id().equals("0")){
+                                    Log.d("DEBUG", "Stop clicked");
+                                    CarrisApi.updateDirectionAndStop(currentCarreira, currentDirectionIndex, currentStopIndex);
+                                }
                             }catch (Exception ignore){
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
@@ -388,7 +392,7 @@ public class RouteDetailsFragment extends Fragment {
         });
     }
 
-    public void loadCarreiraFromApi(String carreiraId){
+    public void loadCarreiraFromApi(String carreiraId, String agencyId, String name, String color){
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -402,31 +406,51 @@ public class RouteDetailsFragment extends Fragment {
                 //Loading Screen
                 startWaitingAnimation();
                 Carreira carreira = null;
-                try {
-                    carreira = Api.getCarreira(carreiraId);
-                    carreira.init();
-                    connected = true;
-                }catch (Exception e ){
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.show();
-                            if (loadingImage.getAnimation() != null){
-                                loadingImage.getAnimation().cancel();
+                if (agencyId.equals("-1")) {
+                    try {
+                        carreira = CarrisMetropolitanaApi.getCarreira(carreiraId);
+                        carreira.init();
+                        connected = true;
+                    } catch (Exception e) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.show();
+                                if (loadingImage.getAnimation() != null) {
+                                    loadingImage.getAnimation().cancel();
+                                }
+                                loadingImage.setVisibility(View.INVISIBLE);
                             }
-                            loadingImage.setVisibility(View.INVISIBLE);
-                        }
-                    });
-                    connected = false;
-                    return;
+                        });
+                        connected = false;
+                        return;
+                    }
+                }else if(agencyId.equals("0")){
+                    try {
+                        carreira = CarrisApi.getCarreira(name, carreiraId, color, agencyId);
+                        connected = true;
+                    } catch (Exception e) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.show();
+                                if (loadingImage.getAnimation() != null) {
+                                    loadingImage.getAnimation().cancel();
+                                }
+                                loadingImage.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        connected = false;
+                        return;
+                    }
                 }
                 currentDirectionIndex = 0;
-                //carreira.updatePathsOnSelectedDirection(currentDirectionIndex);
                 currentCarreira = carreira;
                 currentCarreiraId = carreira.getRouteId();
                 currentStopIndex = 0;
                 stopList.clear();
                 List<Stop> toAdd = new ArrayList<>();
+                Log.d("DEBUG CARRIS", "Size :" + carreira.getDirectionList().size());
                 carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
                 assert toAdd.size() > 0;
                 stopList.addAll(toAdd);
@@ -437,54 +461,9 @@ public class RouteDetailsFragment extends Fragment {
                 if(stopList.get(currentStopIndex).getScheduleList() != null){
                     scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
                 }
-
                 MainActivity activity = (MainActivity)getActivity();
                 RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
-
-                Carreira finalCarreira = carreira;
-
-                stopWaitingAnimation(finalCarreira, fragment, point);
-            }
-        });
-        thread.start();
-    }
-
-    public void loadCarreiraFromFavorites(Carreira carreira){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startWaitingAnimation();
-                currentCarreira = carreira;
-                currentCarreiraId = carreira.getRouteId();
-                currentStopIndex = 0;
-                currentDirectionIndex = 0;
-                if (currentCarreira.isOnline()){
-                    try{
-                        carreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, 0);
-                    }catch (Exception ignore){
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.show();
-                            }
-                        });
-                        connected = false;
-
-                    }
-                }
-                List<Stop> toAdd = new ArrayList<>();
-                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
-                stopList.addAll(toAdd);
-                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
-                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
-                directionList = carreira.getDirectionList();
-                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
-
-                MainActivity activity = (MainActivity)getActivity();
-                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
-
                 stopWaitingAnimation(carreira, fragment, point);
-
             }
         });
         thread.start();
@@ -517,33 +496,6 @@ public class RouteDetailsFragment extends Fragment {
         });
         thread.start();
     }
-    public void loadCarreiraOfflineFromFavorites(Carreira carreira){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startWaitingAnimation();
-                currentCarreira = carreira;
-                currentCarreiraId = carreira.getRouteId();
-                currentStopIndex = 0;
-                currentDirectionIndex = 0;
-                List<Stop> toAdd = new ArrayList<>();
-                carreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
-                stopList.addAll(toAdd);
-                double[] coordinates = stopList.get(currentStopIndex).getCoordinates();
-                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
-                directionList = carreira.getDirectionList();
-                scheduleList.addAll(stopList.get(currentStopIndex).getScheduleList());
-
-                MainActivity activity = (MainActivity)getActivity();
-                RouteFavoritesFragment fragment = (RouteFavoritesFragment) activity.routeFavoritesFragment;
-
-                stopWaitingAnimation(carreira, fragment, point);
-
-            }
-        });
-        thread.start();
-    }
-
     private void updateMarkers(List<Stop> stopList, MapView map){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
@@ -638,14 +590,24 @@ public class RouteDetailsFragment extends Fragment {
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_2a9057, null);
             case "#FDB71A":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fdb71a, null);
+            case "#FFDC00":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ffdc00, null);
+            case "#F7941E":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_f7941e, null);
+            case "ED1C24":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ed1c24, null);
+            case "EC008C":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ec008c, null);
+            case "#091B7D":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_091b7d, null);
+            case "#8C8C99":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_8c8c99, null);
+            case "#2FB61E":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_2fb61e, null);
+            case "#00AEEF":
+                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_00aeef, null);
             case "color_cascais":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_cascais, null);
-            case "color_carris":
-                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_carris, null);
-            case "color_cp":
-                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_cp, null);
-            case "color_fertagus":
-                return ResourcesCompat.getDrawable(getResources(), R.drawable.color_fertagus, null);
             default:
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_00b8b0, null);
         }

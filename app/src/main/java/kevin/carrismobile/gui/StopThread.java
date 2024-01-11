@@ -2,7 +2,7 @@ package kevin.carrismobile.gui;
 
 import java.util.List;
 
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.data.bus.Stop;
 
 public class StopThread extends Thread{
 

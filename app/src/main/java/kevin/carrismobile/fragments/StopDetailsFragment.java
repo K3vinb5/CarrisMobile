@@ -1,6 +1,7 @@
 package kevin.carrismobile.fragments;
 
 import android.app.AlertDialog;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
@@ -17,12 +18,17 @@ import android.widget.TextView;
 
 import com.example.carrismobile.R;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-import kevin.carrismobile.api.Api;
-import kevin.carrismobile.data.RealTimeSchedule;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.data.bus.RealTimeSchedule;
+import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.custom.MyCustomDialog;
 
 public class StopDetailsFragment extends Fragment {
@@ -60,12 +66,12 @@ public class StopDetailsFragment extends Fragment {
                     @Override
                     public void run() {
 
-                        String selectedId = currentStop.getRealTimeSchedules().get(i).getLine_id()+"";
+                        String selectedId = currentStopRealTimeSchedules.get(i).getLine_id()+"";
                         MainActivity activity = (MainActivity) getActivity();
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         activity.openFragment(routeDetailFragment, 0, true);
                         if(currentStop.isOnline()){
-                            routeDetailFragment.loadCarreiraFromApi(selectedId);
+                            routeDetailFragment.loadCarreiraFromApi(selectedId, currentStop.getAgency_id(), "name", "color");
                         }else{
                             routeDetailFragment.loadCarreiraOffline(selectedId);
                         }
@@ -89,11 +95,12 @@ public class StopDetailsFragment extends Fragment {
                 Stop stop;
                 List<RealTimeSchedule> toAdd;
                 try{
-                    stop = Api.getStopFromId(newStopId); //requires API
+                    stop = CarrisMetropolitanaApi.getStopFromId(newStopId); //requires API
                     toAdd = stop.getRealTimeSchedules(); //requires API
                     Log.d("STOP SCHEDULES", toAdd.toString());
                     if (toAdd != null){
                         currentStopRealTimeSchedules.clear();
+                        toAdd.removeIf(trip -> isFirstTimeSmaller(trip.getScheduled_arrival().substring(0,5), getCurrentFormattedTime()));
                         currentStopRealTimeSchedules.addAll(toAdd);
                         MainActivity mainActivity = (MainActivity) getActivity();
                         StopFavoritesFragment fragment = (StopFavoritesFragment)mainActivity.stopFavoritesFragment;
@@ -210,5 +217,30 @@ public class StopDetailsFragment extends Fragment {
         thread.start();
     }
 
+    public static String getCurrentFormattedTime(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LocalDateTime currentUTC = LocalDateTime.now(ZoneOffset.UTC);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            return currentUTC.format(formatter);
+        }
+        return null;
+    }
+    private static boolean isFirstTimeSmaller(String time1, String time2) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if(Integer.parseInt(time1.substring(0,2)) > 23){
+                time1 = "0" + (Integer.parseInt(time1.substring(0,2)) - 24) + time1.substring(2);
+            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
+            LocalTime lt1 = LocalTime.parse(time1, formatter);
+            LocalTime lt2 = LocalTime.parse(time2, formatter);
+
+            // Subtract 30 minutes from the first time
+            LocalTime lt1Minus30 = lt1.plus(30, ChronoUnit.MINUTES);
+
+            // Compare the adjusted first time with the second time
+            return lt1Minus30.isBefore(lt2);
+        }
+        return false;
+    }
 }

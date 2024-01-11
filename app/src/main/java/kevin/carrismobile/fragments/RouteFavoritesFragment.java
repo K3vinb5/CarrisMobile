@@ -25,16 +25,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import kevin.carrismobile.data.Carreira;
+import kevin.carrismobile.data.bus.Carreira;
 import kevin.carrismobile.adaptors.RouteImageListAdaptor;
+import kevin.carrismobile.data.bus.CarreiraBasic;
 
 public class RouteFavoritesFragment extends Fragment {
 
     EditText editText;
     ListView list;
     Button seeStopsFavorites;
-    List<Carreira> carreiraList = new ArrayList<>();
-    List<Carreira> currentCarreiraList = new ArrayList<>();
+    List<CarreiraBasic> carreiraList = new ArrayList<>();
+    List<CarreiraBasic> currentCarreiraList = new ArrayList<>();
     RouteImageListAdaptor carreiraListAdapter;
     private static SharedPreferences mPrefs;
 
@@ -77,12 +78,12 @@ public class RouteFavoritesFragment extends Fragment {
                                 }else{
                                     textModifiedString = "       ";}
                                 //Carreiras
-                                for (Carreira carreira : carreiraList){
+                                for (CarreiraBasic carreira : carreiraList){
                                     if (carreira.toString().contains(original) || carreira.toString().contains(textModifiedString)){
                                         currentCarreiraList.add(carreira);
                                     }
                                 }
-                                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
+                                currentCarreiraList.sort(Comparator.comparing(CarreiraBasic::getRouteId));
                                 Log.println(Log.DEBUG, "DATA SET", "Changed to " + currentCarreiraList.size());
                                 carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
@@ -108,9 +109,9 @@ public class RouteFavoritesFragment extends Fragment {
                         RouteDetailsFragment fragment = (RouteDetailsFragment) mainActivity.routeDetailsFragment;
                         mainActivity.openFragment(fragment, 0, false);
                         if (currentCarreiraList.get(i).isOnline()){
-                            fragment.loadCarreiraFromFavorites(currentCarreiraList.get(i));
+                            fragment.loadCarreiraFromApi(currentCarreiraList.get(i).getRouteId(), currentCarreiraList.get(i).getAgency_id(), currentCarreiraList.get(i).getLong_name(), currentCarreiraList.get(i).getColor());
                         }else{
-                            fragment.loadCarreiraOfflineFromFavorites(currentCarreiraList.get(i));
+                            fragment.loadCarreiraOffline(currentCarreiraList.get(i).getRouteId());
                         }
                     }
                 });
@@ -143,12 +144,12 @@ public class RouteFavoritesFragment extends Fragment {
                     return;
                 }
                 for (int i = 0; i < Integer.parseInt(size); i++){
-                    Carreira carreiraToAdd = (Carreira)loadObject("key_carreiraList_carreira_" + i, Carreira.class);
+                    CarreiraBasic carreiraToAdd = (CarreiraBasic) loadObject("key_carreiraList_carreira_" + i, CarreiraBasic.class);
                     carreiraList.add(carreiraToAdd);
-                    Log.d("Carreira Recovered", carreiraToAdd.getName());
+                    Log.d("Carreira Recovered", carreiraToAdd.getLong_name());
                 }
                 currentCarreiraList.addAll(carreiraList);
-                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
+                currentCarreiraList.sort(Comparator.comparing(CarreiraBasic::getRouteId));
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -167,7 +168,9 @@ public class RouteFavoritesFragment extends Fragment {
             public void run() {
                 if (carreira != null){
                     if (!carreiraList.contains(carreira)){
-                        carreiraList.add(carreira);
+                        CarreiraBasic carreiraBasic = new CarreiraBasic(carreira.getRouteId(), carreira.getName(), carreira.getColor(), carreira.isOnline());
+                        carreiraBasic.setAgency_id(carreira.getAgency_id());
+                        carreiraList.add(carreiraBasic);
                         String size = (String)loadObject("key_carreiraList_size", String.class);
                         int intSize = Integer.parseInt(size);
                         intSize++;
@@ -181,7 +184,7 @@ public class RouteFavoritesFragment extends Fragment {
                                 editText.setText(""); //clears editText
                                 currentCarreiraList.clear();
                                 currentCarreiraList.addAll(carreiraList);
-                                currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
+                                currentCarreiraList.sort(Comparator.comparing(CarreiraBasic::getRouteId));
                                 carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                                 list.setAdapter(carreiraListAdapter);
                             }
@@ -202,9 +205,9 @@ public class RouteFavoritesFragment extends Fragment {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Carreira stopToRemove = null;
+                CarreiraBasic stopToRemove = null;
                 boolean stopFound = false;
-                for (Carreira carreira : carreiraList){
+                for (CarreiraBasic carreira : carreiraList){
                     if (carreiraId.equals(carreira.getRouteId())){
                         stopToRemove = carreira;
                         stopFound = true;
@@ -228,7 +231,7 @@ public class RouteFavoritesFragment extends Fragment {
                         editText.setText(""); //clears editText
                         currentCarreiraList.clear();
                         currentCarreiraList.addAll(carreiraList);
-                        currentCarreiraList.sort(Comparator.comparing(Carreira::getRouteId));
+                        currentCarreiraList.sort(Comparator.comparing(CarreiraBasic::getRouteId));
                         carreiraListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraList, 0);
                         list.setAdapter(carreiraListAdapter);
                     }
@@ -261,7 +264,7 @@ public class RouteFavoritesFragment extends Fragment {
     }
 
     public boolean containsCarreira(String carreiraId){
-        for (Carreira c: carreiraList){
+        for (CarreiraBasic c: carreiraList){
             if (c.getRouteId().equals(carreiraId)){
                 return true;
             }

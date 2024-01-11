@@ -2,6 +2,8 @@ package kevin.carrismobile.gui;
 
 import android.util.Log;
 
+import androidx.fragment.app.Fragment;
+
 import kevin.carrismobile.fragments.MainActivity;
 import kevin.carrismobile.fragments.RealTimeFragment;
 import kevin.carrismobile.fragments.StopsMapFragment;
@@ -15,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kevin.carrismobile.api.Api;
-import kevin.carrismobile.data.Stop;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.data.bus.Stop;
 
 public class StopsBackgroundThread extends Thread{
 
@@ -25,20 +27,33 @@ public class StopsBackgroundThread extends Thread{
     private GeoPoint lastFixedPoint = new GeoPoint(0d, 0d);// last known location (1 iteration behind)
     public Lock lock = new ReentrantLock();
     private boolean firstRunExecuted = true;
+    private boolean firstWait = true;
     private boolean needUpdating = false;
+    private final Fragment fragment;
+
+    public StopsBackgroundThread(Fragment fragment) {
+        this.fragment = fragment;
+    }
 
     @Override
     public void run() {
         int index = 0;
         List<Stop> stopList;
         try {
-            stopList = Api.getStopList();
+            stopList = CarrisMetropolitanaApi.getStopList();
         }catch (Exception e){
             //TODO use Shared Preferences here to reduce internet connection need
             return;
         }
         while(true){
             try{
+                if (!firstWait){
+                    TimeUnit.MILLISECONDS.sleep(7000);
+                    if (fragment.isHidden()){
+                        continue;
+                    }
+                }
+                firstWait = false;
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -104,7 +119,6 @@ public class StopsBackgroundThread extends Thread{
                 Log.println(Log.DEBUG,"STOP BACKGROUND THREAD", "CALL" + index);
                 thread.start();
                 index++;
-                TimeUnit.MILLISECONDS.sleep(7000);
             }catch (Exception e){
                 Log.d("STOP BACKGROUND THREAD", "INTERRUPTED");
                 break;

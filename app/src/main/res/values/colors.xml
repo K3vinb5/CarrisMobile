@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="darkYello">#FFCF41</color>
     <color name="yellow">#FFEB3B</color>
     <color name="lightYellow">#FFF48F</color>
     <color name="extraLightYellow">#FFF9C2</color>
-    <color name="lightYellowDark">#FFF05F</color>
     <color name="gray">#626262</color>
     <color name="lightGray">#9F9F9F</color>
 

@@ -10,8 +10,7 @@
         android:onClick="onOptionsItemSelected"
         android:orderInCategory="3">
 
-        <menu
-            android:id="@+id/menu_revice" >
+        <menu>
 
 
         </menu>

@@ -1,0 +1,161 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="kevin.carrismobile.fragments.MetroStationFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        android:background="?attr/colorPrimary"
+        android:backgroundTint="@color/yellow"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/top_menu" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Detalhes Estação Metro"
+        android:textColor="@color/black"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/metroStationTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="40dp"
+        android:text="Nome Estação"
+        android:textStyle="bold"
+        android:textColor="@color/lightYellow"
+        android:textSize="25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <ImageView
+        android:id="@+id/metroStationLineImage"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/ic_loading"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+         />
+
+    <TextView
+        android:id="@+id/firstDestiniy"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="50dp"
+        android:text="First Destiny"
+        android:textColor="@color/lightYellow"
+        android:textSize="23dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/metroStationTitle" />
+
+    <TextView
+        android:id="@+id/firstDestiniyFirstTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="First Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstDestiniy" />
+    <TextView
+        android:id="@+id/firstDestiniySecondTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="Second Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstDestiniyFirstTime" />
+    <TextView
+        android:id="@+id/firstDestiniyThirdTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="Third Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstDestiniySecondTime" />
+
+    <TextView
+        android:id="@+id/secondDestiniy"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="70dp"
+        android:text="Second Destiny"
+        android:textColor="@color/lightYellow"
+        android:textSize="23dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstDestiniyThirdTime" />
+
+    <TextView
+        android:id="@+id/secondDestiniyFirstTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="First Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/secondDestiniy" />
+    <TextView
+        android:id="@+id/secondDestiniySecondTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="Second Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/secondDestiniyFirstTime" />
+    <TextView
+        android:id="@+id/secondDestiniyThirdTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="15dp"
+        android:text="Third Time"
+        android:textColor="@color/lightYellow"
+        android:textSize="18dp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/secondDestiniySecondTime" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

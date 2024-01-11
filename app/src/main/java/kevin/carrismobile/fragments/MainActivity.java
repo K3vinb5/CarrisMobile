@@ -1,44 +1,21 @@
 package kevin.carrismobile.fragments;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.example.carrismobile.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
-
-import kevin.carrismobile.api.Offline;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -53,8 +30,10 @@ public class MainActivity extends AppCompatActivity {
     public Fragment stopDetailsFragment = new StopDetailsFragment();
     public Fragment stopFavoritesFragment = new StopFavoritesFragment();
     public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
-    public Fragment moovitFragment = new MoovitFragment();
+    public Fragment trainsFragment = new TrainsFragment();
     public Fragment settingsFragment = new SettingsFragment();
+    public Fragment cpStationFrament = new CPStationFragment();
+    public Fragment metroStationFragment = new MetroStationFragment();
     public Fragment currentFragment = null;
     public List<Fragment> oldFragmentsList = new ArrayList<>();
     private HashMap<Fragment, Integer> mapper= new HashMap<>();
@@ -71,13 +50,15 @@ public class MainActivity extends AppCompatActivity {
         transaction.add(R.id.main_layout, routesFragment).commit();
         mapper.put(routesFragment, 2);
         initFragment(R.id.main_layout, settingsFragment, 2);
-        initFragment(R.id.main_layout, routeDetailsFragment, 2);
-        initFragment(R.id.main_layout, realTimeFragment, 4);
-        initFragment(R.id.main_layout, stopsMapFragment, 3);
-        initFragment(R.id.main_layout, stopDetailsFragment, 2);
+        initFragment(R.id.main_layout, cpStationFrament, 0);
+        initFragment(R.id.main_layout, metroStationFragment, 0);
         initFragment(R.id.main_layout, stopFavoritesFragment, 1);
         initFragment(R.id.main_layout, routeFavoritesFragment, 1);
-        initFragment(R.id.main_layout, moovitFragment, 0);
+        initFragment(R.id.main_layout, stopDetailsFragment, 2);
+        initFragment(R.id.main_layout, stopsMapFragment, 3);
+        initFragment(R.id.main_layout, realTimeFragment, 4);
+        initFragment(R.id.main_layout, routeDetailsFragment, 2);
+        initFragment(R.id.main_layout, trainsFragment, 0);
         currentIndexFragment = 2;
         currentFragment = routesFragment;
         oldFragmentsList.add(routesFragment);
@@ -159,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     private void bottomItemMenu(MenuItem item){
         //Application bottomBar
         if (item.getItemId() == R.id.bottomitem1) {
-            openFragment(moovitFragment, 0, true);
+            openFragment(trainsFragment, 0, true);
         }else if(item.getItemId() == R.id.bottomitem2){
             openFragment(realTimeFragment,4, true);
         }else if(item.getItemId() == R.id.bottomitem3){

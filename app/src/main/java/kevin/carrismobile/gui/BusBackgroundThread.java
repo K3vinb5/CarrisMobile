@@ -2,6 +2,8 @@ package kevin.carrismobile.gui;
 
 import android.util.Log;
 
+import androidx.fragment.app.Fragment;
+
 import kevin.carrismobile.fragments.MainActivity;
 import kevin.carrismobile.fragments.RealTimeFragment;
 
@@ -13,15 +15,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kevin.carrismobile.api.Api;
-import kevin.carrismobile.data.Bus;
-import kevin.carrismobile.data.Carreira;
-import kevin.carrismobile.data.Direction;
+import kevin.carrismobile.api.CarrisMetropolitanaApi;
+import kevin.carrismobile.data.bus.Bus;
+import kevin.carrismobile.data.bus.Carreira;
+import kevin.carrismobile.data.bus.Direction;
 
 public class BusBackgroundThread extends Thread{
 
     private Lock lock = new ReentrantLock();
     private boolean connected = false;
+    private final Fragment fragment;
+
+    public BusBackgroundThread(Fragment fragment) {
+        this.fragment = fragment;
+    }
 
 
     public Lock getLock() {
@@ -31,8 +38,17 @@ public class BusBackgroundThread extends Thread{
     @Override
     public void run() {
         int index= 0;
-
         while (true){
+            if (index > 1){
+                try {
+                    TimeUnit.MILLISECONDS.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (fragment.isHidden()){
+                continue;
+            }
             try{
                 Thread thread = new Thread(new Runnable() {
                     @Override
@@ -42,7 +58,7 @@ public class BusBackgroundThread extends Thread{
 
                         List<Bus> listToAdd;
                         try{
-                            listToAdd = Api.getBusFromLine(currentText);
+                            listToAdd = CarrisMetropolitanaApi.getBusFromLine(currentText);
                             Carreira carreira = RealTimeFragment.currentCarreira;
                             if (listToAdd.size() > 0){
                                 List<Direction> carreiraDirectionList = carreira.getDirectionList();
@@ -86,7 +102,6 @@ public class BusBackgroundThread extends Thread{
                 index++;
                 synchronized (RealTimeFragment.markerBusList){
                     List<Marker> currentBusList = RealTimeFragment.markerBusList;
-                    TimeUnit.MILLISECONDS.sleep(5000);
                     if (!RealTimeFragment.markerBusList.equals(currentBusList)){
                         for (Marker marker : currentBusList){
                             RealTimeFragment.map.getOverlays().remove(marker);
