@@ -89,6 +89,7 @@ public class RouteDetailsFragment extends Fragment {
     public AlertDialog routeAdded;
     public AlertDialog routeDeleted;
     public boolean connected;
+    boolean first = true;
     public List<Marker> markerList = new ArrayList<>();//
     public Polyline line = null;
 
@@ -148,11 +149,19 @@ public class RouteDetailsFragment extends Fragment {
                         Stop currentStop = stopList.get(currentStopIndex);
                         MainActivity mainActivity = (MainActivity) getActivity();
                         assert mainActivity != null;
-                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        mainActivity.openFragment(stopDetailsFragment, 0, true);
                         if (currentCarreira.isOnline()){
-                            stopDetailsFragment.loadNewStop(currentStop.getStopID());
+                            if (currentCarreira.getAgency_id().equals("-1")){
+                                StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                                mainActivity.openFragment(stopDetailsFragment, 0, true);
+                                stopDetailsFragment.loadNewStop(currentStop.getStopID());
+                            }else if(currentCarreira.getAgency_id().equals("0")){
+                                CarrisStopDetailsFragment carrisStopDetailsFragment = (CarrisStopDetailsFragment)mainActivity.carrisStopDetailsFragment;
+                                mainActivity.openFragment(carrisStopDetailsFragment, 0, true);
+                                carrisStopDetailsFragment.loadCarrisStop(currentStop);
+                            }
                         }else{
+                            StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                            mainActivity.openFragment(stopDetailsFragment, 0, true);
                             stopDetailsFragment.loadNewOfflineStop(currentStop);
                         }
                     }
@@ -427,7 +436,7 @@ public class RouteDetailsFragment extends Fragment {
                     }
                 }else if(agencyId.equals("0")){
                     try {
-                        carreira = CarrisApi.getCarreira(name, carreiraId, color, agencyId);
+                        carreira = CarrisApi.getCarreira(name, carreiraId);
                         connected = true;
                     } catch (Exception e) {
                         getActivity().runOnUiThread(new Runnable() {

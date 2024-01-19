@@ -11,6 +11,7 @@ import kevin.carrismobile.data.bus.Carreira;
 import kevin.carrismobile.data.train.CPStop;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,7 +31,8 @@ public class CPApi {
         Request request = new Request.Builder().url(url).build();
         String output = "";
         try {
-            output = client.newCall(request).execute().body().string();
+            Response response = client.newCall(request).execute();
+            output = response.body().string();
         } catch (Exception ignore) {}
         return output;
     }

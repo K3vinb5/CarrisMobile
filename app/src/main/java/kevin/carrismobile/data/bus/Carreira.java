@@ -140,6 +140,11 @@ public class Carreira implements Serializable {
     public static Carreira generateCarreiraPlaceHolder(){
         return new Carreira("Carreira", "-1", "#000000");
     }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public String getColor() {
         return color;
     }

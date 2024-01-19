@@ -1,8 +1,11 @@
 package kevin.carrismobile.api;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.net.SocketTimeoutException;
@@ -19,6 +22,7 @@ import kevin.carrismobile.data.bus.Shape;
 import kevin.carrismobile.data.bus.Stop;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 public class CarrisMetropolitanaApi {
     public static final String CARREIRAURL = "https://api.carrismetropolitana.pt/lines/";
@@ -34,9 +38,11 @@ public class CarrisMetropolitanaApi {
         Request request = new Request.Builder().url(url).build();
         String output = "";
         try {
-            output = client.newCall(request).execute().body().string();
+            Response response = client.newCall(request).execute();
+            output = response.body().string();
+            response.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("CARRIS METROPOLITANA API", "Message :" + e.getMessage());
         }
         return output;
     }
@@ -114,20 +120,6 @@ public class CarrisMetropolitanaApi {
         }
 
     }
-
-    public static CarreiraBasic getCarreiraBasic(String id){
-        try {
-            Gson gson = new Gson();
-            CarreiraBasic carreira = gson.fromJson(getJson(CARREIRAURL + id), CarreiraBasic.class);
-            carreira.setOnline(true);
-            carreira.setAgency_id("-1");
-            return carreira;
-        }catch (Exception e ){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static List<CarreiraBasic> getCarreiraBasicList(){
         try {
             Gson gson = new Gson();
@@ -149,7 +141,8 @@ public class CarrisMetropolitanaApi {
     public static List<Stop> getStopList(){
         try {
             Gson gson = new Gson();
-            JsonArray jsonCarreiraArray = new JsonParser().parse(getJson(REALTIMELISTSTOPURL)).getAsJsonArray();
+            JsonArray jsonCarreiraArray = gson.fromJson(getJson(REALTIMELISTSTOPURL), JsonArray.class);
+            Log.d("CARRIS METROPOLITANA API DEBUG", "SIZE :" + jsonCarreiraArray.size());
             List<Stop> stopList = new ArrayList<>();
             for (JsonElement jsonElement : jsonCarreiraArray){
                 Stop stop = gson.fromJson(jsonElement, Stop.class);
@@ -159,7 +152,7 @@ public class CarrisMetropolitanaApi {
             }
             return stopList;
         }catch (Exception e ){
-            e.printStackTrace();
+            Log.e("ERROR CARRIS METROPOLITANA API", "Message :" + e.getMessage());
             return null;
         }
     }

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import kevin.carrismobile.api.RealCarrisApi;
+
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     public Fragment settingsFragment = new SettingsFragment();
     public Fragment cpStationFrament = new CPStationFragment();
     public Fragment metroStationFragment = new MetroStationFragment();
+    public Fragment carrisStopDetailsFragment = new CarrisStopDetailsFragment();
     public Fragment currentFragment = null;
     public List<Fragment> oldFragmentsList = new ArrayList<>();
     private HashMap<Fragment, Integer> mapper= new HashMap<>();
@@ -55,10 +58,12 @@ public class MainActivity extends AppCompatActivity {
         initFragment(R.id.main_layout, stopFavoritesFragment, 1);
         initFragment(R.id.main_layout, routeFavoritesFragment, 1);
         initFragment(R.id.main_layout, stopDetailsFragment, 2);
+        initFragment(R.id.main_layout, carrisStopDetailsFragment, 2);
         initFragment(R.id.main_layout, stopsMapFragment, 3);
         initFragment(R.id.main_layout, realTimeFragment, 4);
         initFragment(R.id.main_layout, routeDetailsFragment, 2);
         initFragment(R.id.main_layout, trainsFragment, 0);
+        RealCarrisApi.init(MainActivity.this);
         currentIndexFragment = 2;
         currentFragment = routesFragment;
         oldFragmentsList.add(routesFragment);
@@ -187,8 +192,13 @@ public class MainActivity extends AppCompatActivity {
     private void stopDeitalsTopBar(MenuItem item){
         //stopDetails topBar
         if (item.getItemId() == R.id.stopDetailstopItem2){
-            StopDetailsFragment fragment = (StopDetailsFragment) this.stopDetailsFragment;
-            fragment.addCurrentStopToFavorites();
+            StopDetailsFragment stopDetails = (StopDetailsFragment) this.stopDetailsFragment;
+            CarrisStopDetailsFragment carrisStopDetails = (CarrisStopDetailsFragment)this.carrisStopDetailsFragment;
+            if (!stopDetails.isHidden()){
+                stopDetails.addCurrentStopToFavorites();
+            }else if(!carrisStopDetails.isHidden()){
+                carrisStopDetails.addCurrentStopToFavorites();
+            }
         }
     }
 

@@ -175,7 +175,9 @@ public class RoutesFragment extends Fragment {
                     @Override
                     public void run() {
                         listLock.lock();
-                        imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                        synchronized (currentCarreiraBasicList){
+                            imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                        }
                         list.setAdapter(imagesListAdapter);
                         listLock.unlock();
                     }
@@ -191,7 +193,9 @@ public class RoutesFragment extends Fragment {
             @Override
             public void run() {
                 listLock.lock();
-                imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                synchronized (currentCarreiraBasicList){
+                    imagesListAdapter = new RouteImageListAdaptor(getActivity(), currentCarreiraBasicList);
+                }
                 list.setAdapter(imagesListAdapter);
                 listLock.unlock();
             }
@@ -214,7 +218,6 @@ public class RoutesFragment extends Fragment {
                     case 0:
                         currentCarreiraBasicList.clear();
                         currentCarreiraBasicList.addAll(carreiraBasicList);
-                        Log.d("DEBUG", currentCarreiraBasicList.toString());
                         updateList();
                         break;
                     case 1:

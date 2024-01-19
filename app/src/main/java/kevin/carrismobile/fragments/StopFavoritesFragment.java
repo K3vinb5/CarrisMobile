@@ -66,11 +66,20 @@ public class StopFavoritesFragment extends Fragment {
                             return;
                         }
                         MainActivity mainActivity = (MainActivity) getActivity();
-                        StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
-                        mainActivity.openFragment(stopDetailsFragment, 0, false);
+                        assert mainActivity != null;
                         if (selectedStop.isOnline()){
-                            stopDetailsFragment.loadNewStop(selectedStop.getStopID()+"");
+                            if (selectedStop.getAgency_id().equals("-1")){
+                                StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                                mainActivity.openFragment(stopDetailsFragment, 0, true);
+                                stopDetailsFragment.loadNewStop(selectedStop.getStopID());
+                            }else if(selectedStop.getAgency_id().equals("0")){
+                                CarrisStopDetailsFragment carrisStopDetailsFragment = (CarrisStopDetailsFragment)mainActivity.carrisStopDetailsFragment;
+                                mainActivity.openFragment(carrisStopDetailsFragment, 0, true);
+                                carrisStopDetailsFragment.loadCarrisStop(selectedStop);
+                            }
                         }else{
+                            StopDetailsFragment stopDetailsFragment = (StopDetailsFragment) mainActivity.stopDetailsFragment;
+                            mainActivity.openFragment(stopDetailsFragment, 0, true);
                             stopDetailsFragment.loadNewOfflineStop(selectedStop);
                         }
                     }

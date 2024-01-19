@@ -16,6 +16,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import kevin.carrismobile.data.bus.Carreira;
 import kevin.carrismobile.data.bus.CarreiraBasic;
@@ -25,19 +27,22 @@ import kevin.carrismobile.data.bus.Point;
 import kevin.carrismobile.data.bus.RealTimeSchedule;
 import kevin.carrismobile.data.bus.Schedule;
 import kevin.carrismobile.data.bus.Stop;
+import kevin.carrismobile.data.bus.carris.CarrisWaitTimes;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 public class CarrisApi {
 
     public final static String GET_BUS_STOP_TIMES = " https://www.carris.pt/umbraco/Surface/Routes/GetBusStopTimes";
     public final static String GET_LINE = "https://www.carris.pt/viaje/carreiras/";
     public final static String GET_LIST = "https://carris.pt/umbraco/Surface/Routes/GetRoutes?Query=&VehicleTypeId=&ZoneId=";
-
-    public static Carreira getCarreira(String name, String lineId, String color, String agency_id){
+    public final static String GET_STOP_INFO = "https://carris.pt/umbraco/Surface/BusStops/GetNextRoutesAtStop";
+    public final static String GET_NEAR_STOPS = "https://carris.pt/umbraco/Surface/BusStops/GetNearestBusStops";
+    public static Carreira getCarreira(String name, String lineId){
         String response = "";
         Gson gson = new Gson();
-        Carreira carreiraOut = new Carreira(name, lineId, color);
+        Carreira carreiraOut = new Carreira(name, lineId, "#000000");
         carreiraOut.setOnline(true);
         carreiraOut.setAgency_id("0");
         try {
@@ -45,9 +50,24 @@ public class CarrisApi {
             response = doc.body().html();
             Document doc1 = Jsoup.parse(response);
             Elements stopsContainers = doc1.select(".stops-wrapper");
-
+            Elements shapeContainers = doc1.select("div.shape-holder");
+            Element button = doc.selectFirst("button.variant");
+            if (button != null) {
+                String color = button.attr("style").replaceAll(".*background-color:(#\\w+);.*", "$1");
+                if (color.length() == 7){
+                    carreiraOut.setColor(color.toUpperCase());
+                }
+            }
+            List<List<Point>> pointsList = new ArrayList<>();
             carreiraOut.initLists();
             int index = 0;
+            for (Element shape : shapeContainers){
+                String geojsonData = shape.attr("data-itinerary-geojson");
+                if (!geojsonData.isEmpty()) {
+                    pointsList.add(parseGeoJson(geojsonData));
+                }
+            }
+            Log.d("DEBUG Carris Api", "Number of directions :" + pointsList.size());
             for (Element stopsContainer : stopsContainers) {
                 // Select the bus stop elements within the container
                 Elements busStopElements = stopsContainer.select(".bus-stop");
@@ -68,7 +88,6 @@ public class CarrisApi {
                     double longitude = geoLocation.getLon();
                     Path currentPath = new Path(stopId, stopIndex);
                     Stop currentStop = new Stop(stopId, stopName, latitude, longitude);
-                    currentDirection.getPointList().add(new Point(latitude, longitude));
                     currentStop.setAgency_id("0");
                     currentStop.setOnline(true);
                     currentPath.setStop(currentStop);
@@ -80,7 +99,8 @@ public class CarrisApi {
                     }
                     stopIndex++;
                 }
-                currentDirection.setHeadsign(firstStopName + " -> " + lastStopName);
+                currentDirection.getPointList().addAll(pointsList.get(index));
+                currentDirection.setHeadsign(lastStopName);
                 carreiraOut.getDirectionList().add(currentDirection);
                 index++;
             }
@@ -88,6 +108,20 @@ public class CarrisApi {
             e.printStackTrace();
         }
         return carreiraOut;
+    }
+
+    public static List<Point> parseGeoJson(String geoJson) {
+        List<Point> points = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\\[(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)\\]");
+        Matcher matcher = pattern.matcher(geoJson);
+
+        while (matcher.find()) {
+            double lon = Double.parseDouble(matcher.group(1));
+            double lat = Double.parseDouble(matcher.group(2));
+            points.add(new Point(lat, lon));
+        }
+
+        return points;
     }
 
     public static void updateDirectionAndStop(Carreira carreira, int directionIndex, int stopIndex){
@@ -106,7 +140,8 @@ public class CarrisApi {
         Request request = new Request.Builder().url(url).build();
         String html = "";
         try {
-            html = client.newCall(request).execute().body().string();
+            Response response = client.newCall(request).execute();
+            html = response.body().string();
             Document doc = Jsoup.parse(html);
             // Select the elements containing schedule information
             Elements scheduleElements = doc.select(".time-container-schedule-hour-minutes");
@@ -130,8 +165,7 @@ public class CarrisApi {
                     stop.getOfflineRealTimeSchedules().add(new RealTimeSchedule(carreira.getRouteId(), carreira.getRouteId(), "null", "null", "null", stopIndex, toAdd, "null"));
                 }
             }
-
-
+            response.close();
         } catch (Exception ignore) {
             Log.e("ERROR", ignore.getMessage());
         }
@@ -143,7 +177,8 @@ public class CarrisApi {
         Request request = new Request.Builder().url(GET_LIST).build();
         String html;
         try{
-            html = client.newCall(request).execute().body().string();
+            Response response = client.newCall(request).execute();
+            html = response.body().string();
             Document doc = Jsoup.parse(html);
             Elements routeClasses = doc.select(".results-container");
             for (Element routeClass : routeClasses) {
@@ -158,11 +193,40 @@ public class CarrisApi {
                 CarreiraBasic carreiraBasic = new CarreiraBasic(routeId, routeName, bgColor, true);
                 carreiraBasic.setAgency_id("0");
                 returnList.add(carreiraBasic);
+                response.close();
             }
         }catch (Exception e){
             Log.e("CARRIS API ERROR", "Message: " + e.getMessage());
         }
         return returnList;
+    }
+
+    public static List<CarrisWaitTimes> getStopWaitTimes(String stopId, String stopName){
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(GET_STOP_INFO + "?StopId=" + stopId + "&StopName=" + stopName).build();
+        List<CarrisWaitTimes> carrisWaitTimes = new ArrayList<>();
+        String html;
+        try {
+            Response response = client.newCall(request).execute();
+            html = response.body().string();
+            Document doc = Jsoup.parse(html);
+
+            // Extract Routes
+            Elements routeElements = doc.select(".next-routes-route");
+
+            for (Element routeElement : routeElements) {
+                // Extract Route Information
+                String routeId = routeElement.select(".info-number").text().trim();
+                String routeName = routeElement.select(".detail-text-name").text().trim();
+                String routeDest = routeElement.select(".detail-text-dest").text().trim();
+                String routeWaiting = routeElement.select(".next-routes-route-time div").first().text().trim();
+                carrisWaitTimes.add(new CarrisWaitTimes(routeId, routeName, routeDest, routeWaiting.toLowerCase()));
+            }
+            response.close();
+        }catch (Exception e){
+            Log.e("CARRIS API ERROR", "Message: " + e.getMessage());
+        }
+        return carrisWaitTimes;
     }
 
     public static String getCurrentFormattedTime(){
