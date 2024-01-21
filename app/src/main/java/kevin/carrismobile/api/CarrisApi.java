@@ -33,12 +33,34 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class CarrisApi {
-
+    /**
+     * API endpoint URL for retrieving bus stop times.
+     */
     public final static String GET_BUS_STOP_TIMES = " https://www.carris.pt/umbraco/Surface/Routes/GetBusStopTimes";
+    /**
+     * API endpoint URL for retrieving information about a specific bus line.
+     */
     public final static String GET_LINE = "https://www.carris.pt/viaje/carreiras/";
+    /**
+     * API endpoint URL for retrieving a list of all bus routes.
+     */
     public final static String GET_LIST = "https://carris.pt/umbraco/Surface/Routes/GetRoutes?Query=&VehicleTypeId=&ZoneId=";
+    /**
+     * API endpoint URL for retrieving next routes at a bus stop.
+     */
     public final static String GET_STOP_INFO = "https://carris.pt/umbraco/Surface/BusStops/GetNextRoutesAtStop";
+    /**
+     * API endpoint URL for retrieving nearest bus stops.
+     */
     public final static String GET_NEAR_STOPS = "https://carris.pt/umbraco/Surface/BusStops/GetNearestBusStops";
+
+    /**
+     * Retrieves detailed information about a specific bus route based on the provided name and line ID.
+     *
+     * @param name    The name of the bus route.
+     * @param lineId  The ID of the bus route.
+     * @return A {@link Carreira} object containing detailed information about the specified bus route.
+     */
     public static Carreira getCarreira(String name, String lineId){
         String response = "";
         Gson gson = new Gson();
@@ -57,6 +79,14 @@ public class CarrisApi {
                 if (color.length() == 7){
                     carreiraOut.setColor(color.toUpperCase());
                 }
+            }else{
+                Element div = doc.selectFirst("div.variant");
+                if(div != null){
+                    String color = div.attr("style").replaceAll(".*background-color:(#\\w+);.*", "$1");
+                    if (color.length() == 7){
+                        carreiraOut.setColor(color.toUpperCase());
+                    }
+                }
             }
             List<List<Point>> pointsList = new ArrayList<>();
             carreiraOut.initLists();
@@ -67,12 +97,11 @@ public class CarrisApi {
                     pointsList.add(parseGeoJson(geojsonData));
                 }
             }
-            Log.d("DEBUG Carris Api", "Number of directions :" + pointsList.size());
+            //Log.d("DEBUG Carris Api", "Number of directions :" + pointsList.size());
             for (Element stopsContainer : stopsContainers) {
                 // Select the bus stop elements within the container
                 Elements busStopElements = stopsContainer.select(".bus-stop");
 
-                String firstStopName = "";
                 String lastStopName = "";
                 Direction currentDirection = new Direction(lineId+"_"+index,"");
                 int stopIndex = 0;
@@ -92,9 +121,7 @@ public class CarrisApi {
                     currentStop.setOnline(true);
                     currentPath.setStop(currentStop);
                     currentDirection.getPathList().add(currentPath);
-                    if (stopIndex == 0){
-                        firstStopName = stopName;
-                    }else if(stopIndex == busStopElements.size() - 1){
+                    if(stopIndex == busStopElements.size() - 1){
                         lastStopName = stopName;
                     }
                     stopIndex++;
@@ -109,7 +136,12 @@ public class CarrisApi {
         }
         return carreiraOut;
     }
-
+    /**
+     * Parses GeoJSON data and returns a list of geographic points.
+     *
+     * @param geoJson GeoJSON data to parse.
+     * @return A list of {@link Point} objects representing geographic points.
+     */
     public static List<Point> parseGeoJson(String geoJson) {
         List<Point> points = new ArrayList<>();
         Pattern pattern = Pattern.compile("\\[(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)\\]");
@@ -123,7 +155,13 @@ public class CarrisApi {
 
         return points;
     }
-
+    /**
+     * Updates schedule information for a specific bus stop within a given bus route and direction and stop.
+     *
+     * @param carreira        The bus route.
+     * @param directionIndex  The index of the direction within the bus route.
+     * @param stopIndex       The index of the stop within the direction.
+     */
     public static void updateDirectionAndStop(Carreira carreira, int directionIndex, int stopIndex){
         Stop stop = carreira.getDirectionList().get(directionIndex).getPathList().get(stopIndex).getStop();
         stop.getScheduleList().clear();
@@ -135,7 +173,7 @@ public class CarrisApi {
             urlDirection = (directionIndex + 1) + "";
         }
         String url = GET_BUS_STOP_TIMES+"?RouteNumber="+carreira.getRouteId()+"&Direction="+urlDirection+"&BusStopId="+stop.getStopID()+"&Date="+getCurrentFormattedTime();
-        Log.d("CARRIS REALTIME", url);
+        //Log.d("CARRIS REALTIME", url);
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
         String html = "";
@@ -170,7 +208,11 @@ public class CarrisApi {
             Log.e("ERROR", ignore.getMessage());
         }
     }
-
+    /**
+     * Retrieves a list of basic information about all bus routes.
+     *
+     * @return A list of {@link CarreiraBasic} objects containing basic information about each bus route.
+     */
     public static List<CarreiraBasic> getCarreiraBasicList(){
         List<CarreiraBasic> returnList = new ArrayList<>();
         OkHttpClient client = new OkHttpClient();
@@ -200,7 +242,13 @@ public class CarrisApi {
         }
         return returnList;
     }
-
+    /**
+     * Retrieves wait times for buses at a specific bus stop.
+     *
+     * @param stopId   The ID of the bus stop.
+     * @param stopName The name of the bus stop.
+     * @return A list of {@link CarrisWaitTimes} objects representing wait times for buses at the specified stop.
+     */
     public static List<CarrisWaitTimes> getStopWaitTimes(String stopId, String stopName){
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(GET_STOP_INFO + "?StopId=" + stopId + "&StopName=" + stopName).build();
@@ -228,7 +276,11 @@ public class CarrisApi {
         }
         return carrisWaitTimes;
     }
-
+    /**
+     * Gets the current formatted time for use in API requests.
+     *
+     * @return A formatted string representing the current date in the "yyyy-MM-dd" format.
+     */
     public static String getCurrentFormattedTime(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentUTC = LocalDateTime.now(ZoneOffset.UTC);

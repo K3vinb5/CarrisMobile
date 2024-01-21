@@ -47,13 +47,11 @@ public class RealCarrisApi {
                 mPrefs = activity.getSharedPreferences("RealCarrisApi", MODE_PRIVATE);
                 token = (String)loadObject("token", String.class);
                 refreshToken = (String)loadObject("refreshToken", String.class);
-                Log.d("DEBUG REAL TIME", "token :" + token + " refresh token: " + refreshToken);
                 if (token == null || refreshToken == null){
                     try{
                         updateToken();
                         storeObject(new Gson().toJson(token), "token");
                         storeObject(new Gson().toJson(refreshToken), "refreshToken");
-                        Log.d("DEBUG REAL TIME", "token :" + token + " refresh token: " + refreshToken);
                     }catch (Exception e){
                         Log.e("REAL CARRIS API ERROR", "Message :" + e.getMessage());
                     }
@@ -119,7 +117,7 @@ public class RealCarrisApi {
         }catch (Exception e){
             Log.e("REAL CARRIS API ERROR", "Message :" + e.getMessage());
         }
-        Log.d("REAL CARRIS API DEBUG", "STOP LIST SIZE: " + stopList.size());
+        //Log.d("REAL CARRIS API DEBUG", "STOP LIST SIZE: " + stopList.size());
         return stopList;
     }
 

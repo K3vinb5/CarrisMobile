@@ -2,14 +2,13 @@ package kevin.carrismobile.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RotateDrawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
@@ -42,7 +41,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import kevin.carrismobile.adaptors.StopImageListAdaptor;
-import kevin.carrismobile.api.CarrisMetropolitanaApi;
 import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.gui.CustomMarkerInfoWindow;
 import kevin.carrismobile.gui.LocationBackgroundThread;
@@ -54,22 +52,20 @@ public class StopsMapFragment extends Fragment {
     public MapView map;
     public CompassOverlay compassOverlay;
     public TextView textView;
-    public Button buttonRefresh;
+    public LocationManager mLocationManager;
     public Button buttonCenter;
     public Button favoritarButton;
     public Button stopDetailsButton;
     public Stop currentStop;
     AlertDialog stopAdded;
-    public boolean isFocused = true;
     static List<Marker> markerList = Collections.synchronizedList(new ArrayList<Marker>());
     private List<Marker> stopsMarkerList = Collections.synchronizedList(new ArrayList<Marker>());
     GeoPoint currentLocation = new GeoPoint(0d,0d);
     StopsBackgroundThread backgroundThread;
     LocationBackgroundThread locationBackgroundThread;
     FusedLocationProviderClient fusedLocationProviderClient;
-    private static final float[] gravity = new float[3];
-    private static final float[] geomagnetic = new float[3];
-    private static float azimuth = 0.0f;
+    int LOCATION_REFRESH_TIME = 1000; // 1 times per second update
+    int LOCATION_REFRESH_DISTANCE = 1; // 1 meters to update
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.stops_map_fragment, container, false);
@@ -86,7 +82,6 @@ public class StopsMapFragment extends Fragment {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map.setTileSource(SettingsFragment.getCurrentTileProvider(getContext()));
 
-        getLastLocation();
         map.getController().setCenter(currentLocation);
         map.getController().setZoom(18f);
         map.setMultiTouchControls(true);
@@ -94,6 +89,7 @@ public class StopsMapFragment extends Fragment {
         map.setMaxZoomLevel(20d);
         compassOverlay = new CompassOverlay(getContext(), map);
         compassOverlay.enableCompass();
+        setUpLocationManager();
         backgroundThread = new StopsBackgroundThread(StopsMapFragment.this);
         backgroundThread.start();
         locationBackgroundThread = new LocationBackgroundThread(StopsMapFragment.this);
@@ -101,11 +97,9 @@ public class StopsMapFragment extends Fragment {
         buttonCenter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isFocused = true;
-                getLastLocation();
-                Log.d("DEBUG HEADING", "HEADING :" + getFacingDirection());
                 map.getController().animateTo(currentLocation, 17d, 1500L);
                 Log.d("CURRENT ORIENTATION: " , "ORIENTATION: " + compassOverlay.getOrientation());
+                Log.d("CURRENT LOCATION: ", "LOCATION: " + getCurrentLocation().getLatitude()+" , " + getCurrentLocation().getLongitude());
             }
         });
 
@@ -171,78 +165,29 @@ public class StopsMapFragment extends Fragment {
         return v;
     }
 
-    public void getLastLocation(){
+    public void setUpLocationManager(){
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location!=null && isFocused){
-                        //gets updated every 50m you walk so it is not necessary to compute new close stops everytime there is a tiny change
-                        currentLocation.setLatitude(location.getLatitude());
-                        currentLocation.setLongitude(location.getLongitude());
-                    }
-                }
-            });
+            mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+            mLocationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, LOCATION_REFRESH_TIME, LOCATION_REFRESH_DISTANCE, mLocationListener);
+            Location location = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+            if (location == null){
+                return;
+            }
+            currentLocation.setCoords(location.getLatitude(), location.getLongitude());
         }else{
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+            setUpLocationManager();
         }
     }
 
-    public double getFacingDirection() {
-        SensorManager sensorManager = (SensorManager) getContext().getSystemService(getContext().SENSOR_SERVICE);
-        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-        if (accelerometer != null && magnetometer != null) {
-            SensorEventListener sensorEventListener = new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                        System.arraycopy(event.values, 0, gravity, 0, 3);
-                    } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-                        System.arraycopy(event.values, 0, geomagnetic, 0, 3);
-                    }
-
-                    float[] rotationMatrix = new float[9];
-                    boolean success = SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
-
-                    if (success) {
-                        float[] orientationValues = new float[3];
-                        SensorManager.getOrientation(rotationMatrix, orientationValues);
-                        azimuth = (float) Math.toDegrees(orientationValues[0]);
-
-                        // Adjust the azimuth to be in the range [0, 360)
-                        azimuth = (azimuth + 360) % 360;
-                    }
-                }
-
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                    // Do nothing for now
-                }
-            };
-
-            sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-            sensorManager.registerListener(sensorEventListener, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
-
-            // Sleep for a short duration to allow sensors to stabilize
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    private final LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(final Location location) {
+            synchronized (currentLocation) {
+                currentLocation.setCoords(location.getLatitude(), location.getLongitude());
             }
-
-            // Unregister the listener to stop receiving sensor updates
-            sensorManager.unregisterListener(sensorEventListener);
         }
-
-        // Calculate the facing direction in degrees where 0 represents north
-        double facingDirection = (azimuth + 360) % 360;
-
-        // Adjust the facing direction to be in the range [0.0, 360.0)
-        return facingDirection;
-    }
-
+    };
     public void updateCurrentLocationMarker(){
         for (Marker marker : markerList){
             map.getOverlays().remove(marker);
@@ -314,24 +259,6 @@ public class StopsMapFragment extends Fragment {
         }
     }
 
-    private double calcCrow(double[] coordinates1, double[] coordinates2)
-    {
-        float R = 6371; // Radius of earth in km
-        double dLat = toRad(coordinates2[0] - coordinates1[0]);
-        double dLon = toRad(coordinates2[1] - coordinates1[1]);
-        double radlat1 = toRad(coordinates1[0]);
-        double radlat2 = toRad(coordinates2[0]);
-
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(radlat1) * Math.cos(radlat2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
-    private static double toRad(double d)
-    {
-        return d * Math.PI / 180;
-    }
 
     public MapView getMap() {
         return map;
@@ -345,7 +272,4 @@ public class StopsMapFragment extends Fragment {
         return textView;
     }
 
-    public boolean isFocused() {
-        return isFocused;
-    }
 }

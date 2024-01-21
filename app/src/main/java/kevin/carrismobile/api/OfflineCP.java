@@ -37,7 +37,7 @@ public class OfflineCP {
         }else {
             Log.w("WARNING SHARED PREFERENCES", "Stops files found " + Offline.mPrefsStops.getString(STOPS_KEY, null).length());
         }
-        if (!Offline.mPrefsStopTimes.contains(STOP_TIMES_KEY)){
+        /*if (!Offline.mPrefsStopTimes.contains(STOP_TIMES_KEY)){
             Offline.copyResource(R.raw.cp_stop_times, STOP_TIMES_KEY, activity, Offline.mPrefsStopTimes);
             Log.w("WARNING SHARED PREFERENCES", "Stop Times files not found");
         }else{
@@ -54,7 +54,7 @@ public class OfflineCP {
             Log.w("WARNING SHARED PREFERENCES", "Trips files not found");
         }else{
             Log.w("WARNING SHARED PREFERENCES", "Trips files found " + Offline.mPrefsTrips.getString(TRIPS_KEY, null).length());
-        }
+        }*/
     }
     public static List<CPStopBasic> getStops(){
         List<CPStopBasic> out = new ArrayList<>();

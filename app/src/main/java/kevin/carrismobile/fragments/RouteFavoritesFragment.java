@@ -109,7 +109,7 @@ public class RouteFavoritesFragment extends Fragment {
                         RouteDetailsFragment fragment = (RouteDetailsFragment) mainActivity.routeDetailsFragment;
                         mainActivity.openFragment(fragment, 0, false);
                         if (currentCarreiraList.get(i).isOnline()){
-                            fragment.loadCarreiraFromApi(currentCarreiraList.get(i).getRouteId(), currentCarreiraList.get(i).getAgency_id(), currentCarreiraList.get(i).getLong_name(), currentCarreiraList.get(i).getColor());
+                            fragment.loadCarreiraFromApi(currentCarreiraList.get(i).getRouteId(), currentCarreiraList.get(i).getAgency_id(), currentCarreiraList.get(i).getLong_name());
                         }else{
                             fragment.loadCarreiraOffline(currentCarreiraList.get(i).getRouteId());
                         }
@@ -146,7 +146,7 @@ public class RouteFavoritesFragment extends Fragment {
                 for (int i = 0; i < Integer.parseInt(size); i++){
                     CarreiraBasic carreiraToAdd = (CarreiraBasic) loadObject("key_carreiraList_carreira_" + i, CarreiraBasic.class);
                     carreiraList.add(carreiraToAdd);
-                    Log.d("Carreira Recovered", carreiraToAdd.getLong_name());
+                    //Log.d("Carreira Recovered", carreiraToAdd.getLong_name());
                 }
                 currentCarreiraList.addAll(carreiraList);
                 currentCarreiraList.sort(Comparator.comparing(CarreiraBasic::getRouteId));

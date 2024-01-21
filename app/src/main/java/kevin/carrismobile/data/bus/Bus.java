@@ -11,6 +11,7 @@ public class Bus {
     private double lat;
     private double previousLatitude;
     private double previousLongitude;
+    private int variantNumber;
     @SerializedName(value = "lon", alternate = {"lng"})
     private double lon;
     private String speed;
@@ -70,6 +71,10 @@ public class Bus {
             return "-1";
         }
         return speed;
+    }
+
+    public int getVariantNumber() {
+        return variantNumber;
     }
 
     public String getStatus() {

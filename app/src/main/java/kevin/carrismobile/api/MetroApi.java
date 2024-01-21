@@ -95,10 +95,10 @@ public class MetroApi {
             out = client.newCall(request).execute().body().string();
             JsonObject object = gson.fromJson(out, JsonObject.class);
             JsonObject stationData = gson.fromJson(gson.toJson(object.get("data").getAsJsonObject().get("station")), JsonObject.class);
-            Log.d("DEBUG API", stationData+"");
+            //Log.d("DEBUG API", stationData+"");
             stop = gson.fromJson(stationData, MetroStop.class);
         } catch (Exception e) {
-            Log.e("API ERROR", e.getMessage()+"");
+            Log.e("API ERROR", "Message :" + e.getMessage());
         }
         stop.setStop_id(stop_id);
         return stop;

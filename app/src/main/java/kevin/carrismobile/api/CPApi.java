@@ -61,10 +61,6 @@ public class CPApi {
         return out;
     }
 
-    public static void updateDirectionAndStop(Carreira carreira){
-
-    }
-
     public static String getCurrentFormattedTime(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentUTC = LocalDateTime.now(ZoneOffset.UTC);

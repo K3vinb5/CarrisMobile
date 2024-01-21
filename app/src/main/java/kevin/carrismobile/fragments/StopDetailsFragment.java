@@ -71,7 +71,7 @@ public class StopDetailsFragment extends Fragment {
                         RouteDetailsFragment routeDetailFragment = (RouteDetailsFragment) activity.routeDetailsFragment;
                         activity.openFragment(routeDetailFragment, 0, true);
                         if(currentStop.isOnline()){
-                            routeDetailFragment.loadCarreiraFromApi(selectedId, currentStop.getAgency_id(), "name", "color");
+                            routeDetailFragment.loadCarreiraFromApi(selectedId, currentStop.getAgency_id(), "name");
                         }else{
                             routeDetailFragment.loadCarreiraOffline(selectedId);
                         }

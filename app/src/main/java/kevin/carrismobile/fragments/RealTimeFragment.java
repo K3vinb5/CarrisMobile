@@ -103,14 +103,19 @@ public class RealTimeFragment extends Fragment {
         map.setMultiTouchControls(true);
         map.getController().setCenter(new GeoPoint(38.73329737648646d, -9.14096412687648d));
         map.getController().setZoom(13.0);
+        map.setMinZoomLevel(13.0);
+        map.setMaxZoomLevel(20.0);
         map.invalidate();
+        nextButton.setVisibility(View.INVISIBLE);
+        previousButton.setVisibility(View.INVISIBLE);
+        textView.setVisibility(View.INVISIBLE);
+        checkBox.setVisibility(View.INVISIBLE);
         CompassOverlay compassOverlay = new CompassOverlay(getActivity(), map);
         compassOverlay.enableCompass();
         dialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não foi possível conectar à API da Carris Metropolitana, verifique a sua ligação á internet.\nPode também haver um problema com os servidores da Carris Metropolitana");
         backgroundDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Error in background thread");
         noCurrentBusesDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Erro de conexão", "Não existe nenhum autocarro dessa carreira em circulação neste preciso momento");
         setButtonListener();
-
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -204,6 +209,7 @@ public class RealTimeFragment extends Fragment {
                 List<Bus> listToAdd;
                 Carreira carreira = null;
                 if (!isThread){
+                    startWaiting();
                     currentLine = line;
                 }
                 try{
@@ -227,10 +233,10 @@ public class RealTimeFragment extends Fragment {
                         for (Bus b : listToAdd){
                             switch (b.getPattern_id()) {
                                 case "ASC":
-                                    b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
+                                    b.setPattern_name(carreiraDirectionList.get(2 * b.getVariantNumber()).getHeadsign());
                                     break;
                                 case "DESC":
-                                    b.setPattern_name(carreiraDirectionList.get(1).getHeadsign());
+                                    b.setPattern_name(carreiraDirectionList.get(1 + 2 * b.getVariantNumber()).getHeadsign());
                                     break;
                                 case "CIRC":
                                     b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
@@ -277,9 +283,19 @@ public class RealTimeFragment extends Fragment {
                         @Override
                         public void run() {
                             dialog.show();
+                            nextButton.setVisibility(View.INVISIBLE);
+                            previousButton.setVisibility(View.INVISIBLE);
+                            textView.setVisibility(View.INVISIBLE);
+                            checkBox.setVisibility(View.INVISIBLE);
                         }
                     });
                     connected = false;
+                    if (backgroundThreadStarted){
+                        backgroundThread.interrupt();
+                        backgroundThreadStarted = false;
+                    }
+                    button.setEnabled(true);
+                    lock.unlock();
                     Log.e("REALTIME TRACKING", "Exception Caught: \n" + e.getMessage());
                     return;
                 }
@@ -295,6 +311,7 @@ public class RealTimeFragment extends Fragment {
                         if (!isThread){
                             GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
                             map.getController().animateTo(point, 16.5, 1500L);
+                            endWaiting();
                         }else{
                             if (checkBox.isChecked()){
                                 map.getController().animateTo(markerBusList.get(currentSelectedBus).getPosition(), 16.5, 2500L);
@@ -313,14 +330,139 @@ public class RealTimeFragment extends Fragment {
         }).start();
     }
 
+    /*public void loadStop(List<String> lines, boolean isCarris) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                List<Bus> listToAdd = new ArrayList<>();
+                Carreira carreira = null;
+                startWaiting();
+                currentLine = null;
+
+                try{
+                    String agencyId = Offline.agencyServiceMap.get(currentLine) != null ? Offline.agencyServiceMap.get(currentLine) : "-1";
+                    if (isCarris){
+                        for (String line : lines){
+                            List<Bus> list = RealCarrisApi.getBusFromLine(line);
+                            carreira = CarrisApi.getCarreira("", currentLine);
+                            List<Direction> carreiraDirectionList = carreira.getDirectionList();
+                            for (Bus b : list){
+                            switch (b.getPattern_id()) {
+                                case "ASC":
+                                    b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
+                                    break;
+                                case "DESC": b.setPattern_name(carreiraDirectionList.get(1).getHeadsign());
+                                    break;
+                                case "CIRC": b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
+                                    break;
+                            }
+                        }
+                        listToAdd.addAll(list);
+                        }
+                        if (noRunningBuses(listToAdd)) {
+                            lock.unlock();
+                            return;
+                        }
+                        listToAdd.sort(Comparator.comparing(Bus::getVehicleId));
+
+                    }else{
+                        for (String line : lines){
+                            List<Bus> list = CarrisMetropolitanaApi.getBusFromLine(line);
+                            carreira = CarrisMetropolitanaApi.getCarreira(line);
+                            carreira.init();
+                            for (Bus b : list){
+                                for(Direction d : carreira.getDirectionList()){
+                                    if (d.isCorrectHeadsign(b.getPattern_id())){
+                                        b.setPattern_name(d.getHeadsign());
+                                    }
+                                }
+                            }
+                            listToAdd.addAll(list);
+                        }
+                        if (noRunningBuses(listToAdd)) {
+                            lock.unlock();
+                            return;
+                        }
+                        listToAdd.sort(Comparator.comparing(Bus::getVehicleId));
+                    }
+                    currentDirectionIndex = 0;
+                    currentSelectedBus = 0;
+                    List<Path> pathListToAdd = currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList();
+                    busList.clear();
+                    pathList.clear();
+                    busList.addAll(listToAdd);
+                    pathList.addAll(pathListToAdd);
+                    connected = true;
+                }catch (Exception e){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.show();
+                            nextButton.setVisibility(View.INVISIBLE);
+                            previousButton.setVisibility(View.INVISIBLE);
+                            textView.setVisibility(View.INVISIBLE);
+                            checkBox.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    connected = false;
+                    if (backgroundThreadStarted){
+                        backgroundThread.interrupt();
+                        backgroundThreadStarted = false;
+                    }
+                    button.setEnabled(true);
+                    lock.unlock();
+                    Log.e("REALTIME TRACKING", "Exception Caught: \n" + e.getMessage());
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isThread){
+                            updateTextView();
+                            updateDirectionIndex();
+                            updateMarkers(pathList, map);
+                        }
+                        updateBusesUI();
+                        if (!isThread){
+                            GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
+                            map.getController().animateTo(point, 16.5, 1500L);
+                            endWaiting();
+                        }else{
+                            if (checkBox.isChecked()){
+                                map.getController().animateTo(markerBusList.get(currentSelectedBus).getPosition(), 16.5, 2500L);
+                            }
+                        }
+                    }
+                });
+                lock.unlock();
+
+                if(!backgroundThreadStarted && connected){
+                    backgroundThread = new BusBackgroundThread(RealTimeFragment.this, currentCarreira);
+                    backgroundThreadStarted = true;
+                    backgroundThread.start();
+                }
+            }
+        }).start();
+    }*/
+
     private boolean noRunningBuses(List<Bus> listToAdd) {
         if (listToAdd.size() == 0){
             Log.e("REALTIME TRACKING", "Bus List Invalid (Empty)");
             connected = false;
+            if (backgroundThreadStarted){
+                backgroundThread.interrupt();
+                backgroundThreadStarted = false;
+            }
+            button.setEnabled(true);
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     noCurrentBusesDialog.show();
+                    nextButton.setVisibility(View.INVISIBLE);
+                    previousButton.setVisibility(View.INVISIBLE);
+                    textView.setVisibility(View.INVISIBLE);
+                    checkBox.setVisibility(View.INVISIBLE);
                 }
             });
             return true;
@@ -353,6 +495,33 @@ public class RealTimeFragment extends Fragment {
             }
         }
 
+    }
+    private void startWaiting(){
+        getActivity().runOnUiThread(() -> {
+            nextButton.setEnabled(false);
+            nextButton.setVisibility(View.INVISIBLE);
+            previousButton.setEnabled(false);
+            previousButton.setVisibility(View.INVISIBLE);
+            button.setEnabled(false);
+            textView.setVisibility(View.INVISIBLE);
+            checkBox.setEnabled(false);
+            checkBox.setVisibility(View.INVISIBLE);
+            map.setEnabled(false);
+        });
+    }
+
+    private void endWaiting(){
+        getActivity().runOnUiThread(() -> {
+            nextButton.setEnabled(true);
+            nextButton.setVisibility(View.VISIBLE);
+            previousButton.setEnabled(true);
+            previousButton.setVisibility(View.VISIBLE);
+            button.setEnabled(true);
+            textView.setVisibility(View.VISIBLE);
+            checkBox.setEnabled(true);
+            checkBox.setVisibility(View.VISIBLE);
+            map.setEnabled(true);
+        });
     }
 
     private void updateMarkers(List<Path> pathList, MapView map){

@@ -165,7 +165,7 @@ public class StopFavoritesFragment extends Fragment {
                 for (int i = 0; i < Integer.parseInt(size); i++){
                     Stop stopToAdd = (Stop)loadObject("key_stopList_stop_" + i, Stop.class);
                     stopList.add(stopToAdd);
-                    Log.d("Stop Recovered", stopToAdd.getTts_name());
+                    //Log.d("Stop Recovered", stopToAdd.getTts_name());
                 }
                 currentStopList.addAll(stopList);
                 currentStopList.sort(Comparator.comparing(Stop::getTts_name));

@@ -28,12 +28,11 @@ public class Offline {
 
     public static void init(Activity activity){
         mPrefsStops = activity.getSharedPreferences("OfflineStops", Context.MODE_PRIVATE);
-        mPrefsRoutes = activity.getSharedPreferences("OfflineRoutes", Context.MODE_PRIVATE);
-        mPrefsStopTimes = activity.getSharedPreferences("OfflineStopTimes", Context.MODE_PRIVATE);
-        mPrefsTrips = activity.getSharedPreferences("OfflineTrips", Context.MODE_PRIVATE);
+        //mPrefsRoutes = activity.getSharedPreferences("OfflineRoutes", Context.MODE_PRIVATE);
+        //mPrefsStopTimes = activity.getSharedPreferences("OfflineStopTimes", Context.MODE_PRIVATE);
+        //mPrefsTrips = activity.getSharedPreferences("OfflineTrips", Context.MODE_PRIVATE);
         mPrefsMaps = activity.getSharedPreferences("OfflineAgencyMap", Context.MODE_PRIVATE);
         OfflineCP.initCPOffline(activity);
-        OfflineMobiCascais.initMobiCascaisOffline(activity);
         if (!mPrefsMaps.contains(AGENCY_SERVICE_KEY)){
             copyResource(R.raw.agency_service, AGENCY_SERVICE_KEY,activity, mPrefsMaps);
             Log.w("WARNING SHARED PREFERENCES", "Agency files not found");
@@ -52,8 +51,7 @@ public class Offline {
     public static Carreira getCarreira(String id){
         String agency = agencyServiceMap.get(id);
         switch (agency) {
-            case "3":
-                return OfflineMobiCascais.getCarreira(id);
+            default:
         }
         return null;
     }
@@ -64,15 +62,13 @@ public class Offline {
         //returnList.addAll(OfflineCarris.getCarreiraList());
         //returnList.addAll(OfflineCP.getCarreiraList());
         //returnList.addAll(OfflineFerTagus.getCarreiraList());
-        returnList.addAll(OfflineMobiCascais.getCarreiraList());
+        //returnList.addAll(OfflineMobiCascais.getCarreiraList());
         return returnList;
     }
 
     public static void updateDirectionIndex(Carreira carreira, int directionIndex){
         switch (carreira.getAgency_id()) {
-            case "3":
-                OfflineMobiCascais.updateDirectionIndex(carreira, directionIndex);
-                break;
+            default:
         }
     }
     public static void copyResource(int resource, String key, Activity activity, SharedPreferences mPrefs){
@@ -84,6 +80,7 @@ public class Offline {
                 textBuilder.append((char) c);
             }
             mPrefs.edit().putString(key, textBuilder.toString()).apply();
+            in.close();
             Log.d("SUCCESS SAVING " + key, Integer.toString(textBuilder.toString().length()));
         }catch (Exception e){
             Log.e("ERROR SAVING " + key, e.getMessage());

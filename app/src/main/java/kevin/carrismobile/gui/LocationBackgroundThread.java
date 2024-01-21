@@ -21,13 +21,13 @@ public class LocationBackgroundThread extends Thread{
         int index = 0;
         while (true) {
             try {
-                if (index > 1) {
+                if (index > 0) {
                     TimeUnit.MILLISECONDS.sleep(200);
                     if (fragment.isHidden()) {
                         continue;
                     }
                 }
-                fragment.getLastLocation();
+                //fragment.getLastLocation();
                 currentLocation.setLatitude(fragment.getCurrentLocation().getLatitude());
                 currentLocation.setLatitude(fragment.getCurrentLocation().getLongitude());
                 fragment.getActivity().runOnUiThread(new Runnable() {

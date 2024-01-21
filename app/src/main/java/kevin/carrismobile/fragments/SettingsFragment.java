@@ -143,7 +143,7 @@ public class SettingsFragment extends Fragment {
                 }
                 mapTilerSource.setApiKey(mapiKey);
             default:
-                return TileSourceFactory.OpenTopo;
+                return new OpenStreetMapsTileSource();
         }
     }
 

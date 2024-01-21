@@ -44,11 +44,11 @@ public class BusBackgroundThread extends Thread{
     @Override
     public void run() {
         while (true) {
-
             try {
                 TimeUnit.MILLISECONDS.sleep(5000);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                Log.e("ERROR BACKGROUND", "Message :" + e.getMessage());
+                break;
             }
 
             if (fragment.isHidden()) {

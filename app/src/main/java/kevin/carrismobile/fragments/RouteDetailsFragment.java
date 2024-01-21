@@ -110,6 +110,7 @@ public class RouteDetailsFragment extends Fragment {
         schedulesListText = v.findViewById(R.id.schedulesListText);
         stopView = v.findViewById(R.id.pathView);
         scheduleView = v.findViewById(R.id.scheduleView);
+        scheduleView.setClickable(false);
         spinner = v.findViewById(R.id.spinner);
         routeImageView = v.findViewById(R.id.routeImageView);
         loadingImage = v.findViewById(R.id.loadingImage);
@@ -138,7 +139,6 @@ public class RouteDetailsFragment extends Fragment {
 
         setSpinnerSetItemsSelectedListener();
         setStopViewItemsSelectedListener();
-        setScheduleViewItemsSelectedListener();
 
         routeStopDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,30 +195,18 @@ public class RouteDetailsFragment extends Fragment {
                     @Override
                     public void run() {
                         currentDirectionIndex = adapterView.getSelectedItemPosition();
+                        currentStopIndex = 0;
                         stopList.clear();
-                            try{
-                                if ( currentCarreira.isOnline()) {
-                                    if(currentCarreira.getAgency_id().equals("-1")){
-                                        currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
-                                    }else if (currentCarreira.getAgency_id().equals("0")){
-                                        CarrisApi.updateDirectionAndStop(currentCarreira, currentDirectionIndex, currentStopIndex);
-                                    }                                }
-                            }catch (Exception ignore){
-                                getActivity().runOnUiThread(() -> dialog.show());
-                                connected = false;
-                                return;
-                            }
                         List<Stop> toAdd = new ArrayList<>();
                         currentCarreira.getDirectionList().get(currentDirectionIndex).getPathList().forEach(path -> toAdd.add(path.getStop()));
                         assert toAdd.size() > 0;
                         stopList.addAll(toAdd);
-                        currentStopIndex = 0;
                         getActivity().runOnUiThread(() -> {
                             updateMarkers(stopList, map);
                             stopImageListAdaptor = new StopImageListAdaptor(getActivity(), stopList);
                             stopView.setAdapter(stopImageListAdaptor);
                             //TODO not sure what the id is
-                            stopView.performItemClick(getView(), 0, getId());
+                            stopView.performItemClick(getView(), currentStopIndex, getId());
                         });
 
                     }
@@ -273,7 +261,7 @@ public class RouteDetailsFragment extends Fragment {
                             @Override
                             public void run() {
                                 scheduleArrayAdapter.notifyDataSetChanged();
-                                map.getController().animateTo(new GeoPoint(coordinates[0], coordinates[1]));
+                                map.getController().animateTo(new GeoPoint(coordinates[0], coordinates[1]), 16.0, 1000L);
                                 Thread thread1 = new Thread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -307,30 +295,6 @@ public class RouteDetailsFragment extends Fragment {
             }
         });
     }
-
-    private void setScheduleViewItemsSelectedListener(){
-        scheduleView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Stop currentStop = stopList.get(currentStopIndex);
-                        double[] coordinates = currentStop.getCoordinates();
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                map.getController().animateTo(new GeoPoint(coordinates[0], coordinates[1]));
-                            }
-                        });
-                    }
-                });
-                thread.start();
-            }
-        });
-    }
-
-
     private void startWaitingAnimation(){
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -394,14 +358,16 @@ public class RouteDetailsFragment extends Fragment {
                 }
                 map.setVisibility(View.VISIBLE);
                 map.getController().setCenter(point);
-                map.getController().setZoom(17.0);
+                map.getController().setZoom(16.0);
+                map.setMinZoomLevel(13.0);
+                map.setMaxZoomLevel(20.0);
                 map.invalidate();
                 updateMarkers(stopList, map);
             }
         });
     }
 
-    public void loadCarreiraFromApi(String carreiraId, String agencyId, String name, String color){
+    public void loadCarreiraFromApi(String carreiraId, String agencyId, String name){
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -524,6 +490,17 @@ public class RouteDetailsFragment extends Fragment {
             String descrption = "Stop Id: " + s.getStopID() + "\nLocality: " + s.getLocality() + "\nMunicipality: " + s.getMunicipality_name();
             MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
             marker.setInfoWindow(miw);
+            marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    if (!marker.isInfoWindowShown()){
+                        marker.showInfoWindow();
+                        int stopIndex = markerList.indexOf(marker);
+                        stopView.performItemClick(getView(), stopIndex, getId());
+                    }
+                    return false;
+                }
+            });
         }
         if (line != null){
             map.getOverlays().remove(line);

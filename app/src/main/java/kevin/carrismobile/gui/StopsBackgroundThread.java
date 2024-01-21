@@ -2,16 +2,10 @@ package kevin.carrismobile.gui;
 
 import android.util.Log;
 
-import androidx.fragment.app.Fragment;
-
 import kevin.carrismobile.api.RealCarrisApi;
-import kevin.carrismobile.custom.MyCustomDialog;
-import kevin.carrismobile.fragments.MainActivity;
-import kevin.carrismobile.fragments.RealTimeFragment;
 import kevin.carrismobile.fragments.StopsMapFragment;
 
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +19,8 @@ import kevin.carrismobile.data.bus.Stop;
 public class StopsBackgroundThread extends Thread{
 
     private List<Stop> currentToAddList = new ArrayList<>();
-    private GeoPoint currentFixedPoint = new GeoPoint(0d,0d); //current updated location
-    private GeoPoint lastFixedPoint = new GeoPoint(0d, 0d);// last known location (1 iteration behind)
+    private GeoPoint currentPoint = new GeoPoint(0d,0d); //current updated location
+    private GeoPoint lastFixedPoint = new GeoPoint(0d, 0d);// last known location
     public static Lock lock = new ReentrantLock();
     public List<Stop> stopList = new ArrayList<>();
     private boolean firstRunExecuted = true;
@@ -37,17 +31,12 @@ public class StopsBackgroundThread extends Thread{
         this.fragment = fragment;
     }
     public void initStopList(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    stopList.addAll(CarrisMetropolitanaApi.getStopList());
-                    stopList.addAll(RealCarrisApi.getStopList());
-                }catch (Exception e){
-                    Log.e("ERROR IN STOP MAP", "Message :" + e.getMessage());
-                }
-            }
-        }).start();
+        try{
+            stopList.addAll(CarrisMetropolitanaApi.getStopList());
+            stopList.addAll(RealCarrisApi.getStopList());
+        }catch (Exception e){
+            Log.e("ERROR IN STOP MAP", "Message :" + e.getMessage());
+        }
     }
 
     @Override
@@ -55,11 +44,11 @@ public class StopsBackgroundThread extends Thread{
         initStopList();
         int index = 0;
         while(true){
-            if (stopList == null){
+            if (stopList.isEmpty()){
                 initStopList();
             }
             try{
-                if (index > 1){
+                if (index > 0){
                     TimeUnit.MILLISECONDS.sleep(7000);
                     if (fragment.isHidden()){
                         continue;
@@ -68,31 +57,30 @@ public class StopsBackgroundThread extends Thread{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        MapView map = fragment.getMap();
                         List<Stop> stopToAddList = new ArrayList<>();
-
-                        fragment.getLastLocation();
-                        currentFixedPoint.setLatitude(fragment.getCurrentLocation().getLatitude());
-                        currentFixedPoint.setLongitude(fragment.getCurrentLocation().getLongitude());
-
-                        needUpdating = calcCrow(lastFixedPoint, currentFixedPoint) > 0.5d;
-
+                        GeoPoint point = fragment.getCurrentLocation();
+                        currentPoint.setCoords(point.getLatitude(), point.getLongitude());
+                        needUpdating = calcCrow(lastFixedPoint, currentPoint) > 0.5d;
                         if (stopList == null){
                             return;
                         }
                         if (needUpdating){
-                            double[] coordinates = new double[]{currentFixedPoint.getLatitude(),currentFixedPoint.getLongitude()};
+                            Log.d("STOP BACKGROUND THREAD", "UPDATING...");
+                            double[] coordinates = new double[]{currentPoint.getLatitude(), currentPoint.getLongitude()};
+                            Log.d("STOP BACKGROUND THREAD", "CURRENT COORDINATES: " + currentPoint.getLatitude() + " , " + currentPoint.getLongitude());
                             for (Stop stop : stopList){
                                 if (calcCrowFromCoordinates(coordinates, stop.getCoordinates()) < 1d) {
                                     stopToAddList.add(stop);
                                 }
                             }
+                            Log.d("STOP BACKGROUND THREAD", "UPDATING " + stopToAddList.size() + " STOPS\nFrom " + stopList.size());
                             needUpdating = false;
-                            lastFixedPoint.setLatitude(currentFixedPoint.getLatitude());
-                            lastFixedPoint.setLongitude(currentFixedPoint.getLongitude());
+                            lastFixedPoint.setLatitude(currentPoint.getLatitude());
+                            lastFixedPoint.setLongitude(currentPoint.getLongitude());
                             fragment.getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.d("STOP BACKGROUND THREAD", "UPDATED GUI");
                                     fragment.updateStopsMarkersList(stopToAddList);
                                 }
                             });

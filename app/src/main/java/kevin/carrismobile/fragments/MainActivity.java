@@ -1,5 +1,6 @@
 package kevin.carrismobile.fragments;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -25,21 +26,21 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    public Fragment realTimeFragment = new RealTimeFragment();
-    public Fragment routeDetailsFragment = new RouteDetailsFragment();
-    public Fragment routesFragment = new RoutesFragment();
-    public Fragment stopsMapFragment = new StopsMapFragment();
-    public Fragment stopDetailsFragment = new StopDetailsFragment();
-    public Fragment stopFavoritesFragment = new StopFavoritesFragment();
-    public Fragment routeFavoritesFragment = new RouteFavoritesFragment();
-    public Fragment trainsFragment = new TrainsFragment();
-    public Fragment settingsFragment = new SettingsFragment();
-    public Fragment cpStationFrament = new CPStationFragment();
-    public Fragment metroStationFragment = new MetroStationFragment();
-    public Fragment carrisStopDetailsFragment = new CarrisStopDetailsFragment();
+    public Fragment realTimeFragment;
+    public Fragment routeDetailsFragment;
+    public Fragment routesFragment;
+    public Fragment stopsMapFragment;
+    public Fragment stopDetailsFragment;
+    public Fragment stopFavoritesFragment;
+    public Fragment routeFavoritesFragment;
+    public Fragment trainsFragment;
+    public Fragment settingsFragment;
+    public Fragment cpStationFrament;
+    public Fragment metroStationFragment;
+    public Fragment carrisStopDetailsFragment;
     public Fragment currentFragment = null;
     public List<Fragment> oldFragmentsList = new ArrayList<>();
-    private HashMap<Fragment, Integer> mapper= new HashMap<>();
+    private HashMap<Fragment, Integer> mapper = new HashMap<>();
     public boolean stopOrRouteFavorite = false;
     int currentIndexFragment = 0;
     BottomNavigationView bottomAppBar;
@@ -49,6 +50,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         bottomAppBar = findViewById(R.id.bottomAppBar);
+
+        realTimeFragment = new RealTimeFragment();
+        routeDetailsFragment = new RouteDetailsFragment();
+        routesFragment = new RoutesFragment();
+        stopsMapFragment = new StopsMapFragment();
+        stopDetailsFragment = new StopDetailsFragment();
+        stopFavoritesFragment = new StopFavoritesFragment();
+        routeFavoritesFragment = new RouteFavoritesFragment();
+        trainsFragment = new TrainsFragment();
+        settingsFragment = new SettingsFragment();
+        cpStationFrament = new CPStationFragment();
+        metroStationFragment = new MetroStationFragment();
+        carrisStopDetailsFragment = new CarrisStopDetailsFragment();
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.main_layout, routesFragment).commit();
         mapper.put(routesFragment, 2);
@@ -67,6 +82,24 @@ public class MainActivity extends AppCompatActivity {
         currentIndexFragment = 2;
         currentFragment = routesFragment;
         oldFragmentsList.add(routesFragment);
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (oldFragmentsList.size() > 1) {
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.hide(currentFragment);
+                    transaction.show(oldFragmentsList.get(oldFragmentsList.size() - 1));
+                    currentFragment = oldFragmentsList.get(oldFragmentsList.size() - 1);
+                    checkRightMenu(mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
+                    oldFragmentsList.remove(oldFragmentsList.size() - 1);
+                    transaction.commit();
+                } else {
+                    this.setEnabled(false);
+                    onBackPressed();
+                    this.setEnabled(true);
+                }
+            }
+        });
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -75,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -82,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.bottom_menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         bottomItemMenu(item);
@@ -91,48 +126,50 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void openFragment(Fragment newFragment, int newIndexFragment, boolean animate){
+    public void openFragment(Fragment newFragment, int newIndexFragment, boolean animate) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if(animate){
+        if (animate) {
             int oldIndexFragment = currentIndexFragment;
-            this.currentIndexFragment =  newIndexFragment;
+            this.currentIndexFragment = newIndexFragment;
             decideAnimation(transaction, oldIndexFragment, currentIndexFragment);
             checkRightMenu(oldIndexFragment, currentIndexFragment);
         }
         transaction.hide(currentFragment);
         transaction.show(newFragment);
         transaction.commit();
-        if(oldFragmentsList.size() < 11){
+        if (oldFragmentsList.size() < 11) {
             oldFragmentsList.add(currentFragment);
         }
         currentFragment = newFragment;
     }
-    private void initFragment(int layout, Fragment fragment, int menuIndex){
+
+    private void initFragment(int layout, Fragment fragment, int menuIndex) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(layout, fragment);
         transaction.hide(fragment);
         transaction.commit();
         mapper.put(fragment, menuIndex);
     }
-    private void slideRight(FragmentTransaction transaction){
+
+    private void slideRight(FragmentTransaction transaction) {
         transaction.setCustomAnimations(R.anim.slide_in, R.anim.fade_out); //slideRight
     }
 
-    private void slideLeft(FragmentTransaction transaction){
+    private void slideLeft(FragmentTransaction transaction) {
         transaction.setCustomAnimations(R.anim.fade_in, R.anim.slide_out); //slideLeft
     }
-    
-    private void decideAnimation(FragmentTransaction transaction, int oldIndex, int newIndex){
-        if (newIndex > oldIndex){
+
+    private void decideAnimation(FragmentTransaction transaction, int oldIndex, int newIndex) {
+        if (newIndex > oldIndex) {
             slideLeft(transaction);
-        }else if (newIndex < oldIndex){
+        } else if (newIndex < oldIndex) {
             slideRight(transaction);
-        }else{
+        } else {
             //nothing yet
         }
     }
 
-    public void checkRightMenu(int oldIndexFragment, int currentIndexFragment){
+    public void checkRightMenu(int oldIndexFragment, int currentIndexFragment) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -142,39 +179,40 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void bottomItemMenu(MenuItem item){
+    private void bottomItemMenu(MenuItem item) {
         //Application bottomBar
         if (item.getItemId() == R.id.bottomitem1) {
             openFragment(trainsFragment, 0, true);
-        }else if(item.getItemId() == R.id.bottomitem2){
-            openFragment(realTimeFragment,4, true);
-        }else if(item.getItemId() == R.id.bottomitem3){
-            openFragment(routesFragment,2,true);
-        }else if(item.getItemId() == R.id.bottomitem4){
-            openFragment(stopsMapFragment,3, true);
-        }else if(item.getItemId() == R.id.bottomitem5){
-            if(stopOrRouteFavorite){
+        } else if (item.getItemId() == R.id.bottomitem2) {
+            openFragment(realTimeFragment, 4, true);
+        } else if (item.getItemId() == R.id.bottomitem3) {
+            openFragment(routesFragment, 2, true);
+        } else if (item.getItemId() == R.id.bottomitem4) {
+            openFragment(stopsMapFragment, 3, true);
+        } else if (item.getItemId() == R.id.bottomitem5) {
+            if (stopOrRouteFavorite) {
                 stopOrRouteFavorite = false;
                 openFragment(stopFavoritesFragment, 1, true);
-            }else{
+            } else {
                 stopOrRouteFavorite = true;
                 openFragment(routeFavoritesFragment, 1, true);
             }
         }
     }
 
-    private void standartTopMenu(MenuItem item){
-        if (item.getItemId() == R.id.topItem1){
-            openFragment(settingsFragment,2,true);
+    private void standartTopMenu(MenuItem item) {
+        if (item.getItemId() == R.id.topItem1) {
+            openFragment(settingsFragment, 2, true);
         }
     }
-    private void routeDetailsTopBar(MenuItem item){
+
+    private void routeDetailsTopBar(MenuItem item) {
         //routeDetails topBar
-        if (item.getItemId() == R.id.realTimeonDetails){
-            openFragment(realTimeFragment,4,true);
+        if (item.getItemId() == R.id.realTimeonDetails) {
+            openFragment(realTimeFragment, 4, true);
             RouteDetailsFragment fragment = (RouteDetailsFragment) routeDetailsFragment;
             RealTimeFragment realTimeFragment1 = (RealTimeFragment) realTimeFragment;
-            if (fragment.getCurrentCarreiraId() != null){
+            if (fragment.getCurrentCarreiraId() != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -183,30 +221,30 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-        }else if(item.getItemId() == R.id.routeDetailstopItem2){
+        } else if (item.getItemId() == R.id.routeDetailstopItem2) {
             RouteDetailsFragment fragment = (RouteDetailsFragment) this.routeDetailsFragment;
             fragment.addCurrentRouteToFavorites();
         }
     }
 
-    private void stopDeitalsTopBar(MenuItem item){
+    private void stopDeitalsTopBar(MenuItem item) {
         //stopDetails topBar
-        if (item.getItemId() == R.id.stopDetailstopItem2){
+        if (item.getItemId() == R.id.stopDetailstopItem2) {
             StopDetailsFragment stopDetails = (StopDetailsFragment) this.stopDetailsFragment;
-            CarrisStopDetailsFragment carrisStopDetails = (CarrisStopDetailsFragment)this.carrisStopDetailsFragment;
-            if (!stopDetails.isHidden()){
+            CarrisStopDetailsFragment carrisStopDetails = (CarrisStopDetailsFragment) this.carrisStopDetailsFragment;
+            if (!stopDetails.isHidden()) {
                 stopDetails.addCurrentStopToFavorites();
-            }else if(!carrisStopDetails.isHidden()){
+            } else if (!carrisStopDetails.isHidden()) {
                 carrisStopDetails.addCurrentStopToFavorites();
             }
         }
     }
 
-    private void topItemMenu(MenuItem item){
-        if (item.getItemId() == R.id.topItem1){
+    private void topItemMenu(MenuItem item) {
+        if (item.getItemId() == R.id.topItem1) {
             openFragment(settingsFragment, 2, false);
-        }else if(item.getItemId() == R.id.topItem2){
-            if(oldFragmentsList.size() > 1){
+        } else if (item.getItemId() == R.id.topItem2) {
+            if (oldFragmentsList.size() > 1) {
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.hide(currentFragment);
                 transaction.show(oldFragmentsList.get(oldFragmentsList.size() - 1));
@@ -214,31 +252,7 @@ public class MainActivity extends AppCompatActivity {
                 checkRightMenu(mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1)).intValue(), mapper.get(currentFragment).intValue());
                 oldFragmentsList.remove(oldFragmentsList.size() - 1);
                 transaction.commit();
-            }else{
-                super.onBackPressed();
             }
-        }
-    }
-
-
-    //deprecated I know, but it works and I haven't found anything newer that could substitute it yet
-    @Override
-    public void onBackPressed() {
-        if(oldFragmentsList.size() > 1){
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.hide(currentFragment);
-            transaction.show(oldFragmentsList.get(oldFragmentsList.size() - 1));
-            currentFragment = oldFragmentsList.get(oldFragmentsList.size() - 1);
-
-            Integer oldIndexFragment = mapper.get(oldFragmentsList.get(oldFragmentsList.size() - 1));
-            Integer newIndexFragment = mapper.get(currentFragment);
-            if ( oldIndexFragment != null && newIndexFragment != null){
-                checkRightMenu(oldIndexFragment.intValue(), newIndexFragment.intValue());
-                oldFragmentsList.remove(oldFragmentsList.size() - 1);
-                transaction.commit();
-            }
-        }else{
-            super.onBackPressed();
         }
     }
 }

@@ -150,7 +150,6 @@ public class TrainsFragment extends Fragment {
             @Override
             public void run() {
                 try{
-                    Log.e("ERROR", "Calling OfflineCP");
                     cpList = OfflineCP.getStops();
                     currentCpList.clear();
                     currentCpList.addAll(cpList);

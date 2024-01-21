@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -47,6 +48,14 @@ public class CarrisStopDetailsFragment extends Fragment{
         confirmRemovalDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem removida com sucesso", "A paragem selecionada foi removida da lista de favoritos com sucesso");
         confirmAdditionDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada com sucesso", "A paragem selecionada foi adiconada á lista de favoritos com sucesso");
         stopDetailsToolbar = v.findViewById(R.id.carrisStopDetailstoolbar);
+        stopDetailsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity activity = (MainActivity) getActivity();
+                activity.openFragment(activity.routeDetailsFragment, 0, true);
+                ((RouteDetailsFragment)activity.routeDetailsFragment).loadCarreiraFromApi(currentWaitTimesList.get(i).getRouteId(), "0", currentWaitTimesList.get(i).getRouteName());
+            }
+        });
         return v;
     }
 
