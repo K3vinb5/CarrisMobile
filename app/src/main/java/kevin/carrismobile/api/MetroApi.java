@@ -129,7 +129,7 @@ public class MetroApi {
                 stopList.add(gson.fromJson(element, MetroStop.class));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.e("ERROR METRO API", "Message :" + e.getMessage());
         }
         return stopList;
     }

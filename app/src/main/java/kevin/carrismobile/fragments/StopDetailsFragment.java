@@ -110,7 +110,7 @@ public class StopDetailsFragment extends Fragment {
                             public void run() {
                                 currentStopRealTimeSchedulesAdaptor.notifyDataSetChanged();
                                 stopTitle.setText(stop.getTts_name());
-                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipio: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
                                 currentStop = stop;
                                 if (fragment.containsStop(stop)){
                                     stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_24);
@@ -126,7 +126,7 @@ public class StopDetailsFragment extends Fragment {
                             @Override
                             public void run() {
                                 stopTitle.setText(stop.getTts_name());
-                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipio: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
                                 currentStop = stop;
                             }
                         });
@@ -158,7 +158,7 @@ public class StopDetailsFragment extends Fragment {
                             public void run() {
                                 currentStopRealTimeSchedulesAdaptor.notifyDataSetChanged();
                                 stopTitle.setText(stop.getTts_name());
-                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipio: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
                                 currentStop = stop;
                                 if (fragment.containsStop(stop)){
                                     stopDetailsToolbar.getMenu().getItem(0).setIcon(R.drawable.baseline_star_24);
@@ -174,7 +174,7 @@ public class StopDetailsFragment extends Fragment {
                             @Override
                             public void run() {
                                 stopTitle.setText(stop.getTts_name());
-                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipalidade: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
+                                stopDetails.setText("Localidade: " + stop.getLocality() + "\nMunicipio: " + stop.getMunicipality_name() + "\nDistrito: " + stop.getDistrict_name());
                                 currentStop = stop;
                             }
                         });

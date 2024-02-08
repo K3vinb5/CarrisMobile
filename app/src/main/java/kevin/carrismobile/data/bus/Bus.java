@@ -21,8 +21,11 @@ public class Bus {
     private String trip_id;
     @SerializedName(value = "pattern_id", alternate = {"direction"})
     private String pattern_id;
-    private String pattern_name = "Not settedw";
+    private String pattern_name = "Not setted";
+    @SerializedName(value = "timeStamp", alternate = {"timestamp"})
+
     private String timestamp;
+    private String lastReportTime;
 
     public Bus(String id, double lat, double lon, String speed, double heading, String trip_id, String pattern_id, String timestamp) {
         this.id = id;
@@ -87,6 +90,13 @@ public class Bus {
         return coordinates;
     }
 
+    public double[] getPreviousCoordinates(){
+        double[] coordinates = new double[2];
+        coordinates[0] = previousLatitude;
+        coordinates[1] = previousLongitude;
+        return coordinates;
+    }
+
     public String getPattern_name() {
         return pattern_name;
     }
@@ -96,6 +106,9 @@ public class Bus {
     }
     public String getTimestamp() {
         return timestamp;
+    }
+    public String getPreviousTimeStamp(){
+        return lastReportTime;
     }
     @Override
     public String toString() {

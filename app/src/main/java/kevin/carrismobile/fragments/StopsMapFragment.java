@@ -209,54 +209,60 @@ public class StopsMapFragment extends Fragment {
         map.invalidate();
     }
 
-    public void updateStopsMarkersList(List<Stop> listToAdd){
-        for (Marker marker : stopsMarkerList){
-            map.getOverlays().remove(marker);
-        }
-        stopsMarkerList.clear();
-        for (Stop stop : listToAdd){
-            Marker marker = new Marker(map);
-            Drawable d = StopImageListAdaptor.getImageId(stop.getFacilities(), stop.getTts_name(), stop.getAgency_id(), getActivity());
-            marker.setIcon(d);
-            stopsMarkerList.add(marker);
-            marker.setPosition(new GeoPoint(stop.getCoordinates()[0], stop.getCoordinates()[1]));
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String description = "Municipality: " + stop.getMunicipality_name() + "\nLocality: " + stop.getLocality();
-            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, stop.getTts_name(), description);
-            marker.setInfoWindow(miw);
-            marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    currentStop = stop;
-                    favoritarButton.setVisibility(View.VISIBLE);
-                    stopDetailsButton.setVisibility(View.VISIBLE);
-                    Thread thread = new Thread(new Runnable() {
+    public void updateStopsMarkersList(List<Stop> listToAdd) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (Marker marker : stopsMarkerList){
+                    map.getOverlays().remove(marker);
+                }
+                stopsMarkerList.clear();
+                for (Stop stop : listToAdd){
+                    Marker marker = new Marker(map);
+                    Drawable d = StopImageListAdaptor.getImageId(stop.getFacilities(), stop.getTts_name(), stop.getAgency_id(), getActivity());
+                    marker.setIcon(d);
+                    stopsMarkerList.add(marker);
+                    marker.setPosition(new GeoPoint(stop.getCoordinates()[0], stop.getCoordinates()[1]));
+                    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                    String description = "Municipality: " + stop.getMunicipality_name() + "\nLocality: " + stop.getLocality();
+                    MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, stop.getTts_name(), description);
+                    marker.setInfoWindow(miw);
+                    marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                         @Override
-                        public void run() {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(5000);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            favoritarButton.setVisibility(View.INVISIBLE);
-                            stopDetailsButton.setVisibility(View.INVISIBLE);
-                            getActivity().runOnUiThread(new Runnable() {
+                        public boolean onMarkerClick(Marker marker, MapView mapView) {
+                            currentStop = stop;
+                            favoritarButton.setVisibility(View.VISIBLE);
+                            stopDetailsButton.setVisibility(View.VISIBLE);
+                            Thread thread = new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                        marker.getInfoWindow().close();
+                                    try {
+                                        TimeUnit.MILLISECONDS.sleep(5000);
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
                                     }
+                                    favoritarButton.setVisibility(View.INVISIBLE);
+                                    stopDetailsButton.setVisibility(View.INVISIBLE);
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            marker.getInfoWindow().close();
+                                        }
+                                    });
+                                }
                             });
+                            thread.start();
+                            marker.showInfoWindow();
+                            mapView.getController().animateTo(marker.getPosition());
+                            return true;
                         }
                     });
-                    thread.start();
-                    marker.showInfoWindow();
-                    mapView.getController().animateTo(marker.getPosition());
-                    return true;
+                    map.getOverlays().add(marker);
+                    map.invalidate();
                 }
-            });
-            map.getOverlays().add(marker);
-            map.invalidate();
-        }
+            }
+
+        }).start();
     }
 
 

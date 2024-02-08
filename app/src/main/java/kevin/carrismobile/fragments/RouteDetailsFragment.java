@@ -580,9 +580,9 @@ public class RouteDetailsFragment extends Fragment {
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ffdc00, null);
             case "#F7941E":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_f7941e, null);
-            case "ED1C24":
+            case "#ED1C24":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ed1c24, null);
-            case "EC008C":
+            case "#EC008C":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_ec008c, null);
             case "#091B7D":
                 return ResourcesCompat.getDrawable(getResources(), R.drawable.color_091b7d, null);

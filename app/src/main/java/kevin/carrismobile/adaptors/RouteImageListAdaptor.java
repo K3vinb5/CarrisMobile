@@ -40,10 +40,11 @@ public class RouteImageListAdaptor extends BaseAdapter {
         this.inflater = LayoutInflater.from(context);
         this.carreiraBasicList = carreiraBasicList;
         for (CarreiraBasic cb : carreiraBasicList){
-            textList.add(cb.getLong_name());
-            textIdLit.add(cb.getRouteId());
-            imageList.add(getImageId(cb.getColor()));
+                textList.add(cb.getLong_name());
+                textIdLit.add(cb.getRouteId());
+                imageList.add(getImageId(cb.getColor()));
         }
+
     }
 
     public RouteImageListAdaptor(Activity activity, List<CarreiraBasic> carreiraList, int a){
@@ -121,9 +122,9 @@ public class RouteImageListAdaptor extends BaseAdapter {
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ffdc00, null);
             case "#F7941E":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_f7941e, null);
-            case "ED1C24":
+            case "#ED1C24":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ed1c24, null);
-            case "EC008C":
+            case "#EC008C":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_ec008c, null);
             case "#091B7D":
                 return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.color_091b7d, null);

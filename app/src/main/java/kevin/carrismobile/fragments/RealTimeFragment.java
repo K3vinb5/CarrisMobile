@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RotateDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -33,9 +34,16 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -81,6 +89,7 @@ public class RealTimeFragment extends Fragment {
     public AlertDialog noCurrentBusesDialog;
     public static Carreira currentCarreira;
     public static String currentLine = "";
+    static DateTimeFormatter formatter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -96,7 +105,9 @@ public class RealTimeFragment extends Fragment {
         textView = v.findViewById(R.id.textViewRealTimeFragment);
         checkBox = v.findViewById(R.id.checkBox);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        }
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map.setTileSource(SettingsFragment.getCurrentTileProvider(getContext()));
 
@@ -209,6 +220,20 @@ public class RealTimeFragment extends Fragment {
                 List<Bus> listToAdd;
                 Carreira carreira = null;
                 if (!isThread){
+                    getActivity().runOnUiThread(() -> {
+                        for (Marker marker : markerBusList){
+                            map.getOverlays().remove(marker);
+                        }
+                        for (Marker marker : markerList){
+                            map.getOverlays().remove(marker);
+                        }
+                        if (line != null){
+                            map.getOverlays().remove(RealTimeFragment.this.line);
+                        }
+                        if (map.getZoomLevelDouble() != 13.0) {
+                            map.getController().animateTo(new GeoPoint(38.73329737648646d, -9.14096412687648d), 13.0, 2000L);
+                        }
+                    });
                     startWaiting();
                     currentLine = line;
                 }
@@ -233,15 +258,16 @@ public class RealTimeFragment extends Fragment {
                         for (Bus b : listToAdd){
                             switch (b.getPattern_id()) {
                                 case "ASC":
-                                    b.setPattern_name(carreiraDirectionList.get(2 * b.getVariantNumber()).getHeadsign());
+                                    b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
                                     break;
                                 case "DESC":
-                                    b.setPattern_name(carreiraDirectionList.get(1 + 2 * b.getVariantNumber()).getHeadsign());
+                                    b.setPattern_name(carreiraDirectionList.get(1).getHeadsign());
                                     break;
                                 case "CIRC":
                                     b.setPattern_name(carreiraDirectionList.get(0).getHeadsign());
                                     break;
                             }
+                            //asd
                         }
                     }else{
                         listToAdd = CarrisMetropolitanaApi.getBusFromLine(currentLine);
@@ -279,22 +305,28 @@ public class RealTimeFragment extends Fragment {
                     pathList.addAll(pathListToAdd);
                     connected = true;
                 }catch (Exception e){
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.show();
-                            nextButton.setVisibility(View.INVISIBLE);
-                            previousButton.setVisibility(View.INVISIBLE);
-                            textView.setVisibility(View.INVISIBLE);
-                            checkBox.setVisibility(View.INVISIBLE);
-                        }
-                    });
                     connected = false;
                     if (backgroundThreadStarted){
                         backgroundThread.interrupt();
                         backgroundThreadStarted = false;
                     }
-                    button.setEnabled(true);
+                    getActivity().runOnUiThread(() -> {
+                        dialog.show();
+                        for (Marker marker : markerBusList){
+                            map.getOverlays().remove(marker);
+                        }
+                        for (Marker marker : markerList){
+                            map.getOverlays().remove(marker);
+                        }
+                        if (line != null){
+                            map.getOverlays().remove(RealTimeFragment.this.line);
+                        }
+                        nextButton.setVisibility(View.INVISIBLE);
+                        previousButton.setVisibility(View.INVISIBLE);
+                        textView.setVisibility(View.INVISIBLE);
+                        checkBox.setVisibility(View.INVISIBLE);
+                        button.setEnabled(true);
+                    });
                     lock.unlock();
                     Log.e("REALTIME TRACKING", "Exception Caught: \n" + e.getMessage());
                     return;
@@ -308,13 +340,16 @@ public class RealTimeFragment extends Fragment {
                             updateMarkers(pathList, map);
                         }
                         updateBusesUI();
+                        Log.d("UPDATED BUSES", "SUCCESS");
                         if (!isThread){
                             GeoPoint point = markerBusList.get(currentSelectedBus).getPosition();
                             map.getController().animateTo(point, 16.5, 1500L);
                             endWaiting();
                         }else{
                             if (checkBox.isChecked()){
-                                map.getController().animateTo(markerBusList.get(currentSelectedBus).getPosition(), 16.5, 2500L);
+                                if(!map.isAnimating()){
+                                    map.getController().animateTo(markerBusList.get(currentSelectedBus).getPosition(), 16.5, 2500L);
+                                }
                             }
                         }
                     }
@@ -454,11 +489,20 @@ public class RealTimeFragment extends Fragment {
                 backgroundThread.interrupt();
                 backgroundThreadStarted = false;
             }
-            button.setEnabled(true);
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    button.setEnabled(true);
                     noCurrentBusesDialog.show();
+                    for (Marker marker : markerBusList){
+                        map.getOverlays().remove(marker);
+                    }
+                    for (Marker marker : markerList){
+                        map.getOverlays().remove(marker);
+                    }
+                    if (line != null){
+                        map.getOverlays().remove(line);
+                    }
                     nextButton.setVisibility(View.INVISIBLE);
                     previousButton.setVisibility(View.INVISIBLE);
                     textView.setVisibility(View.INVISIBLE);
@@ -530,20 +574,22 @@ public class RealTimeFragment extends Fragment {
         }
         markerList.clear();
         List<GeoPoint> geoPointList = new ArrayList<>();
-        for (Path path : pathList){
-            Stop s = path.getStop();
-            double[] coordinates = s.getCoordinates();
-            GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
-            geoPointList.add(point);
-            Marker marker = new Marker(map);
-            Drawable d = StopImageListAdaptor.getImageId(s.getFacilities(), s.getTts_name(), s.getAgency_id(), getActivity());
-            marker.setIcon(d);
-            markerList.add(marker);
-            marker.setPosition(point);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String descrption = "Stop Id: " + s.getStopID() + "\nLocality: " + s.getLocality() + "\nMunicipality: " + s.getMunicipality_name();
-            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
-            marker.setInfoWindow(miw);
+        synchronized (pathList){
+            for (Path path : pathList){
+                Stop s = path.getStop();
+                double[] coordinates = s.getCoordinates();
+                GeoPoint point = new GeoPoint(coordinates[0], coordinates[1]);
+                geoPointList.add(point);
+                Marker marker = new Marker(map);
+                Drawable d = StopImageListAdaptor.getImageId(s.getFacilities(), s.getTts_name(), s.getAgency_id(), getActivity());
+                marker.setIcon(d);
+                markerList.add(marker);
+                marker.setPosition(point);
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                String descrption = "Stop Id: " + s.getStopID() + "\nLocalidade: " + s.getLocality() + "\nMunicipio: " + s.getMunicipality_name();
+                MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, s.getTts_name(), descrption);
+                marker.setInfoWindow(miw);
+            }
         }
         if (line != null){
             map.getOverlays().remove(line);
@@ -601,12 +647,69 @@ public class RealTimeFragment extends Fragment {
             markerBusList.add(marker);
             marker.setPosition(point);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String descrption = "Vehicle Id: " + bus.getVehicleId() + "\nSpeed: " + bus.getSpeed() + "\nPattern Id: " + bus.getPattern_id();
-            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, "Bus " + bus.getVehicleId(), descrption);
+            String description;
+            if (currentCarreira.getAgency_id().equals("-1")){
+                description = "Speed: " + bus.getSpeed() + " km/h\nUpdated: " + formatTimeAgoUnix(Long.parseLong(bus.getTimestamp())) + "\nPattern Id: " + bus.getPattern_id();
+            }else{
+                description = "Speed: " + calculateSpeed(bus.getPreviousCoordinates(), bus.getCoordinates(), bus.getTimestamp().substring(0,19), bus.getPreviousTimeStamp().substring(0,19)) + " km/h\nUpdated: " + formatTimeAgoISO8601(bus.getTimestamp().substring(0,19)) +"\nVariant: " + bus.getVariantNumber() + "\nPattern Id: " + bus.getPattern_id();
+            }
+            MarkerInfoWindow miw= new CustomMarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, map, "Bus " + bus.getVehicleId(), description);
             marker.setOnMarkerClickListener(new BusClickListener(miw));
             map.getOverlays().add(marker);
             index++;
         }
+    }
+    private static String formatTimeAgoISO8601(String iso8601Timestamp) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            return formatTimeAgo((System.currentTimeMillis() / 1000) - LocalDateTime.parse(iso8601Timestamp, formatter).toEpochSecond(ZoneOffset.UTC));
+        }
+        return "null";
+    }
+    private static String formatTimeAgoUnix(long timestampMillis) {
+        long current = System.currentTimeMillis() / 1000;
+        return formatTimeAgo(current - timestampMillis);
+    }
+    private static String formatTimeAgo(long seconds) {
+        if (seconds < 60) {
+            return seconds + " sec ago";
+        } else if (seconds < 3600) {
+            return (seconds / 60) + " min ago";
+        } else if (seconds < 86400) {
+            return (seconds / 3600) + " hours ago";
+        } else {
+            return (seconds / 86400) + " days ago";
+        }
+    }
+    private static long timeDifference(String iso8601Timestamp1, String iso8601Timestamp2) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            return LocalDateTime.parse(iso8601Timestamp1, formatter).toEpochSecond(ZoneOffset.UTC) - LocalDateTime.parse(iso8601Timestamp2, formatter).toEpochSecond(ZoneOffset.UTC);
+        }
+        return 0;
+    }
+
+    private static int calculateSpeed(double[] coordinates1, double[] coordinates2, String timeStamp1, String timeStamp2){
+        long timeDifference = timeDifference(timeStamp1, timeStamp2);
+        if (timeDifference == 0) {
+            return 0;
+        }
+        return (int)(calcCrow(coordinates1, coordinates2) / (timeDifference / (360.0)));
+    }
+
+    private static double calcCrow(double[] coordinates1, double[] coordinates2) {
+        float R = 6371; // Radius of earth in km
+        double dLat = toRad(coordinates2[0] - coordinates1[0]);
+        double dLon = toRad(coordinates2[1] - coordinates1[1]);
+        double radlat1 = toRad(coordinates1[0]);
+        double radlat2 = toRad(coordinates2[0]);
+
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(radlat1) * Math.cos(radlat2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+    private static double toRad(double d)
+    {
+        return d * Math.PI / 180;
     }
 
     public static void updateBusesUI(){

@@ -41,6 +41,7 @@ public class RoutesFragment extends Fragment {
 
     ListView list;
     EditText editText;
+    TextWatcher textWatcher;
     Spinner spinner;
     String currentSelectedAgencyId = "-10";
     RouteImageListAdaptor imagesListAdapter;
@@ -104,7 +105,7 @@ public class RoutesFragment extends Fragment {
     }
 
     private void setEditText() {
-        editText.addTextChangedListener(new TextWatcher() {
+        textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -122,15 +123,20 @@ public class RoutesFragment extends Fragment {
                     public void run() {
                         listLock.lock();
                         currentCarreiraBasicList.clear();
-                        String original = editText.getText().toString();
+                        String original = editable.toString();
                         if(original.length() > 0){
                             for (CarreiraBasic cb : carreiraBasicList){
                                 if (doesTextContain(cb.toString(), original) && currentSelectedAgencyId.contains(cb.getAgency_id())){
                                     currentCarreiraBasicList.add(cb);
                                 }
                             }
-                        }else{
+                        }
+                        else if(currentSelectedAgencyId.equals("-10")){
                             currentCarreiraBasicList.addAll(carreiraBasicList);
+                        }
+                        else{
+                            currentCarreiraBasicList.addAll(carreiraBasicList);
+                            currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().contains(currentSelectedAgencyId));
                         }
                         listLock.unlock();
                     }
@@ -145,7 +151,8 @@ public class RoutesFragment extends Fragment {
                 });
                 thread2.start();
             }
-        });
+        };
+        editText.addTextChangedListener(textWatcher);
     }
 
     private void initCarreiraBasicList() {
@@ -204,14 +211,7 @@ public class RoutesFragment extends Fragment {
     }
 
     private void refreshList(){
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (!editText.getText().toString().equals("")){
-                    editText.setText(editText.getText());
-                }
-            }
-        });
+        textWatcher.afterTextChanged(editText.getText());
     }
 
     private void setSpinnerList() {
@@ -225,29 +225,21 @@ public class RoutesFragment extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 switch (i){
                     case 0:
-                        currentCarreiraBasicList.clear();
-                        currentCarreiraBasicList.addAll(carreiraBasicList);
-                        updateList();
-                        refreshList();
                         currentSelectedAgencyId = "-10";
+                        //updateList();
+                        refreshList();
                         break;
                     case 1:
-                        currentCarreiraBasicList.clear();
-                        currentCarreiraBasicList.addAll(carreiraBasicList);
-                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("-1"));
                         Log.d("DEBUG", currentCarreiraBasicList.toString());
-                        updateList();
-                        refreshList();
                         currentSelectedAgencyId = "-1";
+                        //updateList();
+                        refreshList();
                         break;
                     case 2:
-                        currentCarreiraBasicList.clear();
-                        currentCarreiraBasicList.addAll(carreiraBasicList);
-                        currentCarreiraBasicList.removeIf(carreiraBasic -> !carreiraBasic.getAgency_id().equals("0"));
                         Log.d("DEBUG", currentCarreiraBasicList.toString());
-                        updateList();
-                        refreshList();
                         currentSelectedAgencyId = "0";
+                        //updateList();
+                        refreshList();
                         break;
                     default:
                 }
