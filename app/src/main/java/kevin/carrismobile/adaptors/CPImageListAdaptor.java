@@ -33,7 +33,7 @@ public class CPImageListAdaptor extends BaseAdapter {
         this.cpStopBasicList = cpStopBasicList;
         for (CPStopBasic sb : cpStopBasicList){
             textList.add(sb.getNode_name());
-            imageList.add(getImageId(sb.getNode(), activity));
+            imageList.add(getImageId(activity));
         }
     }
 
@@ -71,17 +71,7 @@ public class CPImageListAdaptor extends BaseAdapter {
         return view;
     }
 
-    public static Drawable getImageId(String line, Activity activity){
-        switch (line){
-            case "Amarela":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
-            case "Verde":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
-            case "Azul":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
-            case "Vermelha":
-                return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
-        }
-        return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
+    public static Drawable getImageId(Activity activity){
+        return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.logo_cp, null);
     }
 }

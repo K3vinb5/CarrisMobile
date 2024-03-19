@@ -30,7 +30,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import kevin.carrismobile.api.CarrisMetropolitanaApi;
-import kevin.carrismobile.api.CarrisApi;
+import kevin.carrismobile.api.ScrapingCarrisApi;
 import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.bus.CarreiraBasic;
 import kevin.carrismobile.adaptors.RouteImageListAdaptor;
@@ -163,7 +163,7 @@ public class RoutesFragment extends Fragment {
                 try{
                     toAdd = CarrisMetropolitanaApi.getCarreiraBasicList();
                     carreiraBasicList.addAll(toAdd);
-                    toAdd = CarrisApi.getCarreiraBasicList();
+                    toAdd = ScrapingCarrisApi.getCarreiraBasicList();
                     carreiraBasicList.addAll(toAdd);
                     carreiraBasicList.addAll(Offline.getCarreiraList());
                     carreiraBasicList.sort(Comparator.comparing(CarreiraBasic::getRouteId));

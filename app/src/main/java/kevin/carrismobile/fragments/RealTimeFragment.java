@@ -34,25 +34,21 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import kevin.carrismobile.adaptors.StopImageListAdaptor;
-import kevin.carrismobile.api.CarrisApi;
+import kevin.carrismobile.api.ScrapingCarrisApi;
 import kevin.carrismobile.api.CarrisMetropolitanaApi;
 import kevin.carrismobile.api.Offline;
-import kevin.carrismobile.api.RealCarrisApi;
+import kevin.carrismobile.api.CarrisApi;
 import kevin.carrismobile.data.bus.Bus;
 import kevin.carrismobile.data.bus.Carreira;
 import kevin.carrismobile.data.bus.Direction;
@@ -240,14 +236,14 @@ public class RealTimeFragment extends Fragment {
                 try{
                     String agencyId = Offline.agencyServiceMap.get(currentLine) != null ? Offline.agencyServiceMap.get(currentLine) : "-1";
                     if (agencyId.equals("0")){
-                        listToAdd = RealCarrisApi.getBusFromLine(currentLine);
+                        listToAdd = CarrisApi.getBusFromLine(currentLine);
                         if (noRunningBuses(listToAdd)) {
                             lock.unlock();
                             return;
                         }
                         listToAdd.sort(Comparator.comparing(Bus::getVehicleId));
                         if (!isThread){
-                            carreira = CarrisApi.getCarreira("", currentLine);
+                            carreira = ScrapingCarrisApi.getCarreira("", currentLine);
                             if(backgroundThreadStarted){
                                 backgroundThread.setCarreira(carreira);
                             }

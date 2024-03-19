@@ -8,7 +8,7 @@ public class CarreiraBasic {
     private String agency_id;
     private boolean online;
     private String long_name;
-    private String color;
+    private final String color;
 
     public CarreiraBasic(String id, String long_name, String color, boolean isOnline) {
         this.id = id;

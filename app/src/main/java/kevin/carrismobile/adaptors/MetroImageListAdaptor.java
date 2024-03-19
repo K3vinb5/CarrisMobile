@@ -75,7 +75,7 @@ public class MetroImageListAdaptor extends BaseAdapter {
     }
 
     public static Drawable getImageId(String line, Activity activity){
-        switch (line){
+        /*switch (line){
             case "Amarela":
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.metropolitano_de_lisboa_3, null);
             case "Verde":
@@ -84,8 +84,8 @@ public class MetroImageListAdaptor extends BaseAdapter {
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.metropolitano_de_lisboa_1, null);
             case "Vermelha":
             return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.metropolitano_de_lisboa, null);
-        }
-        return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.stop_stop_logo, null);
+        }*/
+        return ResourcesCompat.getDrawable(activity.getResources(), R.drawable.metropolitano_lisboa_logo, null);
     }
 }
 

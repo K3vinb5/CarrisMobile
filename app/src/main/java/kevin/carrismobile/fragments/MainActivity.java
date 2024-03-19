@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import kevin.carrismobile.api.RealCarrisApi;
+import kevin.carrismobile.api.CarrisApi;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         initFragment(R.id.main_layout, realTimeFragment, 4);
         initFragment(R.id.main_layout, routeDetailsFragment, 2);
         initFragment(R.id.main_layout, trainsFragment, 0);
-        RealCarrisApi.init(MainActivity.this);
+        CarrisApi.init(MainActivity.this);
         currentIndexFragment = 2;
         currentFragment = routesFragment;
         oldFragmentsList.add(routesFragment);

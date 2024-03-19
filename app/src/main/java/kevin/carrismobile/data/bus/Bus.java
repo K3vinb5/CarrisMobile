@@ -9,14 +9,15 @@ public class Bus {
     @SerializedName(value = "id", alternate = {"plateNumber"})
     private String id;
     private double lat;
-    private double previousLatitude;
-    private double previousLongitude;
+    private double previousLatitude = 0;
+    private double previousLongitude = 0;
     private int variantNumber;
     @SerializedName(value = "lon", alternate = {"lng"})
     private double lon;
     private String speed;
-    @SerializedName(value = "status", alternate = {"state"})
+    @SerializedName(value = "current_status", alternate = {"state"})
     private String status;
+    @SerializedName(value = "bearing")
     private double heading;
     private String trip_id;
     @SerializedName(value = "pattern_id", alternate = {"direction"})
@@ -72,6 +73,10 @@ public class Bus {
     public String getSpeed() {
         if (speed == null){
             return "-1";
+        }
+        String[] speedArray = speed.split("\\.");
+        if(speedArray.length > 2){
+            return speedArray[0]+speedArray[1].substring(0,3);
         }
         return speed;
     }

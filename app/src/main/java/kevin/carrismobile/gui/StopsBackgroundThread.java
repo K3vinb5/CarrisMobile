@@ -2,7 +2,7 @@ package kevin.carrismobile.gui;
 
 import android.util.Log;
 
-import kevin.carrismobile.api.RealCarrisApi;
+import kevin.carrismobile.api.CarrisApi;
 import kevin.carrismobile.fragments.StopsMapFragment;
 
 import org.osmdroid.util.GeoPoint;
@@ -33,7 +33,7 @@ public class StopsBackgroundThread extends Thread{
     public void initStopList(){
         try{
             stopList.addAll(CarrisMetropolitanaApi.getStopList());
-            stopList.addAll(RealCarrisApi.getStopList());
+            stopList.addAll(CarrisApi.getStopList());
         }catch (Exception e){
             Log.e("ERROR IN STOP MAP", "Message :" + e.getMessage());
         }

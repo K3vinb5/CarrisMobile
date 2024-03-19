@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import kevin.carrismobile.api.CarrisMetropolitanaApi;
-import kevin.carrismobile.api.CarrisApi;
+import kevin.carrismobile.api.ScrapingCarrisApi;
 import kevin.carrismobile.api.Offline;
 import kevin.carrismobile.data.bus.Carreira;
 import kevin.carrismobile.data.bus.Direction;
@@ -242,7 +242,7 @@ public class RouteDetailsFragment extends Fragment {
                                 currentCarreira.updateSchedulesOnStopOnGivenDirectionAndStop(currentDirectionIndex, currentStopIndex);
                                 }else if (currentCarreira.getAgency_id().equals("0")){
                                     Log.d("DEBUG", "Stop clicked");
-                                    CarrisApi.updateDirectionAndStop(currentCarreira, currentDirectionIndex, currentStopIndex);
+                                    ScrapingCarrisApi.updateDirectionAndStop(currentCarreira, currentDirectionIndex, currentStopIndex);
                                 }
                             }catch (Exception ignore){
                                 getActivity().runOnUiThread(new Runnable() {
@@ -402,7 +402,7 @@ public class RouteDetailsFragment extends Fragment {
                     }
                 }else if(agencyId.equals("0")){
                     try {
-                        carreira = CarrisApi.getCarreira(name, carreiraId);
+                        carreira = ScrapingCarrisApi.getCarreira(name, carreiraId);
                         connected = true;
                     } catch (Exception e) {
                         getActivity().runOnUiThread(new Runnable() {

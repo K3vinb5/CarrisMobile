@@ -20,7 +20,7 @@ import com.example.carrismobile.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import kevin.carrismobile.api.CarrisApi;
+import kevin.carrismobile.api.ScrapingCarrisApi;
 import kevin.carrismobile.custom.MyCustomDialog;
 import kevin.carrismobile.data.bus.Stop;
 import kevin.carrismobile.data.bus.carris.CarrisWaitTimes;
@@ -67,7 +67,7 @@ public class CarrisStopDetailsFragment extends Fragment{
                     assert stop != null;
                     currentStop = stop;
                     currentWaitTimesList.clear();
-                    currentWaitTimesList.addAll(CarrisApi.getStopWaitTimes(currentStop.getStopID(), currentStop.getTts_name()));
+                    currentWaitTimesList.addAll(ScrapingCarrisApi.getStopWaitTimes(currentStop.getStopID(), currentStop.getTts_name()));
                     Log.d("LOADED WAIT TIMES", "List :" + currentWaitTimesList);
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
