@@ -53,7 +53,6 @@ public class StopDetailsFragment extends Fragment {
         stopTitle = v.findViewById(R.id.textViewStopName);
         stopDetails = v.findViewById(R.id.textViewStopNameDetails);
         stopDetailsToolbar = v.findViewById(R.id.stopDetailstoolbar);
-        realTimeButton = v.findViewById(R.id.realTime);
 
         confirmRemovalDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem removida com sucesso", "A paragem selecionada foi removida da lista de favoritos com sucesso");
         confirmAdditionDialog = MyCustomDialog.createOkButtonDialog(getContext(), "Paragem adicionada com sucesso", "A paragem selecionada foi adiconada á lista de favoritos com sucesso");
@@ -83,9 +82,6 @@ public class StopDetailsFragment extends Fragment {
                 thread1.start();
             }
         });
-
-        setRealTimeButtonOnClick();
-
         return v;
     }
 
@@ -222,15 +218,7 @@ public class StopDetailsFragment extends Fragment {
         thread.start();
     }
 
-    private void setRealTimeButtonOnClick(){
-        realTimeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ((MainActivity)getActivity()).openFragment(((MainActivity)getActivity()).realTimeFragment,4, true);
-                System.out.println(currentStop.getLines());
-            }
-        });
-    }
+
 
     public static String getCurrentFormattedTime(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
